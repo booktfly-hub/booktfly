@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
       const pid = booking.provider_id
       if (!providerMap[pid]) {
-        const providerInfo = booking.providers as { company_name_ar: string; company_name_en: string | null } | null
+        const providerInfo = (booking.providers as unknown as { company_name_ar: string; company_name_en: string | null }[] | null)?.[0] ?? null
         providerMap[pid] = {
           provider_id: pid,
           company_name_ar: providerInfo?.company_name_ar || '',
