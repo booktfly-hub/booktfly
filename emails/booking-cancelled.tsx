@@ -74,31 +74,31 @@ export default function BookingCancelled({
 
 const title: React.CSSProperties = {
   color: '#dc2626',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
-  margin: '0 0 8px 0',
+  fontSize: '22px',
+  fontWeight: 800,
+  lineHeight: '32px',
+  margin: '0 0 12px 0',
   textAlign: 'center',
 }
 
 const subtitle: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 24px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 32px 0',
   textAlign: 'center',
 }
 
 const detailsSection: React.CSSProperties = {
   backgroundColor: '#fef2f2',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '0 0 24px 0',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 32px 0',
   border: '1px solid #fecaca',
 }
 
 const detailRow: React.CSSProperties = {
-  padding: '8px 0',
+  padding: '12px 0',
 }
 
 const detailLabelCol: React.CSSProperties = {
@@ -110,15 +110,15 @@ const detailValueCol: React.CSSProperties = {
 }
 
 const detailLabel: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '14px',
+  color: '#7f1d1d',
+  fontSize: '15px',
   margin: '0',
 }
 
 const detailValue: React.CSSProperties = {
-  color: '#111827',
-  fontSize: '14px',
-  fontWeight: 600,
+  color: '#450a0a',
+  fontSize: '15px',
+  fontWeight: 700,
   margin: '0',
 }
 
@@ -129,9 +129,9 @@ const rowDivider: React.CSSProperties = {
 }
 
 const note: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '13px',
-  lineHeight: '20px',
+  color: '#94a3b8',
+  fontSize: '14px',
+  lineHeight: '22px',
   margin: '0',
   textAlign: 'center',
 }

@@ -71,32 +71,32 @@ export default function BookingRefunded({
 }
 
 const title: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
-  margin: '0 0 8px 0',
+  color: '#0f172a',
+  fontSize: '22px',
+  fontWeight: 800,
+  lineHeight: '32px',
+  margin: '0 0 12px 0',
   textAlign: 'center',
 }
 
 const subtitle: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 24px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 32px 0',
   textAlign: 'center',
 }
 
 const detailsSection: React.CSSProperties = {
-  backgroundColor: '#f0f9ff',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '0 0 24px 0',
-  border: '1px solid #bae6fd',
+  backgroundColor: '#f0fdf4',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 32px 0',
+  border: '1px solid #bbf7d0',
 }
 
 const detailRow: React.CSSProperties = {
-  padding: '8px 0',
+  padding: '12px 0',
 }
 
 const detailLabelCol: React.CSSProperties = {
@@ -108,42 +108,42 @@ const detailValueCol: React.CSSProperties = {
 }
 
 const detailLabel: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '14px',
+  color: '#166534',
+  fontSize: '15px',
   margin: '0',
 }
 
 const detailValue: React.CSSProperties = {
-  color: '#111827',
-  fontSize: '14px',
-  fontWeight: 600,
+  color: '#14532d',
+  fontSize: '15px',
+  fontWeight: 700,
   margin: '0',
 }
 
 const rowDivider: React.CSSProperties = {
-  borderColor: '#bae6fd',
-  borderTop: '1px solid #bae6fd',
+  borderColor: '#bbf7d0',
+  borderTop: '1px solid #bbf7d0',
   margin: '0',
 }
 
 const amountLabelStyle: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '14px',
+  color: '#166534',
+  fontSize: '16px',
   fontWeight: 700,
   margin: '0',
 }
 
 const amountValueStyle: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '18px',
-  fontWeight: 700,
+  color: '#15803d',
+  fontSize: '20px',
+  fontWeight: 800,
   margin: '0',
 }
 
 const note: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '13px',
-  lineHeight: '20px',
+  color: '#94a3b8',
+  fontSize: '14px',
+  lineHeight: '22px',
   margin: '0',
   textAlign: 'center',
 }

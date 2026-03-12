@@ -17,7 +17,7 @@ const t = {
   ar: {
     preview: (ref: string) => `تأكيد الحجز - ${ref}`,
     title: 'تم تأكيد حجزك بنجاح!',
-    subtitle: 'شكرا لك! تم تأكيد حجزك وإتمام الدفع بنجاح.',
+    subtitle: 'شكراً لك! تم تأكيد حجزك وإتمام الدفع بنجاح. استعد لرحلتك القادمة.',
     refLabel: 'رقم الحجز',
     routeLabel: 'المسار',
     dateLabel: 'تاريخ المغادرة',
@@ -31,7 +31,7 @@ const t = {
   en: {
     preview: (ref: string) => `Booking Confirmed - ${ref}`,
     title: 'Your Booking is Confirmed!',
-    subtitle: 'Thank you! Your booking has been confirmed and payment processed successfully.',
+    subtitle: 'Thank you! Your booking has been confirmed and payment processed successfully. Get ready for your upcoming trip.',
     refLabel: 'Booking Reference',
     routeLabel: 'Route',
     dateLabel: 'Departure Date',
@@ -131,57 +131,58 @@ export default function BookingConfirmed({
 }
 
 const title: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
-  margin: '0 0 8px 0',
+  color: '#0f172a',
+  fontSize: '24px',
+  fontWeight: 800,
+  lineHeight: '32px',
+  margin: '0 0 12px 0',
   textAlign: 'center',
 }
 
 const subtitle: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 24px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 32px 0',
   textAlign: 'center',
 }
 
 const refSection: React.CSSProperties = {
   backgroundColor: '#f0f9ff',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '0 0 24px 0',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 32px 0',
   textAlign: 'center',
-  border: '1px dashed #0ea5e9',
+  border: '1px solid #bae6fd',
 }
 
 const refLabel: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '12px',
-  fontWeight: 500,
-  margin: '0 0 4px 0',
+  color: '#0369a1',
+  fontSize: '13px',
+  fontWeight: 600,
+  margin: '0 0 8px 0',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
 }
 
 const refValue: React.CSSProperties = {
   color: '#0c4a6e',
-  fontSize: '22px',
-  fontWeight: 700,
+  fontSize: '28px',
+  fontWeight: 800,
   margin: '0',
   letterSpacing: '0.05em',
 }
 
 const detailsSection: React.CSSProperties = {
-  backgroundColor: '#f9fafb',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '0 0 24px 0',
+  backgroundColor: '#f8fafc',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 32px 0',
+  border: '1px solid #e2e8f0',
 }
 
 const detailRow: React.CSSProperties = {
-  padding: '8px 0',
+  padding: '12px 0',
 }
 
 const detailLabelCol: React.CSSProperties = {
@@ -193,42 +194,42 @@ const detailValueCol: React.CSSProperties = {
 }
 
 const detailLabel: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '14px',
+  color: '#64748b',
+  fontSize: '15px',
   margin: '0',
 }
 
 const detailValue: React.CSSProperties = {
-  color: '#111827',
-  fontSize: '14px',
+  color: '#0f172a',
+  fontSize: '15px',
   fontWeight: 600,
   margin: '0',
 }
 
 const rowDivider: React.CSSProperties = {
-  borderColor: '#e5e7eb',
-  borderTop: '1px solid #e5e7eb',
+  borderColor: '#e2e8f0',
+  borderTop: '1px solid #e2e8f0',
   margin: '0',
 }
 
 const totalLabel: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '14px',
-  fontWeight: 700,
-  margin: '0',
-}
-
-const totalValue: React.CSSProperties = {
-  color: '#0c4a6e',
+  color: '#0f172a',
   fontSize: '16px',
   fontWeight: 700,
   margin: '0',
 }
 
+const totalValue: React.CSSProperties = {
+  color: '#0ea5e9',
+  fontSize: '20px',
+  fontWeight: 800,
+  margin: '0',
+}
+
 const note: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '13px',
-  lineHeight: '20px',
+  color: '#94a3b8',
+  fontSize: '14px',
+  lineHeight: '22px',
   margin: '0',
   textAlign: 'center',
 }

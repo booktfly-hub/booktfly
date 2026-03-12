@@ -46,7 +46,8 @@
     "price": "Price",
     "from": "From",
     "to": "To",
-    "or": "Or"
+    "or": "Or",
+    "account": "Account"
   },
   "nav": {
     "browse_trips": "Browse Trips",
@@ -77,6 +78,8 @@
     "google": "Google",
     "already_have_account": "Already have an account? Log in",
     "dont_have_account": "Don't have an account? Sign up",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "verification_sent": "A verification email has been sent. Please check your inbox.",
     "check_email_description": "Please check your email and click the verification link to complete your account setup.",
     "reset_password_description": "Enter your email address and we'll send you a link to reset your password.",
@@ -88,7 +91,14 @@
     "confirm_password": "Confirm Password",
     "update_password_description": "Enter your new password below.",
     "redirecting_to_login": "Redirecting you to the login page...",
-    "password_updated": "Your password has been updated successfully."
+    "password_updated": "Your password has been updated successfully.",
+    "login_subtitle": "Discover exclusive flight packages from trusted travel agencies and Hajj & Umrah operators across the Kingdom.",
+    "login_greeting": "Welcome back! Please enter your details.",
+    "signup_subtitle": "Join thousands of travelers and start booking your perfect trips with the best prices.",
+    "signup_greeting": "Create your account to get started.",
+    "reset_password_subtitle": "Forgot your password? No worries, we'll help you get back to booking your flights in no time.",
+    "update_password_subtitle": "Choose a strong password to keep your BooktFly account secure.",
+    "rights_reserved": "© {year} BooktFly."
   },
   "trips": {
     "title": "Trips",
@@ -336,6 +346,21 @@
     "passenger_email_invalid": "Invalid email address",
     "passwords_mismatch": "Passwords do not match",
     "new_password_min": "New password must be at least 6 characters"
+  },
+  "profile": {
+    "title": "My Profile",
+    "personal_info": "Personal Information",
+    "full_name": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "update_profile": "Update Profile",
+    "profile_updated": "Profile updated successfully",
+    "member_since": "Member since",
+    "change_password": "Change Password",
+    "service_provider": "Service Provider",
+    "go_to_dashboard": "Go to Dashboard",
+    "role_buyer": "Buyer",
+    "role_admin": "Administrator"
   },
   "footer": {
     "about": "About BookitFly",

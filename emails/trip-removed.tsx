@@ -62,66 +62,68 @@ export default function TripRemoved({
 
 const title: React.CSSProperties = {
   color: '#dc2626',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
-  margin: '0 0 8px 0',
+  fontSize: '22px',
+  fontWeight: 800,
+  lineHeight: '32px',
+  margin: '0 0 12px 0',
 }
 
 const subtitle: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
   margin: '0 0 24px 0',
 }
 
 const infoSection: React.CSSProperties = {
-  backgroundColor: '#f9fafb',
-  borderRadius: '8px',
-  padding: '16px',
-  margin: '0 0 16px 0',
+  backgroundColor: '#f8fafc',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 24px 0',
+  border: '1px solid #e2e8f0',
 }
 
 const infoLabel: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '13px',
-  fontWeight: 500,
-  margin: '0 0 4px 0',
+  color: '#64748b',
+  fontSize: '14px',
+  fontWeight: 600,
+  margin: '0 0 8px 0',
 }
 
 const infoValue: React.CSSProperties = {
-  color: '#111827',
-  fontSize: '16px',
-  fontWeight: 600,
+  color: '#0f172a',
+  fontSize: '18px',
+  fontWeight: 700,
   margin: '0',
 }
 
 const reasonSection: React.CSSProperties = {
   backgroundColor: '#fef2f2',
-  borderRadius: '6px',
-  padding: '16px',
-  margin: '0 0 24px 0',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '0 0 32px 0',
+  borderLeft: '4px solid #dc2626',
   borderRight: '4px solid #dc2626',
 }
 
 const reasonLabel: React.CSSProperties = {
-  color: '#991b1b',
-  fontSize: '13px',
-  fontWeight: 600,
-  margin: '0 0 4px 0',
+  color: '#b91c1c',
+  fontSize: '14px',
+  fontWeight: 700,
+  margin: '0 0 8px 0',
 }
 
 const reasonValue: React.CSSProperties = {
-  color: '#7f1d1d',
-  fontSize: '14px',
-  lineHeight: '22px',
+  color: '#991b1b',
+  fontSize: '15px',
+  lineHeight: '24px',
   margin: '0',
 }
 
 const note: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '13px',
-  lineHeight: '20px',
+  color: '#94a3b8',
+  fontSize: '14px',
+  lineHeight: '22px',
   margin: '0',
   textAlign: 'center',
 }

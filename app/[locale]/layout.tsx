@@ -3,9 +3,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
-import { Navbar } from '@/components/layout/navbar'
-import { Footer } from '@/components/layout/footer'
-import { Toaster } from '@/components/ui/toaster'
+import { LocaleShell } from '@/components/layout/locale-shell'
 import '@/app/globals.css'
 
 export const metadata: Metadata = {
@@ -61,10 +59,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <Toaster />
+          <LocaleShell>{children}</LocaleShell>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -10,7 +10,7 @@ type AccountSuspendedProps = {
 const t = {
   ar: {
     preview: 'تم تعليق حسابك',
-    greeting: (name: string) => `مرحبا ${name}،`,
+    greeting: (name: string) => `مرحباً ${name}،`,
     title: 'تم تعليق حسابك',
     body: 'نود إعلامك بأنه تم تعليق حساب مزود الخدمة الخاص بك. خلال فترة التعليق، لن تتمكن من إضافة رحلات جديدة أو استقبال حجوزات.',
     contactTitle: 'تواصل معنا',
@@ -54,7 +54,7 @@ export default function AccountSuspended({
 }
 
 const greeting: React.CSSProperties = {
-  color: '#374151',
+  color: '#334155',
   fontSize: '16px',
   lineHeight: '24px',
   margin: '0 0 16px 0',
@@ -62,8 +62,8 @@ const greeting: React.CSSProperties = {
 
 const alertSection: React.CSSProperties = {
   backgroundColor: '#fef2f2',
-  borderRadius: '8px',
-  padding: '16px',
+  borderRadius: '12px',
+  padding: '24px',
   margin: '0 0 24px 0',
   textAlign: 'center',
   border: '1px solid #fecaca',
@@ -71,43 +71,44 @@ const alertSection: React.CSSProperties = {
 
 const title: React.CSSProperties = {
   color: '#dc2626',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
+  fontSize: '22px',
+  fontWeight: 800,
+  lineHeight: '32px',
   margin: '0',
 }
 
 const body: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 24px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 32px 0',
 }
 
 const contactSection: React.CSSProperties = {
-  backgroundColor: '#f9fafb',
-  borderRadius: '8px',
-  padding: '16px',
+  backgroundColor: '#f8fafc',
+  borderRadius: '12px',
+  padding: '24px',
   margin: '0',
+  border: '1px solid #e2e8f0',
 }
 
 const contactTitle: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '15px',
-  fontWeight: 600,
-  margin: '0 0 8px 0',
+  color: '#0f172a',
+  fontSize: '16px',
+  fontWeight: 700,
+  margin: '0 0 12px 0',
 }
 
 const contactBody: React.CSSProperties = {
-  color: '#6b7280',
-  fontSize: '14px',
-  lineHeight: '22px',
-  margin: '0 0 8px 0',
+  color: '#64748b',
+  fontSize: '15px',
+  lineHeight: '24px',
+  margin: '0 0 12px 0',
 }
 
 const emailText: React.CSSProperties = {
   color: '#0ea5e9',
-  fontSize: '14px',
-  fontWeight: 600,
+  fontSize: '16px',
+  fontWeight: 700,
   margin: '0',
 }

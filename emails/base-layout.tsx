@@ -29,14 +29,11 @@ export default function BaseLayout({ previewText, children }: BaseLayoutProps) {
           <Section style={header}>
             <Img
               src={`${baseUrl}/logo.png`}
-              width="140"
-              height="40"
+              width="220"
               alt="BooktFly"
               style={logo}
             />
           </Section>
-
-          <Hr style={divider} />
 
           {/* Content */}
           <Section style={content}>
@@ -64,7 +61,7 @@ export default function BaseLayout({ previewText, children }: BaseLayoutProps) {
 }
 
 const body: React.CSSProperties = {
-  backgroundColor: '#f4f6f8',
+  backgroundColor: '#f8fafc',
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif',
   margin: '0',
@@ -73,49 +70,55 @@ const body: React.CSSProperties = {
 
 const container: React.CSSProperties = {
   backgroundColor: '#ffffff',
-  borderRadius: '8px',
-  margin: '40px auto',
+  borderRadius: '16px',
+  margin: '60px auto',
   maxWidth: '600px',
   overflow: 'hidden',
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+  border: '1px solid #f1f5f9',
 }
 
 const header: React.CSSProperties = {
-  backgroundColor: '#0c4a6e',
-  padding: '24px 32px',
+  backgroundColor: '#ffffff',
+  padding: '40px 32px 32px',
   textAlign: 'center',
+  borderBottom: '1px solid #f1f5f9',
 }
 
 const logo: React.CSSProperties = {
   margin: '0 auto',
+  display: 'block',
+  width: '220px',
+  height: 'auto',
 }
 
 const divider: React.CSSProperties = {
-  borderColor: '#e5e7eb',
-  borderTop: '1px solid #e5e7eb',
+  borderColor: '#f1f5f9',
+  borderTop: '1px solid #f1f5f9',
   margin: '0',
 }
 
 const content: React.CSSProperties = {
-  padding: '32px',
+  padding: '40px 32px',
 }
 
 const footer: React.CSSProperties = {
-  backgroundColor: '#f9fafb',
-  padding: '24px 32px',
+  backgroundColor: '#f8fafc',
+  padding: '32px',
   textAlign: 'center',
 }
 
 const footerText: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '14px',
-  fontWeight: 600,
-  margin: '0 0 4px 0',
+  color: '#0f172a',
+  fontSize: '15px',
+  fontWeight: 700,
+  margin: '0 0 8px 0',
+  letterSpacing: '0.5px',
 }
 
 const footerCopyright: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '12px',
+  color: '#64748b',
+  fontSize: '13px',
   margin: '0',
-  lineHeight: '18px',
+  lineHeight: '22px',
 }

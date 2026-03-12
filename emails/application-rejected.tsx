@@ -13,7 +13,7 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://booktfly.com'
 const t = {
   ar: {
     preview: 'تحديث حالة طلبك',
-    greeting: (name: string) => `مرحبا ${name}،`,
+    greeting: (name: string) => `مرحباً ${name}،`,
     title: 'تحديث حالة طلب التسجيل',
     body: 'نأسف لإبلاغك بأن طلب التسجيل كمزود خدمة لم يتم قبوله في الوقت الحالي.',
     commentLabel: 'ملاحظات المراجعة:',
@@ -56,7 +56,7 @@ export default function ApplicationRejected({
       <Text style={reapplyNote}>{strings.reapplyText}</Text>
 
       <Section style={ctaSection}>
-        <Button style={button} href={`${baseUrl}/provider/apply`}>
+        <Button style={button} href={`${baseUrl}/${locale}/become-provider/apply`}>
           {strings.cta}
         </Button>
       </Section>
@@ -67,77 +67,79 @@ export default function ApplicationRejected({
 }
 
 const greeting: React.CSSProperties = {
-  color: '#374151',
+  color: '#334155',
   fontSize: '16px',
   lineHeight: '24px',
   margin: '0 0 16px 0',
 }
 
 const title: React.CSSProperties = {
-  color: '#0c4a6e',
-  fontSize: '20px',
-  fontWeight: 700,
-  lineHeight: '28px',
+  color: '#0f172a',
+  fontSize: '22px',
+  fontWeight: 800,
+  lineHeight: '32px',
   margin: '0 0 16px 0',
 }
 
 const body: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 16px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 24px 0',
 }
 
 const commentSection: React.CSSProperties = {
-  backgroundColor: '#fef3c7',
-  borderRadius: '6px',
-  padding: '16px',
-  margin: '0 0 16px 0',
+  backgroundColor: '#fffbeb',
+  borderRadius: '12px',
+  padding: '20px',
+  margin: '0 0 24px 0',
+  borderLeft: '4px solid #f59e0b',
   borderRight: '4px solid #f59e0b',
 }
 
 const commentLabel: React.CSSProperties = {
-  color: '#92400e',
-  fontSize: '13px',
-  fontWeight: 600,
-  margin: '0 0 4px 0',
+  color: '#b45309',
+  fontSize: '14px',
+  fontWeight: 700,
+  margin: '0 0 8px 0',
 }
 
 const commentText: React.CSSProperties = {
-  color: '#78350f',
-  fontSize: '14px',
-  lineHeight: '22px',
+  color: '#92400e',
+  fontSize: '15px',
+  lineHeight: '24px',
   margin: '0',
 }
 
 const reapplyNote: React.CSSProperties = {
-  color: '#4b5563',
-  fontSize: '15px',
-  lineHeight: '24px',
-  margin: '0 0 24px 0',
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: '26px',
+  margin: '0 0 32px 0',
 }
 
 const ctaSection: React.CSSProperties = {
   textAlign: 'center',
-  margin: '0 0 24px 0',
+  margin: '0 0 32px 0',
 }
 
 const button: React.CSSProperties = {
   backgroundColor: '#0ea5e9',
-  borderRadius: '6px',
+  borderRadius: '8px',
   color: '#ffffff',
   display: 'inline-block',
-  fontSize: '15px',
+  fontSize: '16px',
   fontWeight: 600,
-  padding: '12px 32px',
+  padding: '14px 36px',
   textDecoration: 'none',
   textAlign: 'center',
+  boxShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.2)',
 }
 
 const footerNote: React.CSSProperties = {
-  color: '#9ca3af',
-  fontSize: '13px',
-  lineHeight: '20px',
+  color: '#94a3b8',
+  fontSize: '14px',
+  lineHeight: '22px',
   margin: '0',
   textAlign: 'center',
 }

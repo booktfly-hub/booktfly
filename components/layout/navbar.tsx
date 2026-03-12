@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Building2, Plane } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Building2, Plane, Ticket } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
@@ -159,11 +159,19 @@ export function Navbar() {
                                   </Link>
                                 )}
                                 <Link
-                                  href={`/${locale}/my-bookings`}
+                                  href={`/${locale}/profile`}
                                   onClick={() => setUserMenuOpen(false)}
                                   className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-muted rounded-xl transition-colors"
                                 >
                                   <User className="h-4 w-4 text-muted-foreground" />
+                                  {t('nav.profile')}
+                                </Link>
+                                <Link
+                                  href={`/${locale}/my-bookings`}
+                                  onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-muted rounded-xl transition-colors"
+                                >
+                                  <Ticket className="h-4 w-4 text-muted-foreground" />
                                   {t('nav.my_bookings')}
                                 </Link>
                               </div>
@@ -237,12 +245,57 @@ export function Navbar() {
                   {t('nav.become_provider')}
                 </Link>
                 
+                {user && profile && (
+                  <>
+                    <div className="h-px bg-border/50 my-2" />
+                    <Link
+                      href={`/${locale}/profile`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
+                    >
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      {t('nav.profile')}
+                    </Link>
+                    <Link
+                      href={`/${locale}/my-bookings`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
+                    >
+                      <Ticket className="h-4 w-4 text-muted-foreground" />
+                      {t('nav.my_bookings')}
+                    </Link>
+                    {getDashboardLink() && (
+                      <Link
+                        href={getDashboardLink()!}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                        {profile.role === 'admin' ? t('nav.admin_panel') : t('nav.provider_dashboard')}
+                      </Link>
+                    )}
+                  </>
+                )}
+
                 <div className="h-px bg-border/50 my-2" />
-                
+
                 <div className="flex items-center justify-between px-4 py-2">
                   <span className="text-sm font-medium text-muted-foreground">{locale === 'ar' ? 'اللغة' : 'Language'}</span>
                   <LanguageSwitcher />
                 </div>
+
+                {user && (
+                  <>
+                    <div className="h-px bg-border/50 my-2" />
+                    <button
+                      onClick={() => { handleSignOut(); setMobileOpen(false) }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t('common.logout')}
+                    </button>
+                  </>
+                )}
               </div>
             </motion.div>
           )}

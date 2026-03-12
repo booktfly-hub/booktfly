@@ -46,7 +46,8 @@
     "price": "السعر",
     "from": "من",
     "to": "إلى",
-    "or": "أو"
+    "or": "أو",
+    "account": "الحساب"
   },
   "nav": {
     "browse_trips": "تصفح الرحلات",
@@ -77,6 +78,8 @@
     "google": "Google",
     "already_have_account": "لديك حساب بالفعل؟",
     "dont_have_account": "ليس لديك حساب؟",
+    "show_password": "إظهار كلمة المرور",
+    "hide_password": "إخفاء كلمة المرور",
     "verification_sent": "تم إرسال رابط التحقق إلى بريدك الإلكتروني",
     "check_email_description": "يرجى التحقق من بريدك الإلكتروني والضغط على رابط التفعيل لإكمال إنشاء حسابك.",
     "reset_password_description": "أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
@@ -88,7 +91,14 @@
     "confirm_password": "تأكيد كلمة المرور",
     "update_password_description": "أدخل كلمة المرور الجديدة أدناه.",
     "redirecting_to_login": "سيتم تحويلك إلى صفحة تسجيل الدخول...",
-    "password_updated": "تم تحديث كلمة المرور بنجاح"
+    "password_updated": "تم تحديث كلمة المرور بنجاح",
+    "login_subtitle": "اكتشف باقات طيران حصرية من وكالات السفر المعتمدة ومشغلي رحلات الحج والعمرة في جميع أنحاء المملكة.",
+    "login_greeting": "مرحباً بك مجدداً! الرجاء إدخال بياناتك.",
+    "signup_subtitle": "انضم إلى آلاف المسافرين وابدأ في حجز رحلاتك المثالية بأفضل الأسعار.",
+    "signup_greeting": "قم بإنشاء حسابك للبدء.",
+    "reset_password_subtitle": "هل نسيت كلمة المرور؟ لا تقلق، سنساعدك على العودة لحجز رحلاتك في أسرع وقت.",
+    "update_password_subtitle": "اختر كلمة مرور قوية للحفاظ على أمان حسابك في بوكت فلاي.",
+    "rights_reserved": "© {year} BooktFly."
   },
   "trips": {
     "title": "الرحلات",
@@ -336,6 +346,21 @@
     "passenger_email_invalid": "البريد الإلكتروني غير صالح",
     "passwords_mismatch": "كلمتا المرور غير متطابقتين",
     "new_password_min": "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل"
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "personal_info": "المعلومات الشخصية",
+    "full_name": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الجوال",
+    "update_profile": "تحديث الملف الشخصي",
+    "profile_updated": "تم تحديث الملف الشخصي بنجاح",
+    "member_since": "عضو منذ",
+    "change_password": "تغيير كلمة المرور",
+    "service_provider": "مزود خدمة",
+    "go_to_dashboard": "الذهاب إلى لوحة التحكم",
+    "role_buyer": "مسافر",
+    "role_admin": "مدير النظام"
   },
   "footer": {
     "about": "عن BookitFly",
