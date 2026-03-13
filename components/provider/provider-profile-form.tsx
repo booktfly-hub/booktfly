@@ -58,11 +58,7 @@ export function ProviderProfileForm({ provider }: { provider: Provider }) {
 
   function handleLogoChange(file: File | null) {
     setLogoFile(file)
-    if (file) {
-      setLogoPreview(URL.createObjectURL(file))
-    } else {
-      setLogoPreview(provider?.logo_url ?? null)
-    }
+    setLogoPreview(file ? URL.createObjectURL(file) : null)
   }
 
   async function onSubmit(data: ProfileForm) {
@@ -74,17 +70,21 @@ export function ProviderProfileForm({ provider }: { provider: Provider }) {
       let logoUrl = provider.logo_url
       if (logoFile) {
         const ext = logoFile.name.split('.').pop()
-        const filePath = `logos/${provider.id}/${Date.now()}.${ext}`
+        const filePath = `provider-logos/${provider.user_id}/${Date.now()}.${ext}`
         const { error: uploadError } = await supabase.storage
-          .from('provider-documents')
+          .from('trip-images')
           .upload(filePath, logoFile, { upsert: true })
 
-        if (!uploadError) {
-          const { data: publicUrl } = supabase.storage
-            .from('provider-documents')
-            .getPublicUrl(filePath)
-          logoUrl = publicUrl.publicUrl
+        if (uploadError) {
+          toast({ title: locale === 'ar' ? 'فشل رفع الصورة' : 'Logo upload failed', variant: 'destructive' })
+          setSaving(false)
+          return
         }
+
+        const { data: publicUrl } = supabase.storage
+          .from('trip-images')
+          .getPublicUrl(filePath)
+        logoUrl = publicUrl.publicUrl
       }
 
       const { error } = await supabase
@@ -106,6 +106,8 @@ export function ProviderProfileForm({ provider }: { provider: Provider }) {
         return
       }
 
+      setLogoFile(null)
+      setLogoPreview(logoUrl)
       toast({ title: tc('success'), variant: 'success' })
     } catch {
       toast({ title: tc('error'), variant: 'destructive' })
