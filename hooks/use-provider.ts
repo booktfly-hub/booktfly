@@ -11,9 +11,10 @@ export function useProvider(userId: string | undefined) {
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false)
       return
     }
+
+    setLoading(true)
 
     async function fetchProvider() {
       const { data } = await supabase

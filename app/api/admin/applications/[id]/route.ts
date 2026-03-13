@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { render } from '@react-email/components'
+import ApplicationApproved from '@/emails/application-approved'
+import ApplicationRejected from '@/emails/application-rejected'
 
 export async function GET(
   _request: Request,
@@ -119,6 +122,11 @@ export async function PATCH(
         .eq('id', application.user_id)
 
       // 4. Notify provider
+      const approvedHtml = await render(ApplicationApproved({
+        companyName: application.company_name_ar,
+        locale: 'ar',
+      }))
+
       await notify({
         userId: application.user_id,
         type: 'application_approved',
@@ -128,8 +136,8 @@ export async function PATCH(
         bodyEn: 'You can now start posting trips on BooktFly',
         data: { application_id: application.id },
         email: {
-          subject: 'Application Approved! - BooktFly',
-          html: `<p>Congratulations! Your provider application for <strong>${application.company_name_ar}</strong> has been approved.</p><p>You can now start posting trips on BooktFly.</p>`,
+          subject: 'تمت الموافقة على طلبك! - BooktFly',
+          html: approvedHtml,
         },
       })
 
@@ -157,6 +165,12 @@ export async function PATCH(
       }
 
       // 2. Notify provider
+      const rejectedHtml = await render(ApplicationRejected({
+        companyName: application.company_name_ar,
+        comment,
+        locale: 'ar',
+      }))
+
       await notify({
         userId: application.user_id,
         type: 'application_rejected',
@@ -166,8 +180,8 @@ export async function PATCH(
         bodyEn: `Reason: ${comment}`,
         data: { application_id: application.id },
         email: {
-          subject: 'Application Update - BooktFly',
-          html: `<p>Unfortunately, your provider application for <strong>${application.company_name_ar}</strong> has been rejected.</p><p><strong>Reason:</strong> ${comment}</p><p>You can update your application and resubmit.</p>`,
+          subject: 'تحديث حالة طلبك - BooktFly',
+          html: rejectedHtml,
         },
       })
 

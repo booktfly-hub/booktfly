@@ -1,92 +1,55 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
-import { createClient } from '@/lib/supabase/client'
-import { useUser } from '@/hooks/use-user'
-import { useProvider } from '@/hooks/use-provider'
+import { getTranslations, getLocale } from 'next-intl/server'
+import { getProvider } from '@/lib/supabase/provider'
 import { formatPrice, cn, shortId } from '@/lib/utils'
 import { BOOKING_STATUS_COLORS } from '@/lib/constants'
 import type { Booking, BookingStatus } from '@/types'
-import { Loader2, Filter, BookOpen } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
+import BookingsStatusFilter from '@/components/provider/bookings-status-filter'
 
-export default function ProviderBookingsPage() {
-  const t = useTranslations('provider')
-  const ts = useTranslations('status')
-  const tc = useTranslations('common')
-  const locale = useLocale()
-  const { user } = useUser()
-  const { provider, loading: providerLoading } = useProvider(user?.id)
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all')
+const validStatuses: BookingStatus[] = [
+  'confirmed',
+  'payment_processing',
+  'payment_failed',
+  'refunded',
+  'cancelled',
+]
 
-  useEffect(() => {
-    if (!provider) return
+type Props = {
+  searchParams: Promise<{ status?: string }>
+}
 
-    async function fetchBookings() {
-      const supabase = createClient()
-      let query = supabase
-        .from('bookings')
-        .select(
-          '*, trip:trips(*), buyer:profiles!bookings_buyer_id_fkey(*)'
-        )
-        .eq('provider_id', provider!.id)
-        .order('created_at', { ascending: false })
+export default async function ProviderBookingsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const locale = await getLocale()
+  const t = await getTranslations('provider')
+  const ts = await getTranslations('status')
+  const tc = await getTranslations('common')
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
-      }
+  const { supabase, provider } = await getProvider(locale)
 
-      const { data } = await query
-      setBookings((data as Booking[]) ?? [])
-      setLoading(false)
-    }
+  const statusFilter = status && validStatuses.includes(status as BookingStatus)
+    ? (status as BookingStatus)
+    : 'all'
 
-    fetchBookings()
-  }, [provider, statusFilter])
+  let query = supabase
+    .from('bookings')
+    .select('*, trip:trips(*), buyer:profiles!bookings_buyer_id_fkey(*)')
+    .eq('provider_id', provider.id)
+    .order('created_at', { ascending: false })
 
-  if (providerLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+  if (statusFilter !== 'all') {
+    query = query.eq('status', statusFilter)
   }
 
-  const statusOptions: (BookingStatus | 'all')[] = [
-    'all',
-    'confirmed',
-    'payment_processing',
-    'payment_failed',
-    'refunded',
-    'cancelled',
-  ]
+  const { data } = await query
+  const bookings = (data as Booking[]) ?? []
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('bookings')}</h1>
 
-      {/* Status Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
-        {statusOptions.map((status) => (
-          <button
-            key={status}
-            onClick={() => setStatusFilter(status)}
-            className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors',
-              statusFilter === status
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            )}
-          >
-            {status === 'all' ? tc('view_all') : ts(status)}
-          </button>
-        ))}
-      </div>
+      <BookingsStatusFilter current={statusFilter} />
 
-      {/* Bookings Table */}
       {bookings.length === 0 ? (
         <div className="bg-card border rounded-xl p-12 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

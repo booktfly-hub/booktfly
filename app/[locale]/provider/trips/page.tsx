@@ -1,79 +1,51 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { getTranslations, getLocale } from 'next-intl/server'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { useUser } from '@/hooks/use-user'
-import { useProvider } from '@/hooks/use-provider'
+import { getProvider } from '@/lib/supabase/provider'
 import { formatPrice, cn } from '@/lib/utils'
 import { TRIP_STATUS_COLORS } from '@/lib/constants'
 import type { Trip, TripStatus } from '@/types'
+import TripsStatusFilter from '@/components/provider/trips-status-filter'
 import {
   Plus,
-  Loader2,
   Plane,
   Eye,
-  Filter,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react'
 
-export default function ProviderTripsPage() {
-  const t = useTranslations('provider')
-  const tt = useTranslations('trips')
-  const ts = useTranslations('status')
-  const tc = useTranslations('common')
-  const locale = useLocale()
+const VALID_STATUSES: TripStatus[] = ['active', 'sold_out', 'expired', 'deactivated', 'removed']
+
+type Props = {
+  searchParams: Promise<{ status?: string }>
+}
+
+export default async function ProviderTripsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const locale = await getLocale()
   const isAr = locale === 'ar'
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
-  const { user } = useUser()
-  const { provider, loading: providerLoading } = useProvider(user?.id)
-  const [trips, setTrips] = useState<Trip[]>([])
-  const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<TripStatus | 'all'>('all')
+  const t = await getTranslations('provider')
+  const tt = await getTranslations('trips')
+  const ts = await getTranslations('status')
+  const tc = await getTranslations('common')
 
-  useEffect(() => {
-    if (!provider) return
+  const { supabase, provider } = await getProvider(locale)
 
-    async function fetchTrips() {
-      const supabase = createClient()
-      let query = supabase
-        .from('trips')
-        .select('*')
-        .eq('provider_id', provider!.id)
-        .order('created_at', { ascending: false })
+  const statusFilter = VALID_STATUSES.includes(status as TripStatus) ? (status as TripStatus) : 'all'
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
-      }
+  let query = supabase
+    .from('trips')
+    .select('*')
+    .eq('provider_id', provider.id)
+    .order('created_at', { ascending: false })
 
-      const { data } = await query
-      setTrips((data as Trip[]) ?? [])
-      setLoading(false)
-    }
-
-    fetchTrips()
-  }, [provider, statusFilter])
-
-  if (providerLoading || loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 animate-fade-in-up">
-        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-        <p className="text-slate-500 font-medium">{tc('loading')}</p>
-      </div>
-    )
+  if (statusFilter !== 'all') {
+    query = query.eq('status', statusFilter)
   }
 
-  const statusOptions: (TripStatus | 'all')[] = [
-    'all',
-    'active',
-    'sold_out',
-    'expired',
-    'deactivated',
-    'removed',
-  ]
+  const { data } = await query
+  const trips = (data as Trip[]) ?? []
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto animate-fade-in-up">
@@ -91,30 +63,8 @@ export default function ProviderTripsPage() {
         </Link>
       </div>
 
-      {/* Status Filter */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide">
-        <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-            <Filter className="h-4 w-4 text-slate-400" />
-        </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm">
-            {statusOptions.map((status) => (
-            <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={cn(
-                'px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300',
-                statusFilter === status
-                    ? 'bg-slate-900 text-white shadow-md'
-                    : 'bg-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                )}
-            >
-                {status === 'all' ? tc('view_all') : ts(status)}
-            </button>
-            ))}
-        </div>
-      </div>
+      <TripsStatusFilter current={statusFilter} />
 
-      {/* Trips Table */}
       {trips.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-[2.5rem] p-16 text-center flex flex-col items-center shadow-sm">
           <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">

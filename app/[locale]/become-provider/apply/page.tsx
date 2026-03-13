@@ -27,11 +27,32 @@ import { createClient } from '@/lib/supabase/client'
 
 type FormData = z.infer<ReturnType<typeof getProviderApplicationSchema>>
 
-const DOC_FIELDS = [
-  'doc_hajj_permit',
+const DOC_CONFIG: Record<string, { required: Record<string, boolean> }> = {
+  travel_agency: {
+    required: {
+      doc_commercial_reg: true,
+      doc_civil_aviation: true,
+      doc_hajj_permit: false,
+      doc_tourism_permit: false,
+      doc_iata_permit: false,
+    },
+  },
+  hajj_umrah: {
+    required: {
+      doc_commercial_reg: true,
+      doc_hajj_permit: true,
+      doc_civil_aviation: false,
+      doc_tourism_permit: false,
+      doc_iata_permit: false,
+    },
+  },
+}
+
+const ALL_DOC_FIELDS = [
   'doc_commercial_reg',
-  'doc_tourism_permit',
   'doc_civil_aviation',
+  'doc_hajj_permit',
+  'doc_tourism_permit',
   'doc_iata_permit',
 ] as const
 
@@ -103,6 +124,22 @@ export default function ApplyProviderPage() {
   async function onSubmit(data: FormData) {
     setSubmitting(true)
     try {
+      // Validate required documents based on provider type
+      const requiredDocs = DOC_CONFIG[data.provider_type]?.required || {}
+      const missingDocs = Object.entries(requiredDocs)
+        .filter(([field, required]) => required && !documents[field])
+        .map(([field]) => t(field as any))
+      if (missingDocs.length > 0) {
+        toast({
+          title: locale === 'ar'
+            ? `يرجى رفع المستندات المطلوبة: ${missingDocs.join('، ')}`
+            : `Please upload required documents: ${missingDocs.join(', ')}`,
+          variant: 'destructive',
+        })
+        setSubmitting(false)
+        return
+      }
+
       // Upload documents directly to Supabase Storage (avoids Vercel payload limit)
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -386,18 +423,22 @@ export default function ApplyProviderPage() {
               <h2 className="text-xl font-semibold">{t('documents')}</h2>
             </div>
             <p className="text-muted-foreground text-sm mb-6 ms-13">
-              Please upload clear, legible copies of your official documents in PDF, JPG, or PNG format. Max size 5MB per file.
+              {locale === 'ar'
+                ? 'يرجى رفع نسخ واضحة من مستنداتك الرسمية بصيغة PDF أو JPG أو PNG. الحد الأقصى 5 ميجابايت لكل ملف.'
+                : 'Please upload clear, legible copies of your official documents in PDF, JPG, or PNG format. Max size 5MB per file.'}
             </p>
 
             <div className="grid gap-4">
-              {DOC_FIELDS.map((field) => {
+              {ALL_DOC_FIELDS.map((field) => {
                 const isUploaded = !!documents[field];
+                const docConfig = DOC_CONFIG[selectedType]?.required || {}
+                const isRequired = docConfig[field] === true
                 return (
                   <div
                     key={field}
                     className={cn(
                       "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-2 rounded-xl transition-all",
-                      isUploaded ? "border-success/30 bg-success/5" : "border-border/50 hover:border-border"
+                      isUploaded ? "border-success/30 bg-success/5" : isRequired ? "border-border hover:border-primary/30" : "border-border/50 hover:border-border"
                     )}
                   >
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
@@ -412,13 +453,12 @@ export default function ApplyProviderPage() {
                           "text-sm font-medium truncate",
                           isUploaded ? "text-success-foreground" : ""
                         )}>
-                          {t(field).replace(/\s*\(.*?\)/, '')}
+                          {t(field)}
+                          {isRequired
+                            ? <span className="text-destructive ms-1">*</span>
+                            : <span className="text-muted-foreground font-normal ms-1">({tc('optional')})</span>
+                          }
                         </p>
-                        {t(field).includes('(') && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {t('optional_document')}
-                          </p>
-                        )}
                       </div>
                     </div>
 

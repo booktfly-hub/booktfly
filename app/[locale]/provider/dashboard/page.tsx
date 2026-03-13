@@ -1,125 +1,83 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { getTranslations, getLocale } from 'next-intl/server'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { useUser } from '@/hooks/use-user'
-import { useProvider } from '@/hooks/use-provider'
-import { formatPrice } from '@/lib/utils'
+import { getProvider } from '@/lib/supabase/provider'
+import { formatPrice, cn, shortId } from '@/lib/utils'
 import { BOOKING_STATUS_COLORS } from '@/lib/constants'
-import { cn, shortId } from '@/lib/utils'
 import type { Booking } from '@/types'
 import {
   Plane,
   BookOpen,
   DollarSign,
   Armchair,
-  Loader2,
   ArrowRight,
   TrendingUp,
   ArrowLeft
 } from 'lucide-react'
 
-type Stats = {
-  activeTrips: number
-  totalBookings: number
-  monthlyRevenue: number
-  seatsSold: number
-}
-
-export default function ProviderDashboardPage() {
-  const t = useTranslations('provider')
-  const ts = useTranslations('status')
-  const tc = useTranslations('common')
-  const locale = useLocale()
+export default async function ProviderDashboardPage() {
+  const locale = await getLocale()
   const isAr = locale === 'ar'
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
-  const { user } = useUser()
-  const { provider, loading: providerLoading } = useProvider(user?.id)
-  const [stats, setStats] = useState<Stats>({
-    activeTrips: 0,
-    totalBookings: 0,
-    monthlyRevenue: 0,
-    seatsSold: 0,
-  })
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
+  const [t, ts, tc] = await Promise.all([
+    getTranslations('provider'),
+    getTranslations('status'),
+    getTranslations('common'),
+  ])
 
-  useEffect(() => {
-    if (!provider) return
+  const { supabase, provider } = await getProvider(locale)
 
-    async function fetchDashboardData() {
-      const supabase = createClient()
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
 
-      // Fetch active trips count
-      const { count: activeTrips } = await supabase
-        .from('trips')
-        .select('*', { count: 'exact', head: true })
-        .eq('provider_id', provider!.id)
-        .eq('status', 'active')
+  const [
+    { count: activeTrips },
+    { count: totalBookings },
+    { data: monthBookings },
+    { data: seatData },
+    { data: recent },
+  ] = await Promise.all([
+    supabase
+      .from('trips')
+      .select('*', { count: 'exact', head: true })
+      .eq('provider_id', provider.id)
+      .eq('status', 'active'),
+    supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('provider_id', provider.id)
+      .eq('status', 'confirmed'),
+    supabase
+      .from('bookings')
+      .select('provider_payout')
+      .eq('provider_id', provider.id)
+      .eq('status', 'confirmed')
+      .gte('created_at', startOfMonth.toISOString()),
+    supabase
+      .from('bookings')
+      .select('seats_count')
+      .eq('provider_id', provider.id)
+      .eq('status', 'confirmed'),
+    supabase
+      .from('bookings')
+      .select('*, trip:trips(*), buyer:profiles!bookings_buyer_id_fkey(*)')
+      .eq('provider_id', provider.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+  ])
 
-      // Fetch total bookings count
-      const { count: totalBookings } = await supabase
-        .from('bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('provider_id', provider!.id)
-        .eq('status', 'confirmed')
+  const monthlyRevenue =
+    monthBookings?.reduce((sum, b) => sum + (b.provider_payout || 0), 0) ?? 0
+  const seatsSold =
+    seatData?.reduce((sum, b) => sum + (b.seats_count || 0), 0) ?? 0
+  const recentBookings = (recent as Booking[]) ?? []
 
-      // Fetch this month's revenue
-      const startOfMonth = new Date()
-      startOfMonth.setDate(1)
-      startOfMonth.setHours(0, 0, 0, 0)
-
-      const { data: monthBookings } = await supabase
-        .from('bookings')
-        .select('provider_payout')
-        .eq('provider_id', provider!.id)
-        .eq('status', 'confirmed')
-        .gte('created_at', startOfMonth.toISOString())
-
-      const monthlyRevenue =
-        monthBookings?.reduce((sum, b) => sum + (b.provider_payout || 0), 0) ?? 0
-
-      // Fetch total seats sold
-      const { data: seatData } = await supabase
-        .from('bookings')
-        .select('seats_count')
-        .eq('provider_id', provider!.id)
-        .eq('status', 'confirmed')
-
-      const seatsSold =
-        seatData?.reduce((sum, b) => sum + (b.seats_count || 0), 0) ?? 0
-
-      // Fetch recent 5 bookings
-      const { data: recent } = await supabase
-        .from('bookings')
-        .select('*, trip:trips(*), buyer:profiles!bookings_buyer_id_fkey(*)')
-        .eq('provider_id', provider!.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      setStats({
-        activeTrips: activeTrips ?? 0,
-        totalBookings: totalBookings ?? 0,
-        monthlyRevenue,
-        seatsSold,
-      })
-      setRecentBookings((recent as Booking[]) ?? [])
-      setLoading(false)
-    }
-
-    fetchDashboardData()
-  }, [provider])
-
-  if (providerLoading || loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 animate-fade-in-up">
-        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-        <p className="text-slate-500 font-medium">{t('loading_dashboard') || 'Loading Dashboard...'}</p>
-      </div>
-    )
+  const stats = {
+    activeTrips: activeTrips ?? 0,
+    totalBookings: totalBookings ?? 0,
+    monthlyRevenue,
+    seatsSold,
   }
 
   const statCards = [
@@ -136,8 +94,8 @@ export default function ProviderDashboardPage() {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t('dashboard')}</h1>
             <p className="text-slate-500 font-medium mt-1">{isAr ? 'مرحباً بعودتك إلى لوحة التحكم' : 'Welcome back to your dashboard'}</p>
           </div>
-          <Link 
-            href={`/${locale}/provider/trips/new`} 
+          <Link
+            href={`/${locale}/provider/trips/new`}
             className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md"
            >
             <Plane className="h-4 w-4" />
@@ -181,7 +139,7 @@ export default function ProviderDashboardPage() {
             <Arrow className="h-4 w-4 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
           </Link>
         </div>
-        
+
         <div className="divide-y divide-slate-100">
           {recentBookings.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center justify-center">

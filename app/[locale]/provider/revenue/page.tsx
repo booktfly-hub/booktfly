@@ -1,18 +1,8 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
-import { createClient } from '@/lib/supabase/client'
-import { useUser } from '@/hooks/use-user'
-import { useProvider } from '@/hooks/use-provider'
+import { getTranslations, getLocale } from 'next-intl/server'
+import { getProvider } from '@/lib/supabase/provider'
 import { formatPrice } from '@/lib/utils'
 import type { Trip } from '@/types'
-import {
-  Loader2,
-  DollarSign,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react'
+import { DollarSign, TrendingUp, Wallet } from 'lucide-react'
 
 type TripRevenue = {
   trip: Trip
@@ -22,107 +12,68 @@ type TripRevenue = {
   bookingCount: number
 }
 
-type RevenueStats = {
-  grossRevenue: number
-  totalCommission: number
-  netPayout: number
-  perTrip: TripRevenue[]
-}
+export default async function ProviderRevenuePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const { supabase, provider } = await getProvider(locale)
+  const t = await getTranslations('provider')
+  const tc = await getTranslations('common')
 
-export default function ProviderRevenuePage() {
-  const t = useTranslations('provider')
-  const tc = useTranslations('common')
-  const locale = useLocale()
-  const { user } = useUser()
-  const { provider, loading: providerLoading } = useProvider(user?.id)
-  const [stats, setStats] = useState<RevenueStats>({
-    grossRevenue: 0,
-    totalCommission: 0,
-    netPayout: 0,
-    perTrip: [],
-  })
-  const [loading, setLoading] = useState(true)
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('*, trip:trips(*)')
+    .eq('provider_id', provider.id)
+    .eq('status', 'confirmed')
 
-  useEffect(() => {
-    if (!provider) return
+  let grossRevenue = 0
+  let totalCommission = 0
+  let netPayout = 0
+  const tripMap = new Map<string, TripRevenue>()
 
-    async function fetchRevenue() {
-      const supabase = createClient()
+  if (bookings && bookings.length > 0) {
+    for (const booking of bookings) {
+      grossRevenue += booking.total_amount
+      totalCommission += booking.commission_amount
+      netPayout += booking.provider_payout
 
-      // Fetch all confirmed bookings with trip data
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('*, trip:trips(*)')
-        .eq('provider_id', provider!.id)
-        .eq('status', 'confirmed')
-
-      if (!bookings || bookings.length === 0) {
-        setLoading(false)
-        return
+      const tripId = booking.trip_id
+      if (!tripMap.has(tripId)) {
+        tripMap.set(tripId, {
+          trip: booking.trip as Trip,
+          gross: 0,
+          commission: 0,
+          net: 0,
+          bookingCount: 0,
+        })
       }
 
-      let grossRevenue = 0
-      let totalCommission = 0
-      let netPayout = 0
-      const tripMap = new Map<string, TripRevenue>()
-
-      for (const booking of bookings) {
-        grossRevenue += booking.total_amount
-        totalCommission += booking.commission_amount
-        netPayout += booking.provider_payout
-
-        const tripId = booking.trip_id
-        if (!tripMap.has(tripId)) {
-          tripMap.set(tripId, {
-            trip: booking.trip as Trip,
-            gross: 0,
-            commission: 0,
-            net: 0,
-            bookingCount: 0,
-          })
-        }
-
-        const entry = tripMap.get(tripId)!
-        entry.gross += booking.total_amount
-        entry.commission += booking.commission_amount
-        entry.net += booking.provider_payout
-        entry.bookingCount += 1
-      }
-
-      setStats({
-        grossRevenue,
-        totalCommission,
-        netPayout,
-        perTrip: Array.from(tripMap.values()).sort((a, b) => b.net - a.net),
-      })
-      setLoading(false)
+      const entry = tripMap.get(tripId)!
+      entry.gross += booking.total_amount
+      entry.commission += booking.commission_amount
+      entry.net += booking.provider_payout
+      entry.bookingCount += 1
     }
-
-    fetchRevenue()
-  }, [provider])
-
-  if (providerLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
   }
+
+  const perTrip = Array.from(tripMap.values()).sort((a, b) => b.net - a.net)
 
   const cards = [
     {
       label: t('gross_revenue'),
-      value: formatPrice(stats.grossRevenue),
+      value: formatPrice(grossRevenue),
       icon: DollarSign,
     },
     {
       label: t('platform_commission'),
-      value: formatPrice(stats.totalCommission),
+      value: formatPrice(totalCommission),
       icon: TrendingUp,
     },
     {
       label: t('net_payout'),
-      value: formatPrice(stats.netPayout),
+      value: formatPrice(netPayout),
       icon: Wallet,
     },
   ]
@@ -154,7 +105,7 @@ export default function ProviderRevenuePage() {
             {locale === 'ar' ? 'تفاصيل الإيرادات حسب الرحلة' : 'Revenue per Trip'}
           </h2>
         </div>
-        {stats.perTrip.length === 0 ? (
+        {perTrip.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             {tc('no_results')}
           </div>
@@ -181,7 +132,7 @@ export default function ProviderRevenuePage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {stats.perTrip.map((row) => (
+                {perTrip.map((row) => (
                   <tr key={row.trip.id} className="hover:bg-muted/20 transition-colors">
                     <td className="p-3">
                       <p className="font-medium">
