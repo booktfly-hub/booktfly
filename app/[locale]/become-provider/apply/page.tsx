@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
@@ -23,6 +23,7 @@ import {
   X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 type FormData = z.infer<ReturnType<typeof getProviderApplicationSchema>>
 
@@ -40,6 +41,8 @@ export default function ApplyProviderPage() {
   const locale = useLocale() as 'ar' | 'en'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
+  const [isReapply, setIsReapply] = useState(false)
   const [documents, setDocuments] = useState<Record<string, File | null>>({
     doc_hajj_permit: null,
     doc_commercial_reg: null,
@@ -47,6 +50,37 @@ export default function ApplyProviderPage() {
     doc_civil_aviation: null,
     doc_iata_permit: null,
   })
+
+  useEffect(() => {
+    async function checkExistingApplication() {
+      try {
+        const res = await fetch('/api/providers/my-application')
+        if (!res.ok) {
+          setPageLoading(false)
+          return
+        }
+        const result = await res.json()
+        if (result.data) {
+          if (result.data.status === 'pending_review') {
+            router.replace(`/${locale}/become-provider/status`)
+            return
+          }
+          if (result.data.status === 'approved') {
+            router.replace(`/${locale}/provider/dashboard`)
+            return
+          }
+          if (result.data.status === 'rejected') {
+            setIsReapply(true)
+          }
+        }
+      } catch {
+        // No existing application — first-time apply
+      } finally {
+        setPageLoading(false)
+      }
+    }
+    checkExistingApplication()
+  }, [locale, router])
 
   const {
     register,
@@ -69,25 +103,42 @@ export default function ApplyProviderPage() {
   async function onSubmit(data: FormData) {
     setSubmitting(true)
     try {
-      const formData = new FormData()
+      // Upload documents directly to Supabase Storage (avoids Vercel payload limit)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast({ title: locale === 'ar' ? 'يرجى تسجيل الدخول' : 'Please sign in', variant: 'destructive' })
+        return
+      }
 
-      // Append text fields
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, String(value))
-        }
-      })
-
-      // Append document files
-      Object.entries(documents).forEach(([key, file]) => {
+      const docUrls: Record<string, string> = {}
+      for (const [field, file] of Object.entries(documents)) {
         if (file) {
-          formData.append(key, file)
+          const ext = file.name.split('.').pop() || 'pdf'
+          const filePath = `${user.id}/applications/${field}_${Date.now()}.${ext}`
+          const { error: uploadError } = await supabase.storage
+            .from('provider-documents')
+            .upload(filePath, file, { contentType: file.type, upsert: true })
+          if (uploadError) {
+            toast({
+              title: locale === 'ar' ? `فشل رفع ${t(field as any)}` : `Failed to upload ${field}`,
+              variant: 'destructive',
+            })
+            return
+          }
+          const { data: urlData } = supabase.storage
+            .from('provider-documents')
+            .getPublicUrl(filePath)
+          docUrls[`${field}_url`] = urlData.publicUrl
         }
-      })
+      }
 
-      const res = await fetch('/api/providers/apply', {
+      // Send only text data + doc URLs (no files) to the API
+      const endpoint = isReapply ? '/api/providers/reapply' : '/api/providers/apply'
+      const res = await fetch(endpoint, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, ...docUrls }),
       })
 
       const result = await res.json()
@@ -129,22 +180,46 @@ export default function ApplyProviderPage() {
     visible: { opacity: 1, y: 0 }
   }
 
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/20">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen pt-44 pb-12 px-4 bg-muted/20 relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl -z-10" />
 
-      <motion.div 
+      <motion.div
         className="max-w-3xl mx-auto"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
         <motion.div variants={itemVariants} className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-4 tracking-tight">{t('apply_title')}</h1>
+          <h1 className="text-4xl font-bold mb-4 tracking-tight">
+            {isReapply
+              ? (locale === 'ar' ? 'إعادة تقديم الطلب' : 'Reapply as Provider')
+              : t('apply_title')}
+          </h1>
           <p className="text-lg text-muted-foreground">{t('subtitle')}</p>
         </motion.div>
+
+        {isReapply && (
+          <motion.div variants={itemVariants} className="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 text-center">
+            <p className="text-amber-700 dark:text-amber-400 font-medium text-sm">
+              {locale === 'ar'
+                ? 'تم رفض طلبك السابق. يمكنك تقديم طلب جديد بمعلومات محدّثة.'
+                : 'Your previous application was rejected. You can submit a new application with updated information.'}
+            </p>
+          </motion.div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           
