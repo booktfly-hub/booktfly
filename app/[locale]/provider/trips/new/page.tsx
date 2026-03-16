@@ -51,7 +51,9 @@ type TimeSelectProps = {
   locale: 'ar' | 'en'
 }
 
-const to12HourParts = (value: string) => {
+const to12HourParts = (
+  value: string
+): { hour: string; minute: string; period: 'AM' | 'PM' } => {
   if (!value) {
     return { hour: '', minute: '', period: 'AM' as 'AM' | 'PM' }
   }
@@ -85,7 +87,10 @@ const from12HourParts = (
 }
 
 function TimeSelect({ value, onChange, locale }: TimeSelectProps) {
-  const { hour, minute, period } = to12HourParts(value)
+  const timeParts = to12HourParts(value)
+  const hour = timeParts.hour
+  const minute = timeParts.minute
+  const period: 'AM' | 'PM' = timeParts.period
   const hourLabel = locale === 'ar' ? 'الساعة' : 'Hour'
   const minuteLabel = locale === 'ar' ? 'الدقيقة' : 'Minute'
   const periodLabel = locale === 'ar' ? 'الفترة' : 'AM/PM'
