@@ -197,16 +197,29 @@ export default function ApplyProviderPage() {
 
       // Upload documents directly to Supabase Storage (avoids Vercel payload limit)
       const supabase = createClient()
-      setSubmitStatus(locale === 'ar' ? 'جاري التحقق من الجلسة...' : 'Verifying session...')
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (!session?.user) {
+
+      // Extract user ID without any network call.
+      // getSession() can trigger a token refresh that hangs on slow mobile connections,
+      // so we read the stored session from the cookie directly.
+      // The server-side API route still fully validates the session before any DB write.
+      let userId: string | null = null
+      try {
+        const storageKey = `sb-${new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname.split('.')[0]}-auth-token`
+        const raw = localStorage.getItem(storageKey)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          const accessToken: string | undefined = parsed?.access_token
+          if (accessToken) {
+            const payload = JSON.parse(atob(accessToken.split('.')[1]))
+            userId = payload.sub ?? null
+          }
+        }
+      } catch { /* missing or malformed */ }
+      if (!userId) {
         toast({ title: locale === 'ar' ? 'يرجى تسجيل الدخول' : 'Please sign in', variant: 'destructive' })
         router.push(`/${locale}/auth/login?redirect=/become-provider/apply`)
         return
       }
-      const user = session.user
 
       const filesToUpload = Object.entries(documents).filter(([, file]) => file !== null)
       const totalFiles = filesToUpload.length
@@ -223,7 +236,7 @@ export default function ApplyProviderPage() {
           if (!file) return null
 
           const ext = file.name.split('.').pop() || 'pdf'
-          const filePath = `${user.id}/applications/${field}_${Date.now()}.${ext}`
+          const filePath = `${userId}/applications/${field}_${Date.now()}.${ext}`
           const { error: uploadError } = await withTimeout(
             supabase.storage
               .from('provider-documents')
