@@ -190,6 +190,7 @@ export default function NewTripPage() {
       currency: 'SAR',
       total_seats: 1,
       price_per_seat: 0,
+      price_per_seat_one_way: 0,
     },
   })
 
@@ -631,6 +632,24 @@ export default function NewTripPage() {
                 </p>
               )}
             </div>
+            {tripType === 'round_trip' && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')})
+                  {' '}<span className="text-muted-foreground">({tc('optional')})</span>
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  {...register('price_per_seat_one_way', { valueAsNumber: true })}
+                  className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {locale === 'ar' ? 'السعر للمسافرين الذين يحجزون ذهاب فقط على هذه الرحلة' : 'Price for travelers booking one-way on this round-trip'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

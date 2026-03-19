@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { formatPrice, cn, shortId } from '@/lib/utils'
 import { TRIP_STATUS_COLORS, BOOKING_STATUS_COLORS } from '@/lib/constants'
 import { toast } from '@/components/ui/toaster'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, isValid, parseISO, startOfDay } from 'date-fns'
+import { arSA, enUS } from 'date-fns/locale'
 import type { Trip, Booking } from '@/types'
 import {
   Loader2,
@@ -15,11 +19,31 @@ import {
   PowerOff,
   ImageIcon,
   X,
+  CalendarIcon,
+  Clock3,
+  ChevronDown,
+  AlertTriangle,
 } from 'lucide-react'
 
 type EditableFields = {
+  airline: string
+  flight_number: string
+  origin_city_ar: string
+  origin_city_en: string
+  origin_code: string
+  destination_city_ar: string
+  destination_city_en: string
+  destination_code: string
+  departure_at: string
+  return_at: string
+  trip_type: string
+  cabin_class: string
+  listing_type: string
+  is_direct: boolean
   price_per_seat: number
+  price_per_seat_one_way: number
   total_seats: number
+  currency: string
   description_ar: string
   description_en: string
 }
@@ -29,12 +53,79 @@ type Props = {
   bookings: Booking[]
 }
 
+const parseDateTimeValue = (value?: string | null) => {
+  if (!value) return undefined
+  const parsed = parseISO(value)
+  return isValid(parsed) ? parsed : undefined
+}
+
+const getTimeValue = (value?: string | null) => {
+  if (!value) return ''
+  return value.slice(11, 16)
+}
+
+const TIME_MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'))
+const TIME_HOURS_12 = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
+
+const to12HourParts = (value: string) => {
+  if (!value) return { hour: '', minute: '', period: 'AM' as 'AM' | 'PM' }
+  const [rawHours = '00', minute = '00'] = value.split(':')
+  const hours24 = Number(rawHours)
+  const period = hours24 >= 12 ? 'PM' : 'AM'
+  const normalizedHour = hours24 % 12 || 12
+  return { hour: String(normalizedHour).padStart(2, '0'), minute, period }
+}
+
+const from12HourParts = (hour: string, minute: string, period: 'AM' | 'PM') => {
+  if (!hour || !minute) return ''
+  const hourNumber = Number(hour)
+  const normalizedHour = period === 'PM' ? hourNumber % 12 + 12 : hourNumber % 12
+  return `${String(normalizedHour).padStart(2, '0')}:${minute}`
+}
+
+function TimeSelect({ value, onChange, locale }: { value: string; onChange: (v: string) => void; locale: 'ar' | 'en' }) {
+  const { hour, minute, period } = to12HourParts(value)
+  return (
+    <Popover>
+      <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50', value ? 'text-slate-900' : 'text-slate-500')}>
+        <span>{value ? `${hour}:${minute} ${period}` : (locale === 'ar' ? 'اختر الوقت' : 'Select time')}</span>
+        <ChevronDown className="h-4 w-4 opacity-60" />
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-4" align="start">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="relative">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{locale === 'ar' ? 'الساعة' : 'Hour'}</span>
+            <select value={hour} onChange={(e) => onChange(from12HourParts(e.target.value, minute || '00', period))} className="h-10 w-full appearance-none rounded-lg border bg-background px-3 pe-8 text-sm">
+              <option value="">--</option>
+              {TIME_HOURS_12.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+          <div className="relative">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{locale === 'ar' ? 'الدقيقة' : 'Minute'}</span>
+            <select value={minute} onChange={(e) => onChange(from12HourParts(hour || '12', e.target.value, period))} className="h-10 w-full appearance-none rounded-lg border bg-background px-3 pe-8 text-sm">
+              <option value="">--</option>
+              {TIME_MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="relative">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{locale === 'ar' ? 'الفترة' : 'AM/PM'}</span>
+            <select value={period} onChange={(e) => onChange(from12HourParts(hour || '12', minute || '00', e.target.value as 'AM' | 'PM'))} className="h-10 w-full appearance-none rounded-lg border bg-background px-3 pe-8 text-sm">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const t = useTranslations('provider')
   const tt = useTranslations('trips')
   const ts = useTranslations('status')
   const tc = useTranslations('common')
-  const locale = useLocale()
+  const locale = useLocale() as 'ar' | 'en'
   const router = useRouter()
 
   const [trip, setTrip] = useState(initialTrip)
@@ -43,14 +134,58 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(initialTrip.image_url)
 
-  const { register, handleSubmit } = useForm<EditableFields>({
+  const hasBookings = bookings.some((b) => b.status === 'confirmed' || b.status === 'payment_processing')
+
+  const { register, handleSubmit, watch, setValue } = useForm<EditableFields>({
     defaultValues: {
+      airline: initialTrip.airline,
+      flight_number: initialTrip.flight_number || '',
+      origin_city_ar: initialTrip.origin_city_ar,
+      origin_city_en: initialTrip.origin_city_en || '',
+      origin_code: initialTrip.origin_code || '',
+      destination_city_ar: initialTrip.destination_city_ar,
+      destination_city_en: initialTrip.destination_city_en || '',
+      destination_code: initialTrip.destination_code || '',
+      departure_at: initialTrip.departure_at,
+      return_at: initialTrip.return_at || '',
+      trip_type: initialTrip.trip_type,
+      cabin_class: initialTrip.cabin_class,
+      listing_type: initialTrip.listing_type,
+      is_direct: initialTrip.is_direct,
       price_per_seat: initialTrip.price_per_seat,
+      price_per_seat_one_way: initialTrip.price_per_seat_one_way || 0,
       total_seats: initialTrip.total_seats,
+      currency: initialTrip.currency,
       description_ar: initialTrip.description_ar || '',
       description_en: initialTrip.description_en || '',
     },
   })
+
+  const tripType = watch('trip_type')
+  const currency = watch('currency')
+  const departureAt = watch('departure_at')
+  const returnAt = watch('return_at')
+  const departureDate = parseDateTimeValue(departureAt)
+  const returnDate = parseDateTimeValue(returnAt)
+  const departureTime = getTimeValue(departureAt)
+  const returnTime = getTimeValue(returnAt)
+
+  useEffect(() => {
+    if (tripType === 'one_way' && returnAt) {
+      setValue('return_at', '', { shouldDirty: true })
+    }
+  }, [tripType, returnAt, setValue])
+
+  const updateDateTimeField = (field: 'departure_at' | 'return_at', nextDate?: Date, nextTime?: string) => {
+    const currentValue = field === 'departure_at' ? departureAt : returnAt
+    const fallbackDate = parseDateTimeValue(currentValue) ?? new Date()
+    const sourceDate = nextDate ?? fallbackDate
+    const time = nextTime ?? getTimeValue(currentValue) ?? '00:00'
+    const [hours, minutes] = (time || '00:00').split(':')
+    const merged = new Date(sourceDate)
+    merged.setHours(Number(hours || 0), Number(minutes || 0), 0, 0)
+    setValue(field, format(merged, "yyyy-MM-dd'T'HH:mm"), { shouldDirty: true })
+  }
 
   function handleImageChange(file: File | null) {
     setImageFile(file)
@@ -65,10 +200,13 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
     setSaving(true)
     try {
       const formData = new FormData()
-      formData.append('price_per_seat', String(data.price_per_seat))
-      formData.append('total_seats', String(data.total_seats))
-      formData.append('description_ar', data.description_ar)
-      formData.append('description_en', data.description_en)
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          formData.append(key, String(value))
+        }
+      })
+
       if (imageFile) {
         formData.append('image', imageFile)
       }
@@ -84,8 +222,15 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
         return
       }
 
-      setTrip(result.data)
-      toast({ title: tc('success'), variant: 'success' })
+      if (result.pending_approval) {
+        toast({
+          title: locale === 'ar' ? 'تم إرسال طلب التعديل للمراجعة' : 'Edit request submitted for review',
+          variant: 'success',
+        })
+      } else {
+        setTrip(result.data)
+        toast({ title: tc('success'), variant: 'success' })
+      }
     } catch {
       toast({ title: tc('error'), variant: 'destructive' })
     } finally {
@@ -96,16 +241,12 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   async function handleToggleStatus() {
     setToggling(true)
     try {
-      const res = await fetch(`/api/trips/${trip.id}/deactivate`, {
-        method: 'PATCH',
-      })
+      const res = await fetch(`/api/trips/${trip.id}/deactivate`, { method: 'PATCH' })
       const result = await res.json()
-
       if (!res.ok) {
         toast({ title: result.error || tc('error'), variant: 'destructive' })
         return
       }
-
       setTrip(result.data)
       toast({ title: tc('success'), variant: 'success' })
     } catch {
@@ -115,172 +256,222 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
     }
   }
 
+  const inputClass = 'w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">{t('edit_trip')}</h1>
-        <span
-          className={cn(
-            'px-3 py-1 rounded-full text-sm font-medium',
-            TRIP_STATUS_COLORS[trip.status] || ''
-          )}
-        >
+        <span className={cn('px-3 py-1 rounded-full text-sm font-medium', TRIP_STATUS_COLORS[trip.status] || '')}>
           {ts(trip.status)}
         </span>
       </div>
 
+      {hasBookings && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
+          <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+          <p className="text-sm font-medium text-warning">
+            {locale === 'ar'
+              ? 'هذه الرحلة عليها حجوزات. التعديلات ستُرسل للإدارة للموافقة عليها أولاً.'
+              : 'This trip has bookings. Changes will be sent to admin for approval first.'}
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Immutable Fields (display only) */}
+        {/* Listing Type */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">
-            {locale === 'ar' ? 'بيانات الرحلة' : 'Trip Information'}
-          </h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <h2 className="font-semibold">{t('listing_type')}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <select {...register('listing_type')} className={inputClass}>
+              <option value="seats">{t('listing_seats')}</option>
+              <option value="trip">{t('listing_trip')}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Airline & Flight */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{tt('airline')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-muted-foreground">{tt('airline')}</p>
-              <p className="font-medium">{trip.airline}</p>
+              <label className="text-sm font-medium block mb-1.5">{tt('airline')} *</label>
+              <input {...register('airline')} className={inputClass} />
             </div>
             <div>
-              <p className="text-muted-foreground">{tt('flight_number')}</p>
-              <p className="font-medium">{trip.flight_number || '-'}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{tc('from')}</p>
-              <p className="font-medium">
-                {locale === 'ar'
-                  ? trip.origin_city_ar
-                  : trip.origin_city_en || trip.origin_city_ar}
-                {trip.origin_code && ` (${trip.origin_code})`}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{tc('to')}</p>
-              <p className="font-medium">
-                {locale === 'ar'
-                  ? trip.destination_city_ar
-                  : trip.destination_city_en || trip.destination_city_ar}
-                {trip.destination_code && ` (${trip.destination_code})`}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{tt('departure')}</p>
-              <p className="font-medium">
-                {new Date(trip.departure_at).toLocaleString(
-                  locale === 'ar' ? 'ar-SA' : 'en-US'
-                )}
-              </p>
-            </div>
-            {trip.return_at && (
-              <div>
-                <p className="text-muted-foreground">{tt('return_date')}</p>
-                <p className="font-medium">
-                  {new Date(trip.return_at).toLocaleString(
-                    locale === 'ar' ? 'ar-SA' : 'en-US'
-                  )}
-                </p>
-              </div>
-            )}
-            <div>
-              <p className="text-muted-foreground">{tt('trip_type')}</p>
-              <p className="font-medium">{tt(trip.trip_type)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">{tt('cabin_class')}</p>
-              <p className="font-medium">{tt(trip.cabin_class)}</p>
+              <label className="text-sm font-medium block mb-1.5">{tt('flight_number')} <span className="text-muted-foreground">({tc('optional')})</span></label>
+              <input {...register('flight_number')} dir="ltr" className={inputClass} />
             </div>
           </div>
         </div>
 
-        {/* Editable Fields */}
+        {/* Route */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">
-            {locale === 'ar' ? 'بيانات قابلة للتعديل' : 'Editable Fields'}
-          </h2>
+          <h2 className="font-semibold">{tc('from')} → {tc('to')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">
-                {tt('price_per_seat')} ({trip.currency === 'USD' ? tc('usd') : tc('sar')})
-              </label>
-              <input
-                type="number"
-                min={1}
-                step={0.01}
-                {...register('price_per_seat', { valueAsNumber: true })}
-                className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
+              <label className="text-sm font-medium block mb-1.5">{tt('filter_origin')} ({locale === 'ar' ? 'عربي' : 'Arabic'}) *</label>
+              <input {...register('origin_city_ar')} dir="rtl" className={inputClass} />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">
-                {tt('total_seats')}
-              </label>
-              <input
-                type="number"
-                min={trip.booked_seats}
-                {...register('total_seats', { valueAsNumber: true })}
-                className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
+              <label className="text-sm font-medium block mb-1.5">{tt('filter_origin')} ({locale === 'ar' ? 'إنجليزي' : 'English'})</label>
+              <input {...register('origin_city_en')} dir="ltr" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">IATA ({tc('from')})</label>
+              <input {...register('origin_code')} dir="ltr" maxLength={3} className={cn(inputClass, 'uppercase')} />
             </div>
           </div>
-          <div>
-            <label className="text-sm font-medium block mb-1.5">
-              {tc('description')} ({locale === 'ar' ? 'عربي' : 'Arabic'})
-            </label>
-            <textarea
-              {...register('description_ar')}
-              dir="rtl"
-              rows={3}
-              className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-            />
+          <hr />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('filter_destination')} ({locale === 'ar' ? 'عربي' : 'Arabic'}) *</label>
+              <input {...register('destination_city_ar')} dir="rtl" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('filter_destination')} ({locale === 'ar' ? 'إنجليزي' : 'English'})</label>
+              <input {...register('destination_city_en')} dir="ltr" className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">IATA ({tc('to')})</label>
+              <input {...register('destination_code')} dir="ltr" maxLength={3} className={cn(inputClass, 'uppercase')} />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium block mb-1.5">
-              {tc('description')} ({locale === 'ar' ? 'إنجليزي' : 'English'})
-            </label>
-            <textarea
-              {...register('description_en')}
-              dir="ltr"
-              rows={3}
-              className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-            />
-          </div>
+        </div>
 
-          {/* Image */}
-          <div>
-            <label className="text-sm font-medium block mb-1.5">
-              {locale === 'ar' ? 'صورة الرحلة' : 'Trip Image'}
-            </label>
-            {imagePreview ? (
-              <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
-                <img
-                  src={imagePreview}
-                  alt="Trip"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleImageChange(null)}
-                  className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+        {/* Trip Type & Dates */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{tt('trip_type')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('trip_type')} *</label>
+              <select {...register('trip_type')} className={inputClass}>
+                <option value="one_way">{tt('one_way')}</option>
+                <option value="round_trip">{tt('round_trip')}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('cabin_class')} *</label>
+              <select {...register('cabin_class')} className={inputClass}>
+                <option value="economy">{tt('economy')}</option>
+                <option value="business">{tt('business')}</option>
+                <option value="first">{tt('first')}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('departure')} *</label>
+              <input type="hidden" {...register('departure_at')} />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+                <Popover>
+                  <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm', departureDate ? 'text-slate-900' : 'text-slate-500')}>
+                    {departureDate ? format(departureDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS }) : <span>{tt('departure_date')}</span>}
+                    <CalendarIcon className="h-4 w-4 opacity-60" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={departureDate} onSelect={(date) => date && updateDateTimeField('departure_at', date)} initialFocus />
+                  </PopoverContent>
+                </Popover>
+                <div className="relative">
+                  <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <div className="ps-10">
+                    <TimeSelect value={departureTime} locale={locale} onChange={(v) => updateDateTimeField('departure_at', undefined, v)} />
+                  </div>
+                </div>
               </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-                <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {locale === 'ar' ? 'اضغط لرفع صورة' : 'Click to upload'}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={(e) =>
-                    handleImageChange(e.target.files?.[0] ?? null)
-                  }
-                />
-              </label>
+            </div>
+            {tripType === 'round_trip' && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{tt('return_date')}</label>
+                <input type="hidden" {...register('return_at')} />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+                  <Popover>
+                    <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm', returnDate ? 'text-slate-900' : 'text-slate-500')}>
+                      {returnDate ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS }) : <span>{tt('return_date')}</span>}
+                      <CalendarIcon className="h-4 w-4 opacity-60" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={returnDate} onSelect={(date) => date && updateDateTimeField('return_at', date)} disabled={(date) => Boolean(departureDate && startOfDay(date) < startOfDay(departureDate))} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                  <div className="relative">
+                    <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <div className="ps-10">
+                      <TimeSelect value={returnTime} locale={locale} onChange={(v) => updateDateTimeField('return_at', undefined, v)} />
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" {...register('is_direct')} id="is_direct" className="rounded" />
+            <label htmlFor="is_direct" className="text-sm font-medium">{tt('direct')}</label>
+          </div>
+        </div>
+
+        {/* Seats & Price */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{tc('seats')} & {tc('price')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('total_seats')} *</label>
+              <input type="number" min={trip.booked_seats} {...register('total_seats', { valueAsNumber: true })} className={inputClass} />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tc('currency')} *</label>
+              <select {...register('currency')} className={inputClass}>
+                <option value="SAR">{tc('sar')} (SAR)</option>
+                <option value="USD">{tc('usd')} (USD)</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('price_per_seat')} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
+              <input type="number" min={1} step={0.01} {...register('price_per_seat', { valueAsNumber: true })} className={inputClass} />
+            </div>
+            {tripType === 'round_trip' && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')})
+                </label>
+                <input type="number" min={0} step={0.01} {...register('price_per_seat_one_way', { valueAsNumber: true })} className={inputClass} />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {locale === 'ar' ? 'السعر للمسافرين الذين يحجزون ذهاب فقط على هذه الرحلة' : 'Price for travelers booking one-way on this round-trip'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{tc('description')}</h2>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{tc('description')} ({locale === 'ar' ? 'عربي' : 'Arabic'})</label>
+            <textarea {...register('description_ar')} dir="rtl" rows={3} className={cn(inputClass, 'resize-none')} />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-1.5">{tc('description')} ({locale === 'ar' ? 'إنجليزي' : 'English'})</label>
+            <textarea {...register('description_en')} dir="ltr" rows={3} className={cn(inputClass, 'resize-none')} />
+          </div>
+        </div>
+
+        {/* Image */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{locale === 'ar' ? 'صورة الرحلة' : 'Trip Image'}</h2>
+          {imagePreview ? (
+            <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
+              <img src={imagePreview} alt="Trip" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => handleImageChange(null)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{locale === 'ar' ? 'اضغط لرفع صورة' : 'Click to upload'}</span>
+              <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImageChange(e.target.files?.[0] ?? null)} />
+            </label>
+          )}
         </div>
 
         {/* Actions */}
@@ -290,12 +481,8 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
             disabled={saving}
             className="flex-1 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {tc('save')}
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {hasBookings ? (locale === 'ar' ? 'إرسال للمراجعة' : 'Submit for Review') : tc('save')}
           </button>
 
           {(trip.status === 'active' || trip.status === 'deactivated') && (
@@ -305,18 +492,10 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
               disabled={toggling}
               className={cn(
                 'px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2',
-                trip.status === 'active'
-                  ? 'bg-warning/10 text-warning hover:bg-warning/20'
-                  : 'bg-success/10 text-success hover:bg-success/20'
+                trip.status === 'active' ? 'bg-warning/10 text-warning hover:bg-warning/20' : 'bg-success/10 text-success hover:bg-success/20'
               )}
             >
-              {toggling ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : trip.status === 'active' ? (
-                <PowerOff className="h-4 w-4" />
-              ) : (
-                <Power className="h-4 w-4" />
-              )}
+              {toggling ? <Loader2 className="h-4 w-4 animate-spin" /> : trip.status === 'active' ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
               {trip.status === 'active' ? t('deactivate') : t('reactivate')}
             </button>
           )}
@@ -329,17 +508,13 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
           <h2 className="font-semibold">{tc('bookings')}</h2>
         </div>
         {bookings.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            {tc('no_results')}
-          </div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{tc('no_results')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="text-start p-3 font-medium">
-                    {locale === 'ar' ? 'المسافر' : 'Passenger'}
-                  </th>
+                  <th className="text-start p-3 font-medium">{locale === 'ar' ? 'المسافر' : 'Passenger'}</th>
                   <th className="text-start p-3 font-medium">{tc('seats')}</th>
                   <th className="text-start p-3 font-medium">{tc('total')}</th>
                   <th className="text-start p-3 font-medium">{tc('status')}</th>
@@ -351,28 +526,17 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
                   <tr key={booking.id} className="hover:bg-muted/20">
                     <td className="p-3">
                       <p className="font-medium">{booking.passenger_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {shortId(booking.id)}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{shortId(booking.id)}</p>
                     </td>
                     <td className="p-3">{booking.seats_count}</td>
-                    <td className="p-3 font-medium">
-                      {formatPrice(booking.total_amount, trip.currency)}
-                    </td>
+                    <td className="p-3 font-medium">{formatPrice(booking.total_amount, trip.currency)}</td>
                     <td className="p-3">
-                      <span
-                        className={cn(
-                          'px-2 py-0.5 rounded-full text-xs font-medium',
-                          BOOKING_STATUS_COLORS[booking.status] || ''
-                        )}
-                      >
+                      <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', BOOKING_STATUS_COLORS[booking.status] || '')}>
                         {ts(booking.status)}
                       </span>
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">
-                      {new Date(booking.created_at).toLocaleDateString(
-                        locale === 'ar' ? 'ar-SA' : 'en-US'
-                      )}
+                      {new Date(booking.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US')}
                     </td>
                   </tr>
                 ))}

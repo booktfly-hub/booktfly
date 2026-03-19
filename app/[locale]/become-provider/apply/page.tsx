@@ -23,7 +23,6 @@ import {
   X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/client'
 
 type FormData = z.infer<ReturnType<typeof getProviderApplicationSchema>>
 
@@ -195,32 +194,7 @@ export default function ApplyProviderPage() {
         return
       }
 
-      // Upload documents directly to Supabase Storage (avoids Vercel payload limit)
-      const supabase = createClient()
-
-      // Extract user ID without any network call.
-      // getSession() can trigger a token refresh that hangs on slow mobile connections,
-      // so we read the stored session from the cookie directly.
-      // The server-side API route still fully validates the session before any DB write.
-      let userId: string | null = null
-      try {
-        const storageKey = `sb-${new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname.split('.')[0]}-auth-token`
-        const raw = localStorage.getItem(storageKey)
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          const accessToken: string | undefined = parsed?.access_token
-          if (accessToken) {
-            const payload = JSON.parse(atob(accessToken.split('.')[1]))
-            userId = payload.sub ?? null
-          }
-        }
-      } catch { /* missing or malformed */ }
-      if (!userId) {
-        toast({ title: locale === 'ar' ? 'يرجى تسجيل الدخول' : 'Please sign in', variant: 'destructive' })
-        router.push(`/${locale}/auth/login?redirect=/become-provider/apply`)
-        return
-      }
-
+      // Upload documents via server-side API route (handles auth + Supabase Storage)
       const filesToUpload = Object.entries(documents).filter(([, file]) => file !== null)
       const totalFiles = filesToUpload.length
       let uploadedCount = 0
@@ -232,26 +206,26 @@ export default function ApplyProviderPage() {
       )
 
       const uploadResults = await Promise.all(
-        Object.entries(documents).map(async ([field, file]) => {
-          if (!file) return null
+        filesToUpload.map(async ([field, file]) => {
+          const formData = new FormData()
+          formData.append('file', file!)
+          formData.append('field', field)
 
-          const ext = file.name.split('.').pop() || 'pdf'
-          const filePath = `${userId}/applications/${field}_${Date.now()}.${ext}`
-          const { error: uploadError } = await withTimeout(
-            supabase.storage
-              .from('provider-documents')
-              .upload(filePath, file, { contentType: file.type, upsert: true }),
+          const res = await withTimeout(
+            fetch('/api/providers/upload-doc', { method: 'POST', body: formData }),
             CLIENT_TIMEOUT_MS,
             locale === 'ar'
               ? `انتهت مهلة رفع ${t(field as any)}`
               : `Uploading ${t(field as any)} timed out`
           )
 
-          if (uploadError) {
+          const result = await res.json()
+
+          if (!res.ok) {
             throw new Error(
-              locale === 'ar'
+              result.error || (locale === 'ar'
                 ? `فشل رفع ${t(field as any)}`
-                : `Failed to upload ${t(field as any)}`
+                : `Failed to upload ${t(field as any)}`)
             )
           }
 
@@ -262,17 +236,11 @@ export default function ApplyProviderPage() {
               : `Uploading documents (${uploadedCount}/${totalFiles})...`
           )
 
-          const { data: urlData } = supabase.storage
-            .from('provider-documents')
-            .getPublicUrl(filePath)
-
-          return [`${field}_url`, urlData.publicUrl] as const
+          return [result.data.field, result.data.url] as const
         })
       )
 
       const docUrls = uploadResults.reduce<Record<string, string>>((acc, entry) => {
-        if (!entry) return acc
-
         acc[entry[0]] = entry[1]
         return acc
       }, {})

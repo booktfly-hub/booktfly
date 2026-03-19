@@ -34,7 +34,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PATCH: Edit trip (provider only - price, seats, description, image)
+// PATCH: Edit trip (provider only - all fields)
+// If trip has bookings, creates an edit request for admin approval
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
@@ -87,10 +88,31 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updated_at: new Date().toISOString(),
     }
 
+    // All editable fields
+    const stringFields = [
+      'airline', 'flight_number', 'origin_city_ar', 'origin_city_en',
+      'origin_code', 'destination_city_ar', 'destination_city_en',
+      'destination_code', 'departure_at', 'return_at', 'trip_type',
+      'cabin_class', 'listing_type', 'currency', 'description_ar', 'description_en',
+    ]
+
+    for (const field of stringFields) {
+      const val = formData.get(field)
+      if (val !== null) {
+        updates[field] = val || null
+      }
+    }
+
     const priceStr = formData.get('price_per_seat')
     if (priceStr) {
       const price = Number(priceStr)
       if (price > 0) updates.price_per_seat = price
+    }
+
+    const priceOneWayStr = formData.get('price_per_seat_one_way')
+    if (priceOneWayStr !== null) {
+      const price = Number(priceOneWayStr)
+      updates.price_per_seat_one_way = price > 0 ? price : null
     }
 
     const seatsStr = formData.get('total_seats')
@@ -99,11 +121,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       if (seats >= existingTrip.booked_seats) updates.total_seats = seats
     }
 
-    const descAr = formData.get('description_ar')
-    if (descAr !== null) updates.description_ar = descAr || null
-
-    const descEn = formData.get('description_en')
-    if (descEn !== null) updates.description_en = descEn || null
+    const isDirectStr = formData.get('is_direct')
+    if (isDirectStr !== null) {
+      updates.is_direct = isDirectStr === 'true'
+    }
 
     // Upload image if provided
     const imageFile = formData.get('image') as File | null
@@ -127,6 +148,56 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Check if trip has confirmed bookings
+    const { count: bookingCount } = await supabaseAdmin
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('trip_id', id)
+      .in('status', ['confirmed', 'payment_processing'])
+
+    const hasBookings = (bookingCount || 0) > 0
+
+    if (hasBookings) {
+      // Create edit request for admin approval
+      const { updated_at: _removed, ...changesOnly } = updates
+      const { data: editRequest, error: editError } = await supabaseAdmin
+        .from('trip_edit_requests')
+        .insert({
+          trip_id: id,
+          provider_id: provider.id,
+          changes: changesOnly,
+          status: 'pending',
+        })
+        .select()
+        .single()
+
+      if (editError) {
+        console.error('Failed to create edit request:', editError)
+        return NextResponse.json(
+          { data: null, error: 'Failed to submit edit request' },
+          { status: 500 }
+        )
+      }
+
+      // Notify admin
+      const { notifyAdmin } = await import('@/lib/notifications')
+      await notifyAdmin({
+        type: 'trip_edit_approved',
+        titleAr: 'طلب تعديل رحلة جديد',
+        titleEn: 'New Trip Edit Request',
+        bodyAr: `طلب تعديل رحلة من ${existingTrip.origin_city_ar} إلى ${existingTrip.destination_city_ar}`,
+        bodyEn: `Trip edit request for ${existingTrip.origin_city_en || existingTrip.origin_city_ar} to ${existingTrip.destination_city_en || existingTrip.destination_city_ar}`,
+        data: { trip_id: id, edit_request_id: editRequest.id },
+      })
+
+      return NextResponse.json({
+        data: existingTrip,
+        pending_approval: true,
+        error: null,
+      })
+    }
+
+    // No bookings - apply changes directly
     const { data: updatedTrip, error: updateError } = await supabaseAdmin
       .from('trips')
       .update(updates)

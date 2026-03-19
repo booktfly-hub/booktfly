@@ -63,6 +63,7 @@ export function getTripSchema(locale: Locale = 'ar') {
     cabin_class: z.enum(['economy', 'business', 'first']),
     total_seats: z.number().min(1, v(locale, 'seats_required')),
     price_per_seat: z.number().min(1, v(locale, 'price_required')),
+    price_per_seat_one_way: z.number().min(0).optional(),
     currency: z.enum(['SAR', 'USD']),
     description_ar: z.string().optional(),
     description_en: z.string().optional(),

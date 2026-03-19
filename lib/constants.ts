@@ -44,7 +44,19 @@ export const BOOKING_STATUS_COLORS: Record<string, string> = {
   refunded: 'bg-muted text-muted-foreground',
   cancelled: 'bg-muted text-muted-foreground',
   rejected: 'bg-destructive/10 text-destructive',
+  cancellation_pending: 'bg-warning/10 text-warning',
 }
+
+export const EDIT_REQUEST_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-warning/10 text-warning',
+  approved: 'bg-success/10 text-success',
+  rejected: 'bg-destructive/10 text-destructive',
+}
+
+export const BOOKING_TYPES = {
+  one_way: { ar: 'ذهاب فقط', en: 'One Way' },
+  round_trip: { ar: 'ذهاب وعودة', en: 'Round Trip' },
+} as const
 
 export const VISA_TYPES = {
   tourist: { ar: 'سياحية', en: 'Tourist' },

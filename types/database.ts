@@ -3,7 +3,7 @@ export type ProviderType = 'travel_agency' | 'hajj_umrah'
 export type ApplicationStatus = 'pending_review' | 'approved' | 'rejected'
 export type ProviderStatus = 'active' | 'suspended'
 export type TripStatus = 'active' | 'sold_out' | 'expired' | 'removed' | 'deactivated'
-export type BookingStatus = 'payment_processing' | 'confirmed' | 'payment_failed' | 'refunded' | 'cancelled' | 'rejected'
+export type BookingStatus = 'payment_processing' | 'confirmed' | 'payment_failed' | 'refunded' | 'cancelled' | 'rejected' | 'cancellation_pending'
 export type TripType = 'one_way' | 'round_trip'
 export type CabinClass = 'economy' | 'business' | 'first'
 export type ListingType = 'seats' | 'trip'
@@ -20,6 +20,8 @@ export type Passenger = {
   email: string
 }
 
+export type TripEditRequestStatus = 'pending' | 'approved' | 'rejected'
+
 export type NotificationType =
   | 'application_approved'
   | 'application_rejected'
@@ -32,6 +34,12 @@ export type NotificationType =
   | 'booking_rejected'
   | 'new_application'
   | 'provider_reapplied'
+  | 'trip_edit_approved'
+  | 'trip_edit_rejected'
+  | 'trip_updated'
+  | 'cancellation_approved'
+  | 'cancellation_rejected'
+  | 'cancellation_requested'
 
 export type Profile = {
   id: string
@@ -112,6 +120,7 @@ export type Trip = {
   total_seats: number
   booked_seats: number
   price_per_seat: number
+  price_per_seat_one_way: number | null
   currency: Currency
   description_ar: string | null
   description_en: string | null
@@ -135,6 +144,7 @@ export type Booking = {
   passenger_email: string
   passenger_id_number: string | null
   passengers: Passenger[] | null
+  booking_type: 'round_trip' | 'one_way'
   seats_count: number
   price_per_seat: number
   total_amount: number
@@ -167,6 +177,20 @@ export type Notification = {
   data: Record<string, string> | null
   read: boolean
   created_at: string
+}
+
+export type TripEditRequest = {
+  id: string
+  trip_id: string
+  provider_id: string
+  changes: Record<string, unknown>
+  status: TripEditRequestStatus
+  admin_comment: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+  trip?: Trip
+  provider?: Provider
 }
 
 export type PlatformSettings = {
