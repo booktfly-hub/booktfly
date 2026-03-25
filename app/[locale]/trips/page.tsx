@@ -6,7 +6,6 @@ import {
   Search,
   SlidersHorizontal,
   X,
-  Plane,
   ChevronDown,
   Loader2,
   ArrowLeftRight,
@@ -33,7 +32,6 @@ type Filters = {
   price_max: string
   trip_type: string
   cabin_class: string
-  direct_only: boolean
   sort: string
 }
 
@@ -44,9 +42,8 @@ const initialFilters: Filters = {
   date_to: '',
   price_min: '',
   price_max: '',
-  trip_type: '',
+  trip_type: 'one_way',
   cabin_class: '',
-  direct_only: false,
   sort: 'newest',
 }
 
@@ -72,10 +69,9 @@ function TripsContent() {
     ...initialFilters,
     origin: searchParams.get('origin') || '',
     destination: searchParams.get('destination') || '',
-    trip_type: searchParams.get('trip_type') || '',
+    trip_type: searchParams.get('trip_type') || 'one_way',
     date_from: searchParams.get('date_from') || '',
-    date_to: searchParams.get('date_to') || '',
-    direct_only: searchParams.get('direct_only') === 'true',
+    date_to: searchParams.get('trip_type') === 'round_trip' ? searchParams.get('date_to') || '' : '',
   }))
 
   const [showFilters, setShowFilters] = useState(false)
@@ -83,7 +79,6 @@ function TripsContent() {
   const [searchDestination, setSearchDestination] = useState(filters.destination)
   const departureDate = parseDateValue(filters.date_from)
   const returnDate = parseDateValue(filters.date_to)
-
   const fetchTrips = useCallback(
     async (pageNum: number, append = false, overrideOrigin?: string, overrideDestination?: string) => {
       if (!append) setLoading(true)
@@ -99,12 +94,11 @@ function TripsContent() {
         if (origin) params.set('origin', origin)
         if (destination) params.set('destination', destination)
         if (filters.date_from) params.set('date_from', filters.date_from)
-        if (filters.date_to) params.set('date_to', filters.date_to)
+        if (filters.trip_type !== 'one_way' && filters.date_to) params.set('date_to', filters.date_to)
         if (filters.price_min) params.set('price_min', filters.price_min)
         if (filters.price_max) params.set('price_max', filters.price_max)
         if (filters.trip_type) params.set('trip_type', filters.trip_type)
         if (filters.cabin_class) params.set('cabin_class', filters.cabin_class)
-        if (filters.direct_only) params.set('direct_only', 'true')
         if (filters.sort) params.set('sort', filters.sort)
 
         const res = await fetch(`/api/trips?${params.toString()}`)
@@ -123,7 +117,7 @@ function TripsContent() {
         setLoadingMore(false)
       }
     },
-    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.direct_only, filters.sort]
+    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort]
   )
 
   const handleSearch = useCallback(() => {
@@ -158,24 +152,24 @@ function TripsContent() {
     fetchTrips(1, false, newOrigin, newDestination)
   }
 
-  const filterDepsRef = useRef({ date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, direct_only: filters.direct_only, sort: filters.sort })
+  const filterDepsRef = useRef({ date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, sort: filters.sort })
   const initialLoadDone = useRef(false)
 
   useEffect(() => {
     if (!initialLoadDone.current) {
       initialLoadDone.current = true
       fetchTrips(1)
-      filterDepsRef.current = { date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, direct_only: filters.direct_only, sort: filters.sort }
+      filterDepsRef.current = { date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, sort: filters.sort }
       return
     }
     const prev = filterDepsRef.current
-    const changed = prev.date_from !== filters.date_from || prev.date_to !== filters.date_to || prev.price_min !== filters.price_min || prev.price_max !== filters.price_max || prev.trip_type !== filters.trip_type || prev.cabin_class !== filters.cabin_class || prev.direct_only !== filters.direct_only || prev.sort !== filters.sort
+    const changed = prev.date_from !== filters.date_from || prev.date_to !== filters.date_to || prev.price_min !== filters.price_min || prev.price_max !== filters.price_max || prev.trip_type !== filters.trip_type || prev.cabin_class !== filters.cabin_class || prev.sort !== filters.sort
     if (changed) {
-      filterDepsRef.current = { date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, direct_only: filters.direct_only, sort: filters.sort }
+      filterDepsRef.current = { date_from: filters.date_from, date_to: filters.date_to, price_min: filters.price_min, price_max: filters.price_max, trip_type: filters.trip_type, cabin_class: filters.cabin_class, sort: filters.sort }
       setPage(1)
       fetchTrips(1)
     }
-  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.direct_only, filters.sort, fetchTrips])
+  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, fetchTrips])
 
   const handleLoadMore = () => {
     const nextPage = page + 1
@@ -200,8 +194,9 @@ function TripsContent() {
     setFilters((prev) => ({
       ...prev,
       date_from: nextValue,
-      date_to:
-        prev.date_to && date && parseISO(prev.date_to) < date
+      date_to: prev.trip_type === 'one_way'
+        ? ''
+        : prev.date_to && date && parseISO(prev.date_to) < date
           ? ''
           : prev.date_to,
     }))
@@ -225,16 +220,6 @@ function TripsContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 md:pt-32 md:pb-16 lg:pt-36 lg:pb-20 animate-fade-in-up">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-3 md:mb-4">
-          {t('trips.search_trip')}
-        </h1>
-        <p className="text-base md:text-lg text-slate-500 font-medium px-4">
-          {t('trips.search_placeholder')}
-        </p>
-      </div>
-
       {/* Main Search Bar */}
       <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
 
@@ -268,8 +253,8 @@ function TripsContent() {
           />
         </div>
 
-        {/* Row 2: Trip Type, Dates, Direct, Search */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {/* Row 2: Trip Type, Dates, Search */}
+        <div className="grid grid-cols-3 gap-3">
           {/* Trip Type */}
           <div className="relative">
             <select
@@ -277,7 +262,6 @@ function TripsContent() {
               onChange={(e) => handleTripTypeChange(e.target.value)}
               className="appearance-none w-full h-12 md:h-14 px-4 pe-10 rounded-2xl bg-slate-50 border-none text-slate-700 text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              <option value="">{t('trips.select_trip_type')}</option>
               <option value="round_trip">{t('trips.round_trip')}</option>
               <option value="one_way">{t('trips.one_way')}</option>
             </select>
@@ -332,29 +316,16 @@ function TripsContent() {
             </PopoverContent>
           </Popover>
 
-          {/* Direct Only Toggle */}
-          <button
-            type="button"
-            onClick={() => updateFilter('direct_only', !filters.direct_only)}
-            className={cn(
-              'flex items-center justify-center gap-2 h-12 md:h-14 px-4 rounded-2xl text-sm font-bold transition-all',
-              filters.direct_only
-                ? 'bg-primary/10 text-primary border-2 border-primary/20'
-                : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-            )}
-          >
-            <Plane className="h-4 w-4" />
-            {t('trips.direct_only')}
-          </button>
-
-          {/* Search button */}
-          <button
-            onClick={handleSearch}
-            className="flex items-center justify-center gap-2 h-12 md:h-14 px-6 rounded-2xl bg-primary text-white font-bold transition-all shadow-sm shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Search className="h-5 w-5" />
-            <span>{t('common.search')}</span>
-          </button>
+        </div>
+          <div className="w-full mt-2">
+                  {/* Search button */}
+                  <button
+              onClick={handleSearch}
+              className="w-full flex items-center justify-center gap-2 h-12 md:h-14 px-6 rounded-2xl bg-primary text-white font-bold transition-all shadow-sm shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Search className="h-5 w-5" />
+              <span>{t('common.search')}</span>
+            </button>
         </div>
 
         {/* Row 3: Sort & More Filters */}

@@ -126,7 +126,7 @@ export function CityAutocomplete({ value, onChange, onSelect, placeholder, class
   }, [cities, isAr, onChange, onSelect])
 
   return (
-    <div ref={wrapperRef} className="relative flex-1 group/input">
+    <div ref={wrapperRef} className="relative w-full sm:flex-1 group/input">
       <div className="absolute inset-y-0 start-0 pl-5 md:pl-6 flex items-center pointer-events-none">
         <MapPin className="h-4 w-4 md:h-5 md:w-5 text-slate-400 group-focus-within/input:text-primary transition-colors" />
       </div>

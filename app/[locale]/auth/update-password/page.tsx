@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { Lock, Loader2, CheckCircle2, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { getAuthErrorKey } from '@/lib/auth-client'
 import { getUpdatePasswordSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -44,7 +45,7 @@ export default function UpdatePasswordPage() {
       })
 
       if (error) {
-        toast({ title: error.message, variant: 'destructive' })
+        toast({ title: t(`errors.${getAuthErrorKey(error)}`), variant: 'destructive' })
         return
       }
 

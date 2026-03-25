@@ -73,6 +73,9 @@ export function TripCard({ trip, className }: TripCardProps) {
           {/* Route Section */}
           <div className="grid grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_84px_minmax(0,1fr)] items-center gap-3 mb-6">
             <div className="min-w-0">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                {t('common.from')}
+              </p>
               <p className="font-black text-slate-900 sm:text-2xl">
                 {originCity}
               </p>
@@ -87,12 +90,15 @@ export function TripCard({ trip, className }: TripCardProps) {
             <div className="flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity">
               <div className="flex items-center w-full gap-1.5">
                 <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
-                <Plane className="h-3.5 w-3.5 text-primary rtl:rotate-180 shrink-0" />
+                <Arrow className="h-4 w-4 text-primary shrink-0" />
                 <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
               </div>
             </div>
 
             <div className="min-w-0 text-end">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                {t('common.to')}
+              </p>
               <p className="font-black text-slate-900 sm:text-2xl">
                 {destCity}
               </p>
@@ -135,8 +141,8 @@ export function TripCard({ trip, className }: TripCardProps) {
                  <span className="text-2xl font-black text-slate-900 leading-none">{formattedPrice}</span>
                </div>
                
-               <div className="h-10 w-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center group-hover:bg-blue-800 group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:shadow-primary/20 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 shrink-0">
-                 <Arrow className="h-4 w-4 rtl:rotate-180 text-orange-200" />
+               <div className="h-10 w-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center transition-all duration-300 shadow-sm group-hover:bg-[var(--color-primary)] group-hover:text-white group-hover:shadow-md group-hover:shadow-[color:var(--color-primary)]/20 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 shrink-0">
+                 <Arrow className="h-4 w-4 rtl:rotate-180 text-current" />
                </div>
              </div>
           </div>

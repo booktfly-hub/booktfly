@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { Mail, Loader2, CheckCircle2, ArrowLeft, ArrowRight, KeyRound } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { getAuthErrorKey } from '@/lib/auth-client'
 import { getMagicLinkSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -36,11 +37,11 @@ export default function ResetPasswordPage() {
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/${locale}/auth/update-password`,
+        redirectTo: `${window.location.origin}/${locale}/auth/callback?next=/${locale}/auth/update-password`,
       })
 
       if (error) {
-        toast({ title: error.message, variant: 'destructive' })
+        toast({ title: t(`errors.${getAuthErrorKey(error)}`), variant: 'destructive' })
         return
       }
 

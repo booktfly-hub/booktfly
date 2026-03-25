@@ -63,10 +63,14 @@ export function getTripSchema(locale: Locale = 'ar') {
     cabin_class: z.enum(['economy', 'business', 'first']),
     total_seats: z.number().min(1, v(locale, 'seats_required')),
     price_per_seat: z.number().min(1, v(locale, 'price_required')),
-    price_per_seat_one_way: z.number().min(0).optional(),
+    price_per_seat_one_way: z.number().optional(),
     currency: z.enum(['SAR', 'USD']),
     description_ar: z.string().optional(),
     description_en: z.string().optional(),
+  }).superRefine((data, ctx) => {
+    if (data.trip_type === 'round_trip' && (!data.price_per_seat_one_way || data.price_per_seat_one_way < 1)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: v(locale, 'price_required'), path: ['price_per_seat_one_way'] })
+    }
   })
 }
 
@@ -147,6 +151,18 @@ export function getRoomBookingSchema(locale: Locale = 'ar') {
   })
 }
 
+export function getMarkeeteerApplicationSchema(locale: Locale = 'ar') {
+  return z.object({
+    full_name:        z.string().min(2, v(locale, 'name_required')),
+    national_id:      z.string().min(10, v(locale, 'national_id_required')),
+    date_of_birth:    z.string().min(1, v(locale, 'date_of_birth_required')),
+    phone:            z.string().min(9, v(locale, 'phone_required')),
+    phone_alt:        z.string().optional(),
+    email:            z.string().email(v(locale, 'email_invalid')),
+    national_address: z.string().min(5, v(locale, 'national_address_required')),
+  })
+}
+
 // Default Arabic schemas for backward compatibility (used in API routes)
 export const signupSchema = getSignupSchema('ar')
 export const loginSchema = getLoginSchema('ar')
@@ -157,3 +173,4 @@ export const bookingSchema = getBookingSchema('ar')
 export const updatePasswordSchema = getUpdatePasswordSchema('ar')
 export const roomSchema = getRoomSchema('ar')
 export const roomBookingSchema = getRoomBookingSchema('ar')
+export const markeeteerApplicationSchema = getMarkeeteerApplicationSchema('ar')

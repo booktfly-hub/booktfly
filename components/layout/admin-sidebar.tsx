@@ -18,6 +18,7 @@ import {
   PenSquare,
   Banknote,
   ExternalLink,
+  Star,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ import { LanguageSwitcher } from '@/components/layout/language-switcher'
 const NAV_ITEMS = [
   { key: 'dashboard', icon: LayoutDashboard, href: '/admin' },
   { key: 'applications', icon: FileText, href: '/admin/applications' },
+  { key: 'marketeers', icon: Star, href: '/admin/marketeers' },
   { key: 'providers', icon: Building2, href: '/admin/providers' },
   { key: 'trips', icon: Plane, href: '/admin/trips' },
   { key: 'rooms', icon: BedDouble, href: '/admin/rooms' },

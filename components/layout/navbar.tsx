@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   const t = useTranslations()
   const locale = useLocale()
+  const pathname = usePathname()
   const { user, profile, loading } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -37,8 +39,18 @@ export function Navbar() {
   const getDashboardLink = () => {
     if (profile?.role === 'admin') return `/${locale}/admin`
     if (profile?.role === 'provider') return `/${locale}/provider/dashboard`
+    if (profile?.role === 'marketeer') return `/${locale}/marketeer/dashboard`
     return null
   }
+
+  const navItems = [
+    { href: `/${locale}/trips`, label: t('nav.flights'), icon: Plane },
+    { href: `/${locale}/rooms`, label: t('nav.hotels'), icon: BedDouble },
+    { href: '#', label: t('nav.cars'), icon: CarFront },
+  ]
+
+  const isNavItemActive = (href: string) =>
+    href !== '#' && (pathname === href || pathname.startsWith(`${href}/`))
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center mt-2 md:mt-4 px-4 sm:px-6 pointer-events-none transition-all duration-500">
@@ -59,8 +71,8 @@ export function Navbar() {
               width={500} 
               height={150} 
               className={cn(
-                "w-auto transition-all duration-500 object-contain -my-8 sm:-my-10 lg:-my-12", 
-                scrolled ? "h-20 sm:h-24" : "h-28 sm:h-32 lg:h-36"
+                "w-auto transition-all duration-500 object-contain -my-4 sm:-my-10 lg:-my-12", 
+                scrolled ? "h-14 sm:h-24" : "h-16 sm:h-32 lg:h-36"
               )} 
               priority 
             />
@@ -68,28 +80,30 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-2">
-            <Link
-              href={`/${locale}/trips`}
-              className={cn(
-                "px-6 py-2.5 text-sm font-bold transition-all rounded-xl",
-                scrolled
-                  ? "text-primary hover:bg-primary/5"
-                  : "text-primary hover:bg-white/50"
-              )}
-            >
-              {t('nav.browse_trips')}
-            </Link>
-            <Link
-              href={`/${locale}/rooms`}
-              className={cn(
-                "px-6 py-2.5 text-sm font-bold transition-all rounded-xl",
-                scrolled
-                  ? "text-primary hover:bg-primary/5"
-                  : "text-primary hover:bg-white/50"
-              )}
-            >
-              {t('nav.browse_rooms')}
-            </Link>
+            {navItems.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition-all",
+                  isNavItemActive(href)
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95"
+                    : scrolled
+                      ? "border-slate-200 bg-slate-50 text-primary shadow-sm hover:border-primary/20 hover:bg-white"
+                      : "border-white/70 bg-white/80 text-primary shadow-sm backdrop-blur-sm hover:bg-white"
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "h-4 w-4",
+                    isNavItemActive(href)
+                      ? "text-white"
+                      : "text-primary/70"
+                  )}
+                />
+                <span>{label}</span>
+              </Link>
+            ))}
           </div>
 
           {/* Right side */}
@@ -161,7 +175,9 @@ export function Navbar() {
                                     <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
                                     {profile?.role === 'admin'
                                       ? t('nav.admin_panel')
-                                      : t('nav.provider_dashboard')}
+                                      : profile?.role === 'marketeer'
+                                        ? t('profile.go_to_marketeer_dashboard')
+                                        : t('nav.provider_dashboard')}
                                   </Link>
                                 )}
                                 <Link
@@ -196,16 +212,16 @@ export function Navbar() {
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <Link
                       href={`/${locale}/auth/login`}
-                      className="hidden sm:inline-flex text-sm font-bold px-5 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+                      className="inline-flex text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap"
                     >
                       {t('common.login')}
                     </Link>
                     <Link
                       href={`/${locale}/auth/signup`}
-                      className="text-sm font-bold px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:-translate-y-0.5"
+                      className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap"
                     >
                       {t('common.signup')}
                     </Link>
@@ -234,22 +250,25 @@ export function Navbar() {
               className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem]"
             >
               <div className="p-4 space-y-1">
-                <Link
-                  href={`/${locale}/trips`}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
-                >
-                  <Plane className="h-4 w-4 text-muted-foreground" />
-                  {t('nav.browse_trips')}
-                </Link>
-                <Link
-                  href={`/${locale}/rooms`}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
-                >
-                  <BedDouble className="h-4 w-4 text-muted-foreground" />
-                  {t('nav.browse_rooms')}
-                </Link>
+                {navItems.map(({ href, label, icon: Icon }) => {
+                  const isActive = isNavItemActive(href)
+                  return (
+                  <Link
+                    key={label}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
+                      isActive
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-sm shadow-[color:var(--color-primary)]/20'
+                        : 'border-slate-200 bg-slate-50 text-foreground hover:bg-white'
+                    )}
+                  >
+                    <Icon className={cn('h-4 w-4', isActive ? 'text-white' : 'text-primary/70')} />
+                    {label}
+                  </Link>
+                  )
+                })}
                 {user && (
                   <>
                     <div className="h-px bg-border/50 my-2" />
@@ -276,7 +295,11 @@ export function Navbar() {
                         className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted rounded-xl transition-colors"
                       >
                         <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                        {profile?.role === 'admin' ? t('nav.admin_panel') : t('nav.provider_dashboard')}
+                        {profile?.role === 'admin'
+                          ? t('nav.admin_panel')
+                          : profile?.role === 'marketeer'
+                            ? t('profile.go_to_marketeer_dashboard')
+                            : t('nav.provider_dashboard')}
                       </Link>
                     )}
                   </>

@@ -12,7 +12,7 @@ import { z } from 'zod'
 import { Mail, Lock, Loader2, Sparkles, Eye, EyeOff, CheckCircle2, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { getPostLoginRedirect, navigateAfterLogin } from '@/lib/auth-client'
+import { getPostLoginRedirect, navigateAfterLogin, getAuthErrorKey } from '@/lib/auth-client'
 import { getLoginSchema, getMagicLinkSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -59,7 +59,7 @@ function LoginContent() {
       })
 
       if (error) {
-        toast({ title: error.message, variant: 'destructive' })
+        toast({ title: t(`errors.${getAuthErrorKey(error)}`), variant: 'destructive' })
         return
       }
 
@@ -100,7 +100,7 @@ function LoginContent() {
       })
 
       if (error) {
-        toast({ title: error.message, variant: 'destructive' })
+        toast({ title: t(`errors.${getAuthErrorKey(error)}`), variant: 'destructive' })
         return
       }
 

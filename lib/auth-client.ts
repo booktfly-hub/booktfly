@@ -1,6 +1,31 @@
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { AuthError, SupabaseClient } from '@supabase/supabase-js'
 import type { UserRole } from '@/types'
+
+const AUTH_ERROR_MAP: Record<string, string> = {
+  'invalid login credentials':            'invalid_credentials',
+  'invalid credentials':                  'invalid_credentials',
+  'email not confirmed':                  'email_not_confirmed',
+  'user already registered':              'user_already_registered',
+  'email already registered':             'user_already_registered',
+  'password should be at least':          'weak_password',
+  'should be at least 6':                 'weak_password',
+  'email rate limit exceeded':            'rate_limit',
+  'for security purposes':                'rate_limit',
+  'email link is invalid or has expired': 'link_expired',
+  'token has expired or is invalid':      'link_expired',
+  'otp expired':                          'link_expired',
+  'auth session missing':                 'session_missing',
+  'new password should be different':     'same_password',
+}
+
+export function getAuthErrorKey(error: AuthError | Error): string {
+  const msg = error.message.toLowerCase()
+  for (const [pattern, key] of Object.entries(AUTH_ERROR_MAP)) {
+    if (msg.includes(pattern)) return key
+  }
+  return 'generic'
+}
 
 type RedirectOptions = {
   locale: string
@@ -19,6 +44,7 @@ export function getPostLoginRedirect({
 
   if (role === 'admin') return `/${locale}/admin`
   if (role === 'provider') return `/${locale}/provider/dashboard`
+  if (role === 'marketeer') return `/${locale}/marketeer/dashboard`
   return `/${locale}`
 }
 

@@ -1,4 +1,4 @@
-export type UserRole = 'buyer' | 'provider' | 'admin'
+export type UserRole = 'buyer' | 'provider' | 'admin' | 'marketeer'
 export type ProviderType = 'travel_agency' | 'hajj_umrah'
 export type ApplicationStatus = 'pending_review' | 'approved' | 'rejected'
 export type ProviderStatus = 'active' | 'suspended'
@@ -24,6 +24,23 @@ export type WalletTransactionType = 'credit' | 'debit' | 'withdrawal'
 export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'completed'
 
 export type RoomStatus = 'active' | 'deactivated' | 'removed'
+
+export type FlypointsEventType =
+  | 'registration_bonus'
+  | 'booking_sale'
+  | 'referral_client_signup'
+  | 'referral_client_booking'
+  | 'referral_marketeer'
+  | 'weekly_bonus'
+  | 'speed_bonus'
+  | 'rating_bonus'
+  | 'content_bonus'
+  | 'share_bonus'
+  | 'travel_bonus'
+  | 'cancellation_penalty'
+  | 'bad_rating_penalty'
+  | 'no_response_penalty'
+  | 'manual_adjustment'
 
 export type NotificationType =
   | 'application_approved'
@@ -54,6 +71,10 @@ export type NotificationType =
   | 'room_booking_cancelled'
   | 'room_booking_refunded'
   | 'room_removed'
+  | 'marketeer_application_approved'
+  | 'marketeer_application_rejected'
+  | 'new_marketeer_application'
+  | 'points_earned'
 
 export type Profile = {
   id: string
@@ -320,5 +341,49 @@ export type PlatformSettings = {
   bank_iban: string | null
   bank_account_holder_ar: string | null
   bank_account_holder_en: string | null
+  flypoints_sar_rate: number
   updated_at: string
+}
+
+export type MarkeeteerApplication = {
+  id: string
+  user_id: string
+  full_name: string
+  national_id: string
+  date_of_birth: string
+  phone: string
+  phone_alt: string | null
+  email: string
+  national_address: string
+  status: ApplicationStatus
+  admin_comment: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Marketeer = {
+  id: string
+  user_id: string
+  application_id: string | null
+  full_name: string
+  national_id: string
+  phone: string
+  referral_code: string
+  status: 'active' | 'suspended'
+  created_at: string
+  updated_at: string
+}
+
+export type FlypointsTransaction = {
+  id: string
+  marketeer_id: string
+  points: number
+  event_type: FlypointsEventType
+  reference_id: string | null
+  description_ar: string
+  description_en: string
+  expires_at: string
+  created_at: string
 }

@@ -14,8 +14,6 @@ interface HeroSectionClientProps {
   locale: string
   heroTitle: string
   heroSubtitle: string
-  searchFrom: string
-  searchTo: string
   searchButton: string
   providerCta: string
   departureFromLabel: string
@@ -30,8 +28,6 @@ export function HeroSectionClient({
   locale,
   heroTitle,
   heroSubtitle,
-  searchFrom,
-  searchTo,
   searchButton,
   providerCta,
   departureFromLabel,
@@ -44,7 +40,7 @@ export function HeroSectionClient({
   const isAr = locale === 'ar'
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
-  const [tripType, setTripType] = useState('round_trip')
+  const [tripType, setTripType] = useState('one_way')
   const [departureDate, setDepartureDate] = useState<Date>()
   const [returnDate, setReturnDate] = useState<Date>()
   const trustBadges = isAr
@@ -133,12 +129,12 @@ export function HeroSectionClient({
               <input type="hidden" name="date_to" value={returnDate ? format(returnDate, 'yyyy-MM-dd') : ''} />
 
               {/* Row 1: Origin & Destination */}
-              <div className="flex flex-col items-center gap-2 sm:flex-row">
+              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <CityAutocomplete
                   value={origin}
                   onChange={setOrigin}
                   placeholder={departureFromLabel}
-                  className="h-16 text-lg rounded-[1.5rem]"
+                  className="h-16 w-full text-lg rounded-[1.5rem]"
                   showLocateButton
                 />
 
@@ -152,23 +148,40 @@ export function HeroSectionClient({
                 >
                   <ArrowLeftRight className="h-4 w-4 text-slate-400" />
                 </button>
-                <div className="sm:hidden w-full h-px bg-slate-100 my-1" />
+                <div className="sm:hidden flex items-center justify-center py-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOrigin(destination)
+                      setDestination(origin)
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 shadow-sm transition-all active:scale-95"
+                    aria-label={isAr ? 'تبديل الوجهتين' : 'Swap origin and destination'}
+                  >
+                    <ArrowLeftRight className="h-4 w-4 text-slate-500" />
+                  </button>
+                </div>
 
                 <CityAutocomplete
                   value={destination}
                   onChange={setDestination}
                   placeholder={arrivalToLabel}
-                  className="h-16 text-lg rounded-[1.5rem]"
+                  className="h-16 w-full text-lg rounded-[1.5rem]"
                 />
               </div>
 
-              {/* Row 2: Trip Type, Dates, Direct toggle */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Trip Type */}
+              {/* Row 2: Trip type and dates */}
+              <div className="grid grid-cols-3 gap-3">
                 <div className="relative">
                   <select
                     value={tripType}
-                    onChange={(e) => setTripType(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setTripType(value)
+                      if (value === 'one_way') {
+                        setReturnDate(undefined)
+                      }
+                    }}
                     className="appearance-none w-full h-14 px-5 pe-10 rounded-2xl bg-slate-50 border-none text-slate-700 text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <option value="round_trip">{roundTripLabel}</option>
@@ -219,7 +232,6 @@ export function HeroSectionClient({
                     />
                   </PopoverContent>
                 </Popover>
-
               </div>
 
               {/* Search button */}

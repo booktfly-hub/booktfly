@@ -15,8 +15,6 @@ export async function HeroSection({ locale }: HeroSectionProps) {
       locale={locale}
       heroTitle={t('hero_title')}
       heroSubtitle={t('hero_subtitle')}
-      searchFrom={t('search_from')}
-      searchTo={t('search_to')}
       searchButton={t('search_button')}
       providerCta={navT('become_provider')}
       departureFromLabel={tripsT('departure_from')}

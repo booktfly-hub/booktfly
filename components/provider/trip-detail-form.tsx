@@ -431,12 +431,9 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
             {tripType === 'round_trip' && (
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')})
+                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
                 </label>
-                <input type="number" min={0} step={0.01} {...register('price_per_seat_one_way', { valueAsNumber: true })} className={inputClass} />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {locale === 'ar' ? 'السعر للمسافرين الذين يحجزون ذهاب فقط على هذه الرحلة' : 'Price for travelers booking one-way on this round-trip'}
-                </p>
+                <input type="number" min={1} step={0.01} {...register('price_per_seat_one_way', { valueAsNumber: true })} className={inputClass} />
               </div>
             )}
           </div>

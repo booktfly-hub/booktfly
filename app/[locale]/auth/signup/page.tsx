@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { Mail, Lock, User, Phone, Loader2, CheckCircle2, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { getAuthErrorKey } from '@/lib/auth-client'
 import { getSignupSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -39,6 +40,7 @@ export default function SignupPage() {
     setIsLoading(true)
     try {
       const supabase = createClient()
+      const refCode = document.cookie.split('; ').find(r => r.startsWith('ref_code='))?.split('=')[1] ?? null
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -48,12 +50,13 @@ export default function SignupPage() {
             full_name: data.full_name,
             phone: data.phone || null,
             locale,
+            referred_by: refCode,
           },
         },
       })
 
       if (error) {
-        toast({ title: error.message, variant: 'destructive' })
+        toast({ title: t(`errors.${getAuthErrorKey(error)}`), variant: 'destructive' })
         return
       }
 
