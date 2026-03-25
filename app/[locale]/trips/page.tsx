@@ -10,6 +10,7 @@ import {
   Loader2,
   ArrowLeftRight,
   CalendarIcon,
+  Plane,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TripCard } from '@/components/trips/trip-card'
@@ -213,7 +214,7 @@ function TripsContent() {
   }
 
   const hasActiveFilters = Object.entries(filters).some(
-    ([key, val]) => key !== 'sort' && val !== '' && val !== false
+    ([key, val]) => key !== 'sort' && val !== ''
   )
 
   const inputClass = 'w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border-none text-slate-700 text-sm md:text-base font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-colors hover:bg-slate-100'

@@ -141,6 +141,7 @@ export default function MarkeeteerStatusPage() {
 
               <div className="mb-8">
                 <Badge
+                  data-testid="marketeer-application-status"
                   variant={isApproved ? 'success' : isRejected ? 'destructive' : 'warning'}
                   className="mb-4 rounded-full px-3 py-1"
                 >
@@ -212,6 +213,7 @@ export default function MarkeeteerStatusPage() {
                 {isApproved && (
                   <Link
                     href={`/${locale}/marketeer/dashboard`}
+                    data-testid="marketeer-dashboard-link"
                     className={cn(buttonVariants({ size: 'lg' }), 'group w-full rounded-xl font-bold shadow-lg')}
                   >
                     {locale === 'ar' ? 'الذهاب للوحة المسوّق' : 'Go to Marketeer Dashboard'}

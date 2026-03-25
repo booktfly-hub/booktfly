@@ -160,7 +160,7 @@ export default function MarkeeteerDashboardPage() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-1">
+          <div className="flex items-center gap-3 mb-1" data-testid="marketeer-dashboard-header">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Star className="h-5 w-5 text-primary" />
             </div>
@@ -216,6 +216,7 @@ export default function MarkeeteerDashboardPage() {
                 <Button
                   onClick={copyReferralLink}
                   variant={copied ? 'outline' : 'default'}
+                  data-testid="marketeer-copy-referral-link"
                   className={cn(
                     'h-12 shrink-0 rounded-xl px-5 text-sm font-medium',
                     copied && 'border-green-500/20 bg-green-500/10 text-green-600 hover:bg-green-500/15'

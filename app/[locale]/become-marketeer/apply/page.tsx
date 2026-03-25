@@ -190,6 +190,7 @@ export default function ApplyMarkeeteerPage() {
                       type={f.type}
                       dir={f.dir}
                       placeholder={f.placeholder}
+                      data-testid={`marketeer-${String(f.name)}`}
                       {...register(f.name)}
                       className="h-12 rounded-xl border-border/60 bg-background px-4 py-3 text-sm"
                     />
@@ -209,6 +210,7 @@ export default function ApplyMarkeeteerPage() {
               type="submit"
               disabled={submitting}
               size="lg"
+              data-testid="marketeer-apply-submit"
               className="h-14 w-full rounded-xl text-lg font-bold shadow-lg shadow-primary/20"
             >
               {submitting ? (

@@ -123,7 +123,11 @@ function AdminMarketeersContent() {
                 <TableRow><TableCell colSpan={6} className="p-8 text-center text-muted-foreground">{t('common.no_results')}</TableCell></TableRow>
               ) : (
                 applications.map((app) => (
-                  <TableRow key={app.id}>
+                  <TableRow
+                    key={app.id}
+                    data-testid={`marketeer-application-row-${app.id}`}
+                    data-application-email={app.email}
+                  >
                     <TableCell className="font-medium">{app.full_name}</TableCell>
                     <TableCell className="font-mono text-xs">{app.phone}</TableCell>
                     <TableCell>{app.email}</TableCell>
@@ -151,6 +155,7 @@ function AdminMarketeersContent() {
                             onClick={() => handleAction(app.id, 'approve')}
                             variant="outline"
                             size="sm"
+                            data-testid={`approve-marketeer-${app.id}`}
                             className="border-green-500/20 bg-green-500/10 text-green-700 hover:bg-green-500/20"
                           >
                             {actionId === app.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -161,6 +166,7 @@ function AdminMarketeersContent() {
                             onClick={() => setRejectModal({ id: app.id, name: app.full_name })}
                             variant="outline"
                             size="sm"
+                            data-testid={`reject-marketeer-${app.id}`}
                             className="border-red-500/20 bg-red-500/10 text-red-700 hover:bg-red-500/20"
                           >
                             <XCircle className="h-3.5 w-3.5" />
