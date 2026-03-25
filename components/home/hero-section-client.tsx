@@ -16,6 +16,7 @@ interface HeroSectionClientProps {
   heroSubtitle: string
   searchButton: string
   providerCta: string
+  markeeteerCta: string
   departureFromLabel: string
   arrivalToLabel: string
   roundTripLabel: string
@@ -30,6 +31,7 @@ export function HeroSectionClient({
   heroSubtitle,
   searchButton,
   providerCta,
+  markeeteerCta,
   departureFromLabel,
   arrivalToLabel,
   roundTripLabel,
@@ -72,15 +74,28 @@ export function HeroSectionClient({
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-          <Link href={`/${locale}/become-provider`} className="group flex items-center gap-3 rounded-full border border-[#f2dfcc] bg-white/90 px-5 py-2.5 shadow-lg shadow-orange-100/40 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#f97316]/30 hover:bg-white">
-            <span className="flex h-2 w-2 rounded-full bg-accent relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+        <div
+          className="mb-8 flex flex-col items-center justify-center gap-3 animate-fade-in-up sm:flex-row"
+          style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+        >
+          <Link href={`/${locale}/become-provider`} className="group flex items-center justify-center gap-3 rounded-full border border-[#f2dfcc] bg-white/90 px-5 py-2.5 shadow-lg shadow-orange-100/40 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#f97316]/30 hover:bg-white">
+            <span className="relative flex h-2 w-2 rounded-full bg-accent">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"></span>
             </span>
             <span className="text-sm font-semibold tracking-wide text-slate-700 transition-colors group-hover:text-slate-900">
               {providerCta}
             </span>
             <ArrowRight className="h-4 w-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-slate-700 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
+          </Link>
+
+          <Link href={`/${locale}/become-marketeer`} className="group flex items-center justify-center gap-3 rounded-full border border-[#ede9fe] bg-white/90 px-5 py-2.5 shadow-lg shadow-violet-100/50 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-violet-300/50 hover:bg-white">
+            <span className="relative flex h-2 w-2 rounded-full bg-violet-500">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-75"></span>
+            </span>
+            <span className="text-sm font-semibold tracking-wide text-slate-700 transition-colors group-hover:text-slate-900">
+              {markeeteerCta}
+            </span>
+            <ArrowRight className="h-4 w-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-violet-600 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
           </Link>
         </div>
 
