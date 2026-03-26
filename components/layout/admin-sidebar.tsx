@@ -19,6 +19,7 @@ import {
   Banknote,
   ExternalLink,
   Star,
+  PlaneTakeoff,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { key: 'trips', icon: Plane, href: '/admin/trips' },
   { key: 'rooms', icon: BedDouble, href: '/admin/rooms' },
   { key: 'trip_edit_requests', icon: PenSquare, href: '/admin/trip-edit-requests' },
+  { key: 'flight_requests', icon: PlaneTakeoff, href: '/admin/flight-requests' },
   { key: 'bookings', icon: BookOpen, href: '/admin/bookings' },
   { key: 'room_bookings', icon: BookOpen, href: '/admin/room-bookings' },
   { key: 'revenue', icon: DollarSign, href: '/admin/revenue' },

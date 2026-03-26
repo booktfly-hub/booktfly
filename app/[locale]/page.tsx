@@ -8,6 +8,7 @@ import { BecomeProviderCTA } from '@/components/home/become-provider-cta'
 import { TrendingDestinations } from '@/components/home/trending-destinations'
 import { ValueProposition } from '@/components/home/value-proposition'
 import { Testimonials } from '@/components/home/testimonials'
+import { FlightRequestSection } from '@/components/home/flight-request-section'
 
 export default async function HomePage() {
   const locale = await getLocale()
@@ -62,6 +63,8 @@ export default async function HomePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-200 to-transparent" />
         <Testimonials locale={locale} />
       </div>
+
+      <FlightRequestSection />
 
       <BecomeProviderCTA locale={locale} />
     </main>

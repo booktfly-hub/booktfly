@@ -333,7 +333,8 @@
     "top_providers": "أفضل مزودي الخدمة",
     "top_routes": "أكثر الوجهات طلباً",
     "rooms": "الغرف",
-    "room_bookings": "حجوزات الغرف"
+    "room_bookings": "حجوزات الغرف",
+    "flight_requests": "طلبات الرحلات"
   },
   "status": {
     "active": "نشطة",
@@ -350,7 +351,9 @@
     "refunded": "تم الاسترداد",
     "cancelled": "ملغي",
     "cancellation_pending": "إلغاء قيد المراجعة",
-    "suspended": "معلّق"
+    "suspended": "معلّق",
+    "pending": "قيد الانتظار",
+    "reviewed": "تمت المراجعة"
   },
   "notifications": {
     "title": "الإشعارات",
@@ -404,7 +407,31 @@
     "for_marketeers_cta": "ابدأ كمسوّق",
     "stats_trips": "رحلة متاحة",
     "stats_providers": "مزود خدمة معتمد",
-    "stats_travelers": "مسافر استفاد من خدماتنا"
+    "stats_travelers": "مسافر استفاد من خدماتنا",
+    "flight_request_label": "لمن لم يجد رحلته",
+    "flight_request_title": "لم تجد رحلتك؟ أخبرنا بما تحتاج",
+    "flight_request_desc": "أرسل تفاصيل رحلتك المطلوبة وسيتواصل معك فريقنا بأفضل العروض المتاحة",
+    "flight_request_origin": "مدينة المغادرة",
+    "flight_request_destination": "مدينة الوصول",
+    "flight_request_departure": "تاريخ المغادرة",
+    "flight_request_return": "تاريخ العودة",
+    "flight_request_seats": "عدد المقاعد",
+    "flight_request_cabin": "درجة السفر",
+    "flight_request_cabin_economy": "اقتصادية",
+    "flight_request_cabin_business": "رجال الأعمال",
+    "flight_request_cabin_first": "الدرجة الأولى",
+    "flight_request_name": "الاسم الكامل",
+    "flight_request_phone": "رقم الجوال",
+    "flight_request_email": "البريد الإلكتروني",
+    "flight_request_budget": "الحد الأقصى للميزانية (ر.س للمقعد)",
+    "flight_request_notes": "ملاحظات إضافية",
+    "flight_request_notes_placeholder": "أي تفاصيل إضافية تساعدنا في إيجاد أفضل عرض...",
+    "flight_request_submit": "أرسل طلبك",
+    "flight_request_submitting": "جارٍ الإرسال...",
+    "flight_request_success_title": "تم إرسال طلبك بنجاح!",
+    "flight_request_success_desc": "سيتواصل معك فريقنا خلال 24 ساعة بأفضل العروض المتاحة لرحلتك.",
+    "flight_request_new": "إرسال طلب جديد",
+    "flight_request_optional": "اختياري"
   },
   "validation": {
     "name_required": "الاسم مطلوب",

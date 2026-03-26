@@ -19,6 +19,7 @@ export type Passenger = {
 }
 
 export type TripEditRequestStatus = 'pending' | 'approved' | 'rejected'
+export type FlightRequestStatus = 'pending' | 'reviewed' | 'cancelled'
 
 export type WalletTransactionType = 'credit' | 'debit' | 'withdrawal'
 export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'completed'
@@ -75,6 +76,7 @@ export type NotificationType =
   | 'marketeer_application_rejected'
   | 'new_marketeer_application'
   | 'points_earned'
+  | 'new_flight_request'
 
 export type Profile = {
   id: string
@@ -232,6 +234,25 @@ export type TripEditRequest = {
   created_at: string
   trip?: Trip
   provider?: Provider
+}
+
+export type FlightRequest = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  origin: string
+  destination: string
+  departure_date: string
+  return_date: string | null
+  seats_needed: number
+  cabin_class: CabinClass
+  budget_max: number | null
+  notes: string | null
+  status: FlightRequestStatus
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type ProviderWallet = {

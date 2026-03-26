@@ -333,7 +333,8 @@
     "top_providers": "Top Providers",
     "top_routes": "Top Routes",
     "rooms": "Rooms",
-    "room_bookings": "Room Bookings"
+    "room_bookings": "Room Bookings",
+    "flight_requests": "Flight Requests"
   },
   "status": {
     "active": "Active",
@@ -350,7 +351,9 @@
     "refunded": "Refunded",
     "cancelled": "Cancelled",
     "cancellation_pending": "Cancellation Pending",
-    "suspended": "Suspended"
+    "suspended": "Suspended",
+    "pending": "Pending",
+    "reviewed": "Reviewed"
   },
   "notifications": {
     "title": "Notifications",
@@ -404,7 +407,31 @@
     "for_marketeers_cta": "Become a Marketeer",
     "stats_trips": "Trips Available",
     "stats_providers": "Trusted Providers",
-    "stats_travelers": "Happy Travelers"
+    "stats_travelers": "Happy Travelers",
+    "flight_request_label": "Can't find your trip?",
+    "flight_request_title": "Didn't find your flight? Tell us what you need",
+    "flight_request_desc": "Submit your flight details and our team will reach out with the best available options.",
+    "flight_request_origin": "Departure City",
+    "flight_request_destination": "Destination City",
+    "flight_request_departure": "Departure Date",
+    "flight_request_return": "Return Date",
+    "flight_request_seats": "Number of Seats",
+    "flight_request_cabin": "Cabin Class",
+    "flight_request_cabin_economy": "Economy",
+    "flight_request_cabin_business": "Business",
+    "flight_request_cabin_first": "First Class",
+    "flight_request_name": "Full Name",
+    "flight_request_phone": "Phone Number",
+    "flight_request_email": "Email Address",
+    "flight_request_budget": "Max Budget (SAR per seat)",
+    "flight_request_notes": "Additional Notes",
+    "flight_request_notes_placeholder": "Any extra details that help us find the best deal...",
+    "flight_request_submit": "Send Request",
+    "flight_request_submitting": "Sending...",
+    "flight_request_success_title": "Request Sent Successfully!",
+    "flight_request_success_desc": "Our team will contact you within 24 hours with the best available options for your trip.",
+    "flight_request_new": "Submit Another Request",
+    "flight_request_optional": "optional"
   },
   "validation": {
     "name_required": "Name is required",

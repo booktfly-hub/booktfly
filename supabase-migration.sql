@@ -903,5 +903,47 @@ WHERE NOT EXISTS (SELECT 1 FROM platform_settings LIMIT 1);
 COMMIT;
 
 -- ============================================================================
+-- FLIGHT REQUESTS TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS flight_requests (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  email text NOT NULL,
+  phone text NOT NULL,
+  origin text NOT NULL,
+  destination text NOT NULL,
+  departure_date date NOT NULL,
+  return_date date,
+  seats_needed integer NOT NULL DEFAULT 1 CHECK (seats_needed >= 1 AND seats_needed <= 20),
+  cabin_class text NOT NULL DEFAULT 'economy' CHECK (cabin_class IN ('economy', 'business', 'first')),
+  budget_max numeric(10,2),
+  notes text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'cancelled')),
+  admin_notes text,
+  created_at timestamptz DEFAULT now() NOT NULL,
+  updated_at timestamptz DEFAULT now() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_flight_requests_status ON flight_requests(status);
+CREATE INDEX IF NOT EXISTS idx_flight_requests_created_at ON flight_requests(created_at DESC);
+
+CREATE OR REPLACE TRIGGER update_flight_requests_updated_at
+  BEFORE UPDATE ON flight_requests
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+ALTER TABLE flight_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "anyone can submit flight requests"
+  ON flight_requests FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "admins can manage flight requests"
+  ON flight_requests FOR ALL
+  USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- ============================================================================
 -- END OF MIGRATION
 -- ============================================================================

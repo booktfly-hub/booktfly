@@ -158,6 +158,22 @@ export function getMarkeeteerApplicationSchema(locale: Locale = 'ar') {
   })
 }
 
+export function getFlightRequestSchema(locale: Locale = 'ar') {
+  return z.object({
+    name: z.string().min(2, v(locale, 'name_required')),
+    email: z.string().email(v(locale, 'email_invalid')),
+    phone: z.string().min(9, v(locale, 'phone_required')),
+    origin: z.string().min(2, v(locale, 'origin_required')),
+    destination: z.string().min(2, v(locale, 'destination_required')),
+    departure_date: z.string().min(1, v(locale, 'departure_required')),
+    return_date: z.string().optional(),
+    seats_needed: z.number().min(1, v(locale, 'seats_required')).max(20),
+    cabin_class: z.enum(['economy', 'business', 'first']),
+    budget_max: z.number().min(0).optional(),
+    notes: z.string().optional(),
+  })
+}
+
 // Default Arabic schemas for backward compatibility (used in API routes)
 export const signupSchema = getSignupSchema('ar')
 export const loginSchema = getLoginSchema('ar')
@@ -169,3 +185,4 @@ export const updatePasswordSchema = getUpdatePasswordSchema('ar')
 export const roomSchema = getRoomSchema('ar')
 export const roomBookingSchema = getRoomBookingSchema('ar')
 export const markeeteerApplicationSchema = getMarkeeteerApplicationSchema('ar')
+export const flightRequestSchema = getFlightRequestSchema('ar')
