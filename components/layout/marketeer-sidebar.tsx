@@ -2,23 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import {
   LayoutDashboard,
-  FileText,
-  Building2,
-  Plane,
-  BedDouble,
-  BookOpen,
-  DollarSign,
-  Settings,
+  Users,
+  BarChart3,
+  Wallet,
+  Star,
+  MessageSquare,
   Menu,
   X,
   LogOut,
-  PenSquare,
-  Banknote,
   ExternalLink,
-  Star,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -27,45 +22,45 @@ import { signOutAndRedirect } from '@/lib/auth-client'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
 
 const NAV_ITEMS = [
-  { key: 'dashboard', icon: LayoutDashboard, href: '/admin' },
-  { key: 'applications', icon: FileText, href: '/admin/applications' },
-  { key: 'marketeers', icon: Star, href: '/admin/marketeer-list' },
-  { key: 'marketeer_applications', icon: FileText, href: '/admin/marketeers' },
-  { key: 'providers', icon: Building2, href: '/admin/providers' },
-  { key: 'trips', icon: Plane, href: '/admin/trips' },
-  { key: 'rooms', icon: BedDouble, href: '/admin/rooms' },
-  { key: 'trip_edit_requests', icon: PenSquare, href: '/admin/trip-edit-requests' },
-  { key: 'bookings', icon: BookOpen, href: '/admin/bookings' },
-  { key: 'room_bookings', icon: BookOpen, href: '/admin/room-bookings' },
-  { key: 'revenue', icon: DollarSign, href: '/admin/revenue' },
-  { key: 'withdrawals', icon: Banknote, href: '/admin/withdrawals' },
-  { key: 'settings', icon: Settings, href: '/admin/settings' },
+  { key: 'dashboard', icon: LayoutDashboard, href: '/marketeer/dashboard' },
+  { key: 'users', icon: Users, href: '/marketeer/users' },
+  { key: 'revenue', icon: BarChart3, href: '/marketeer/revenue' },
+  { key: 'wallet', icon: Wallet, href: '/marketeer/wallet' },
+  { key: 'reviews', icon: Star, href: '/marketeer/reviews' },
+  { key: 'chat', icon: MessageSquare, href: '/marketeer/chat' },
 ]
 
-export function AdminSidebar() {
-  const t = useTranslations('admin')
-  const locale = useLocale()
+const LABELS: Record<string, { ar: string; en: string }> = {
+  dashboard: { ar: 'الرئيسية', en: 'Dashboard' },
+  users: { ar: 'المستخدمون', en: 'Users' },
+  revenue: { ar: 'الإيرادات', en: 'Revenue' },
+  wallet: { ar: 'المحفظة', en: 'Wallet' },
+  reviews: { ar: 'التقييمات', en: 'Reviews' },
+  chat: { ar: 'المحادثات', en: 'Chat' },
+}
+
+export function MarkeeteerSidebar() {
+  const locale = useLocale() as 'ar' | 'en'
   const pathname = usePathname()
   const supabase = createClient()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isActive = (href: string) => {
     const fullPath = `/${locale}${href}`
-    if (href === '/admin') return pathname === fullPath
     return pathname === fullPath || pathname.startsWith(fullPath + '/')
-  }
-
-  const handleSignOut = async () => {
-    await signOutAndRedirect(supabase, locale)
   }
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white">
       <div className="p-6 border-b border-slate-100">
-        <h2 className="font-black text-2xl text-slate-900 tracking-tight">{t('dashboard')}</h2>
-        <p className="text-xs font-bold text-destructive uppercase tracking-widest mt-1">Admin Panel</p>
+        <h2 className="font-black text-2xl text-slate-900 tracking-tight">
+          {locale === 'ar' ? 'لوحة المسوّق' : 'Marketeer'}
+        </h2>
+        <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">
+          {locale === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
+        </p>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href)
@@ -81,8 +76,8 @@ export function AdminSidebar() {
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
               )}
             >
-              <item.icon className={cn("h-5 w-5", active ? "text-destructive" : "text-slate-400 group-hover:text-slate-900")} />
-              {t(item.key)}
+              <item.icon className={cn('h-5 w-5', active ? 'text-yellow-300' : 'text-slate-400 group-hover:text-slate-900')} />
+              {LABELS[item.key][locale]}
             </Link>
           )
         })}
@@ -101,7 +96,7 @@ export function AdminSidebar() {
           <LanguageSwitcher />
         </div>
         <button
-          onClick={handleSignOut}
+          onClick={() => signOutAndRedirect(supabase, locale)}
           className="flex items-center gap-4 w-full px-4 py-3.5 rounded-2xl text-sm font-bold text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="h-5 w-5" />
@@ -113,7 +108,6 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         className="lg:hidden fixed bottom-6 start-6 z-50 p-4 rounded-full bg-slate-900 text-white shadow-2xl hover:scale-105 transition-transform"
         onClick={() => setMobileOpen(!mobileOpen)}
@@ -121,7 +115,6 @@ export function AdminSidebar() {
         {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm"
@@ -129,7 +122,6 @@ export function AdminSidebar() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           'fixed lg:sticky top-0 z-40 h-[100vh] w-[280px] bg-white border-e border-slate-200 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl lg:shadow-none',

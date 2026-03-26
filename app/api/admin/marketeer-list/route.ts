@@ -12,14 +12,18 @@ export async function GET(request: NextRequest) {
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status') || 'pending_review'
+    const search = searchParams.get('search')?.trim() || ''
 
-    const { data, error } = await supabaseAdmin
-      .from('marketeer_applications')
+    let query = supabaseAdmin
+      .from('marketeers')
       .select('*')
-      .eq('status', status)
       .order('created_at', { ascending: false })
 
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%`)
+    }
+
+    const { data, error } = await query
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     return NextResponse.json({ data, error: null })

@@ -12,7 +12,7 @@ type Props = {
   children: React.ReactNode
 }
 
-const HIDDEN_CHROME_SEGMENTS = new Set(['admin', 'provider', 'auth'])
+const HIDDEN_CHROME_SEGMENTS = new Set(['admin', 'provider', 'marketeer', 'auth'])
 
 export function LocaleShell({ children }: Props) {
   const pathname = usePathname()

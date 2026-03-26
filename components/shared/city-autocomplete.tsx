@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
 import { MapPin, LocateFixed, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,17 +43,26 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 type Props = {
+  locale: string
   value: string
   onChange: (value: string) => void
   onSelect?: (value: string) => void
   placeholder: string
   className?: string
   showLocateButton?: boolean
+  myLocationLabel?: string
 }
 
-export function CityAutocomplete({ value, onChange, onSelect, placeholder, className, showLocateButton }: Props) {
-  const locale = useLocale()
-  const t = useTranslations('common')
+export function CityAutocomplete({
+  locale,
+  value,
+  onChange,
+  onSelect,
+  placeholder,
+  className,
+  showLocateButton,
+  myLocationLabel,
+}: Props) {
   const isAr = locale === 'ar'
   const [cities, setCities] = useState<City[]>([])
   const [open, setOpen] = useState(false)
@@ -148,7 +156,7 @@ export function CityAutocomplete({ value, onChange, onSelect, placeholder, class
           type="button"
           onClick={handleLocate}
           disabled={locating}
-          title={t('my_location')}
+          title={myLocationLabel ?? (isAr ? 'موقعي الحالي' : 'My location')}
           className="absolute inset-y-0 end-0 pe-3 md:pe-4 flex items-center text-slate-400 hover:text-primary transition-colors disabled:opacity-50"
         >
           {locating ? (

@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import type { MarkeeteerApplication } from '@/types'
-import { CheckCircle2, XCircle, Loader2, MessageSquare, X } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { CheckCircle2, XCircle, Loader2, MessageSquare, X, Search } from 'lucide-react'
 import { toast } from '@/components/ui/toaster'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 export default function AdminMarketeers() {
@@ -27,9 +29,11 @@ type AppWithProfile = MarkeeteerApplication & { profiles?: { full_name: string; 
 function AdminMarketeersContent() {
   const t = useTranslations()
   const locale = useLocale()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const statusFilter = searchParams.get('status') || 'pending_review'
   const [applications, setApplications] = useState<AppWithProfile[]>([])
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null)
@@ -80,7 +84,17 @@ function AdminMarketeersContent() {
         {locale === 'ar' ? 'طلبات المسوّقين' : 'Marketeer Applications'}
       </h1>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={locale === 'ar' ? 'بحث بالاسم أو رقم الجوال...' : 'Search by name or phone...'}
+            className="ps-9"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap">
         {statuses.map((s) => (
           <Link
             key={s}
@@ -96,6 +110,7 @@ function AdminMarketeersContent() {
             {t(`status.${s}`)}
           </Link>
         ))}
+        </div>
       </div>
 
       <Card className="overflow-hidden">
@@ -122,11 +137,19 @@ function AdminMarketeersContent() {
               ) : applications.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="p-8 text-center text-muted-foreground">{t('common.no_results')}</TableCell></TableRow>
               ) : (
-                applications.map((app) => (
+                applications
+                .filter((app) => {
+                  if (!search.trim()) return true
+                  const q = search.toLowerCase()
+                  return app.full_name.toLowerCase().includes(q) || app.phone.includes(q)
+                })
+                .map((app) => (
                   <TableRow
                     key={app.id}
                     data-testid={`marketeer-application-row-${app.id}`}
                     data-application-email={app.email}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/${locale}/admin/marketeers/${app.id}`)}
                   >
                     <TableCell className="font-medium">{app.full_name}</TableCell>
                     <TableCell className="font-mono text-xs">{app.phone}</TableCell>
@@ -148,7 +171,7 @@ function AdminMarketeersContent() {
                       </Badge>
                     </TableCell>
                     {statusFilter === 'pending_review' && (
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-2">
                           <Button
                             disabled={actionId === app.id}

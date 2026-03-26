@@ -299,6 +299,9 @@ export default function SignupPage() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
                       {...form.register('password')}
                       className="w-full ps-12 pe-12 py-4 rounded-2xl border border-border bg-background/50 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-border/80 transition-all duration-200 shadow-sm text-base font-medium"
                       placeholder="••••••••"

@@ -227,12 +227,14 @@ function TripsContent() {
         {/* Row 1: Origin & Destination */}
         <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
           <CityAutocomplete
+            locale={locale}
             value={filters.origin}
             onChange={(val) => updateFilter('origin', val)}
             onSelect={(val) => handleCitySelect('origin', val)}
             placeholder={t('trips.departure_from')}
             className="rounded-2xl h-14"
             showLocateButton
+            myLocationLabel={t('common.my_location')}
           />
 
           <button
@@ -246,11 +248,13 @@ function TripsContent() {
           <div className="sm:hidden w-full h-px bg-slate-100 my-1" />
 
           <CityAutocomplete
+            locale={locale}
             value={filters.destination}
             onChange={(val) => updateFilter('destination', val)}
             onSelect={(val) => handleCitySelect('destination', val)}
             placeholder={t('trips.arrival_to')}
             className="rounded-2xl h-14"
+            myLocationLabel={t('common.my_location')}
           />
         </div>
 

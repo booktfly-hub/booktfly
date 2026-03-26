@@ -52,8 +52,21 @@ export default function UpdatePasswordPage() {
       setIsSuccess(true)
       toast({ title: t('password_updated'), variant: 'success' })
 
+      const { data: userData } = await supabase.auth.getUser()
+      let redirectPath = `/${locale}`
+      if (userData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userData.user.id)
+          .maybeSingle()
+        const role = profile?.role || 'buyer'
+        if (role === 'admin') redirectPath = `/${locale}/admin`
+        else if (role === 'provider') redirectPath = `/${locale}/provider/dashboard`
+      }
+
       setTimeout(() => {
-        router.push(`/${locale}/auth/login`)
+        router.push(redirectPath)
       }, 2000)
     } catch {
       toast({ title: tCommon('error'), variant: 'destructive' })

@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-8 sm:pt-32 lg:pt-36">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-muted rounded-lg w-48" />
           <div className="rounded-2xl border bg-card p-6 space-y-4">
@@ -93,7 +93,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-8 sm:pt-32 lg:pt-36">
       <h1 className="text-2xl font-bold text-foreground mb-8">
         {t('profile.title')}
       </h1>

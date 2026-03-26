@@ -146,11 +146,13 @@ export function HeroSectionClient({
               {/* Row 1: Origin & Destination */}
               <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <CityAutocomplete
+                  locale={locale}
                   value={origin}
                   onChange={setOrigin}
                   placeholder={departureFromLabel}
                   className="h-16 w-full text-lg rounded-[1.5rem]"
                   showLocateButton
+                  myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
                 />
 
                 <button
@@ -178,10 +180,12 @@ export function HeroSectionClient({
                 </div>
 
                 <CityAutocomplete
+                  locale={locale}
                   value={destination}
                   onChange={setDestination}
                   placeholder={arrivalToLabel}
                   className="h-16 w-full text-lg rounded-[1.5rem]"
+                  myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
                 />
               </div>
 
