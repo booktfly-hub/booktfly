@@ -9,6 +9,7 @@ import {
   Calendar,
   ArrowRight,
   ArrowLeft,
+  ArrowDown,
   MapPin,
   Clock,
   Users,
@@ -55,9 +56,6 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
         const data = await res.json()
         if (data.trip) {
           setTrip(data.trip)
-          if (data.trip.trip_type !== 'round_trip') {
-            setBookingType('one_way')
-          }
           const city = data.trip.destination_city_en || data.trip.destination_city_ar
           if (city) {
             fetch(`/api/rooms/recommendations?city=${encodeURIComponent(city)}`)
@@ -99,8 +97,9 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const destCity = isAr ? trip.destination_city_ar : capitalizeFirst(trip.destination_city_en || trip.destination_city_ar)
   const remaining = trip.total_seats - trip.booked_seats
   const maxBookable = Math.min(remaining, MAX_SEATS_PER_BOOKING)
-  const selectedPrice = trip.trip_type === 'round_trip' && bookingType === 'one_way' && trip.price_per_seat_one_way
-    ? trip.price_per_seat_one_way
+  const oneWayPrice = trip.price_per_seat_one_way ?? trip.price_per_seat
+  const selectedPrice = bookingType === 'one_way'
+    ? oneWayPrice
     : trip.price_per_seat
   const totalPrice = selectedPrice * seatsCount
   const fmt = (amount: number) => isAr ? formatPrice(amount, trip.currency) : formatPriceEN(amount, trip.currency)
@@ -215,7 +214,8 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                           <div className="flex items-center gap-2">
                             <div className="h-px w-10 bg-slate-200 md:w-12" />
                             <div className="flex h-11 w-11 items-center justify-center rounded-full border border-sky-100 bg-sky-50 text-primary shadow-sm">
-                              <Arrow className="h-4 w-4 rtl:rotate-180" />
+                              <ArrowDown className="h-4 w-4 md:hidden" />
+                              <Arrow className="h-4 w-4 hidden md:block" />
                             </div>
                             <div className="h-px w-10 bg-slate-200 md:w-12" />
                           </div>
@@ -263,25 +263,15 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                       </p>
                       <p className="text-sm font-bold leading-tight text-slate-900">{cabinLabel}</p>
                     </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                      <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                        <Shield className="h-3.5 w-3.5" />
-                        {t('trips.total_seats')}
-                      </p>
-                      <p className="text-2xl font-black text-slate-950">{trip.total_seats}</p>
-                    </div>
                   </div>
                 </div>
 
                 <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
                     <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">{t('trips.price_per_seat')}</p>
                     <p className="text-3xl font-black tracking-tight md:text-4xl">{fmt(selectedPrice)}</p>
-                    {trip.trip_type === 'round_trip' && trip.price_per_seat_one_way && trip.price_per_seat_one_way > 0 && (
-                      <p className="mt-2 text-sm font-semibold text-accent">
-                        {isAr ? 'نوع الحجز المحدد: ' : 'Selected fare: '}{bookingTypeLabel}
-                      </p>
-                    )}
+                    <p className="mt-2 text-sm font-semibold text-accent">
+                      {isAr ? 'نوع الحجز المحدد: ' : 'Selected fare: '}{bookingTypeLabel}
+                    </p>
                 </div>
               </div>
             </div>
@@ -346,39 +336,37 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
             <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#0f172a_0%,#111827_100%)] p-8 text-white">
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">{t('trips.price_per_seat')}</p>
               <p className="text-4xl font-black tracking-tight">{fmt(selectedPrice)}</p>
-              {trip.trip_type === 'round_trip' && trip.price_per_seat_one_way && trip.price_per_seat_one_way > 0 && (
-                <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'نوع الحجز' : 'Booking Type'}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setBookingType('round_trip')}
-                      className={cn(
-                        'rounded-xl border px-3 py-3 text-sm font-bold transition-colors',
-                        bookingType === 'round_trip'
-                          ? 'border-white/30 bg-white text-slate-950'
-                          : 'border-white/10 bg-transparent text-white hover:bg-white/10'
-                      )}
-                    >
-                      <span className="block">{isAr ? BOOKING_TYPES.round_trip.ar : BOOKING_TYPES.round_trip.en}</span>
-                      <span className="mt-1 block text-xs font-semibold opacity-70">{fmt(trip.price_per_seat)}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBookingType('one_way')}
-                      className={cn(
-                        'rounded-xl border px-3 py-3 text-sm font-bold transition-colors',
-                        bookingType === 'one_way'
-                          ? 'border-white/30 bg-white text-slate-950'
-                          : 'border-white/10 bg-transparent text-white hover:bg-white/10'
-                      )}
-                    >
-                      <span className="block">{isAr ? BOOKING_TYPES.one_way.ar : BOOKING_TYPES.one_way.en}</span>
-                      <span className="mt-1 block text-xs font-semibold opacity-70">{fmt(trip.price_per_seat_one_way)}</span>
-                    </button>
-                  </div>
+              <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'نوع الحجز' : 'Booking Type'}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBookingType('round_trip')}
+                    className={cn(
+                      'rounded-xl border px-3 py-3 text-sm font-bold transition-colors',
+                      bookingType === 'round_trip'
+                        ? 'border-white/30 bg-white text-slate-950'
+                        : 'border-white/10 bg-transparent text-white hover:bg-white/10'
+                    )}
+                  >
+                    <span className="block">{isAr ? BOOKING_TYPES.round_trip.ar : BOOKING_TYPES.round_trip.en}</span>
+                    <span className="mt-1 block text-xs font-semibold opacity-70">{fmt(trip.price_per_seat)}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBookingType('one_way')}
+                    className={cn(
+                      'rounded-xl border px-3 py-3 text-sm font-bold transition-colors',
+                      bookingType === 'one_way'
+                        ? 'border-white/30 bg-white text-slate-950'
+                        : 'border-white/10 bg-transparent text-white hover:bg-white/10'
+                    )}
+                  >
+                    <span className="block">{isAr ? BOOKING_TYPES.one_way.ar : BOOKING_TYPES.one_way.en}</span>
+                    <span className="mt-1 block text-xs font-semibold opacity-70">{fmt(oneWayPrice)}</span>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="space-y-6 p-8">
@@ -410,9 +398,6 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                         <Plus className="h-4 w-4" />
                       </button>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-slate-500">
-                      {remaining} {t('trips.seats_remaining')}
-                    </p>
                   </div>
 
                   <div className="space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-5">
@@ -468,13 +453,41 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
     </div>
     
     {/* Mobile Sticky Bottom Bar (Moved outside animating wrapper) */}
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 pb-safe z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
+        <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">
+          <button
+            type="button"
+            onClick={() => setBookingType('round_trip')}
+            className={cn(
+              'rounded-xl px-3 py-2 text-xs font-bold transition-colors text-center',
+              bookingType === 'round_trip'
+                ? 'bg-white text-slate-950'
+                : 'bg-white/10 text-slate-300 hover:bg-white/15'
+            )}
+          >
+            <span className="block">{isAr ? BOOKING_TYPES.round_trip.ar : BOOKING_TYPES.round_trip.en}</span>
+            <span className="block opacity-70 font-semibold">{fmt(trip.price_per_seat)}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setBookingType('one_way')}
+            className={cn(
+              'rounded-xl px-3 py-2 text-xs font-bold transition-colors text-center',
+              bookingType === 'one_way'
+                ? 'bg-white text-slate-950'
+                : 'bg-white/10 text-slate-300 hover:bg-white/15'
+            )}
+          >
+            <span className="block">{isAr ? BOOKING_TYPES.one_way.ar : BOOKING_TYPES.one_way.en}</span>
+            <span className="block opacity-70 font-semibold">{fmt(oneWayPrice)}</span>
+          </button>
+        </div>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 p-4 pb-safe">
             <div className="flex flex-col">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('trips.price_per_seat')}</span>
-                <span className="text-2xl font-black text-white">{fmt(trip.price_per_seat)}</span>
+                <span className="text-2xl font-black text-white">{fmt(selectedPrice)}</span>
             </div>
-            
+
             {isBookable ? (
                 <Link
                 href={`/${locale}/trips/${trip.id}/book?seats=${seatsCount}&bookingType=${bookingType}`}

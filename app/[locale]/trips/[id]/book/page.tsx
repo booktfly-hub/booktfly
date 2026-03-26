@@ -141,9 +141,8 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
 
   const remaining = trip.total_seats - trip.booked_seats
   const maxBookable = Math.min(remaining, MAX_SEATS_PER_BOOKING)
-  const isRoundTrip = trip.trip_type === 'round_trip'
-  const resolvedBookingType = isRoundTrip ? bookingType : 'one_way'
-  const effectivePrice = isRoundTrip && resolvedBookingType === 'one_way' && trip.price_per_seat_one_way
+  const resolvedBookingType = bookingType
+  const effectivePrice = resolvedBookingType === 'one_way' && trip.price_per_seat_one_way
     ? trip.price_per_seat_one_way
     : trip.price_per_seat
   const totalPrice = effectivePrice * seatsCount
@@ -270,11 +269,9 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <span className="px-2 md:px-3 py-1 rounded-md md:rounded-lg bg-accent/5 border border-accent/10 text-accent text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
                         {isAr ? CABIN_CLASSES[trip.cabin_class].ar : CABIN_CLASSES[trip.cabin_class].en}
                     </span>
-                    {isRoundTrip && (
-                      <span className="px-2 md:px-3 py-1 rounded-md md:rounded-lg bg-slate-100 border border-slate-200 text-slate-600 text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
-                        {isAr ? BOOKING_TYPES[resolvedBookingType].ar : BOOKING_TYPES[resolvedBookingType].en}
-                      </span>
-                    )}
+                    <span className="px-2 md:px-3 py-1 rounded-md md:rounded-lg bg-slate-100 border border-slate-200 text-slate-600 text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                      {isAr ? BOOKING_TYPES[resolvedBookingType].ar : BOOKING_TYPES[resolvedBookingType].en}
+                    </span>
                 </div>
              </div>
           </div>

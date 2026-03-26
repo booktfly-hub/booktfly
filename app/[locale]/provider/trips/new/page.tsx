@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
@@ -186,7 +186,6 @@ export default function NewTripPage() {
     resolver: zodResolver(getTripSchema(locale)) as any,
     defaultValues: {
       listing_type: 'seats',
-      trip_type: 'one_way',
       cabin_class: 'economy',
       currency: 'SAR',
       total_seats: 1,
@@ -197,7 +196,6 @@ export default function NewTripPage() {
     },
   })
 
-  const tripType = watch('trip_type')
   const listingType = watch('listing_type')
   const currency = watch('currency')
   const departureAt = watch('departure_at')
@@ -206,12 +204,6 @@ export default function NewTripPage() {
   const returnDate = parseDateTimeValue(returnAt)
   const departureTime = getTimeValue(departureAt)
   const returnTime = getTimeValue(returnAt)
-
-  useEffect(() => {
-    if (tripType === 'one_way' && returnAt) {
-      setValue('return_at', '', { shouldDirty: true, shouldValidate: true })
-    }
-  }, [tripType, returnAt, setValue])
 
   const updateDateTimeField = (field: 'departure_at' | 'return_at', nextDate?: Date, nextTime?: string) => {
     const currentValue = field === 'departure_at' ? departureAt : returnAt
@@ -466,18 +458,6 @@ export default function NewTripPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {tt('trip_type')} *
-              </label>
-              <select
-                {...register('trip_type')}
-                className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="one_way">{tt('one_way')}</option>
-                <option value="round_trip">{tt('round_trip')}</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1.5">
                 {tt('cabin_class')} *
               </label>
               <select
@@ -533,54 +513,52 @@ export default function NewTripPage() {
                 </p>
               )}
             </div>
-            {tripType === 'round_trip' && (
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {tt('return_date')}{' '}
-                  <span className="text-muted-foreground">({tc('optional')})</span>
-                </label>
-                <input type="hidden" {...register('return_at')} />
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
-                  <Popover>
-                    <PopoverTrigger
-                      className={cn(
-                        'flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:outline-none',
-                        returnDate ? 'text-slate-900' : 'text-slate-500'
-                      )}
-                    >
-                      {returnDate
-                        ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS })
-                        : <span>{tt('return_date')}</span>}
-                      <CalendarIcon className="h-4 w-4 opacity-60" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={returnDate}
-                        onSelect={(date) => date ? updateDateTimeField('return_at', date) : clearDateTimeField('return_at')}
-                        disabled={(date) => Boolean(departureDate && startOfDay(date) < startOfDay(departureDate))}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="relative">
-                    <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <div className="ps-10">
-                      <TimeSelect
-                        value={returnTime}
-                        locale={locale}
-                        onChange={(value) => updateDateTimeField('return_at', undefined, value)}
-                      />
-                    </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">
+                {tt('return_date')}{' '}
+                <span className="text-muted-foreground">({tc('optional')})</span>
+              </label>
+              <input type="hidden" {...register('return_at')} />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+                <Popover>
+                  <PopoverTrigger
+                    className={cn(
+                      'flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:outline-none',
+                      returnDate ? 'text-slate-900' : 'text-slate-500'
+                    )}
+                  >
+                    {returnDate
+                      ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS })
+                      : <span>{tt('return_date')}</span>}
+                    <CalendarIcon className="h-4 w-4 opacity-60" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={returnDate}
+                      onSelect={(date) => date ? updateDateTimeField('return_at', date) : clearDateTimeField('return_at')}
+                      disabled={(date) => Boolean(departureDate && startOfDay(date) < startOfDay(departureDate))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="relative">
+                  <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <div className="ps-10">
+                    <TimeSelect
+                      value={returnTime}
+                      locale={locale}
+                      onChange={(value) => updateDateTimeField('return_at', undefined, value)}
+                    />
                   </div>
                 </div>
-                {errors.return_at && (
-                  <p className="text-destructive text-sm mt-1">
-                    {errors.return_at.message}
-                  </p>
-                )}
               </div>
-            )}
+              {errors.return_at && (
+                <p className="text-destructive text-sm mt-1">
+                  {errors.return_at.message}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -620,7 +598,7 @@ export default function NewTripPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {tt('price_per_seat')} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
+                {locale === 'ar' ? 'سعر المقعد (ذهاب وعودة)' : 'Price Per Seat (Round Trip)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
               </label>
               <input
                 type="number"
@@ -635,24 +613,23 @@ export default function NewTripPage() {
                 </p>
               )}
             </div>
-            {tripType === 'round_trip' && (
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')})
-                  {' '}<span className="text-muted-foreground">({tc('optional')})</span>
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  {...register('price_per_seat_one_way', { valueAsNumber: true })}
-                  className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {locale === 'ar' ? 'السعر للمسافرين الذين يحجزون ذهاب فقط على هذه الرحلة' : 'Price for travelers booking one-way on this round-trip'}
+            <div>
+              <label className="text-sm font-medium block mb-1.5">
+                {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
+              </label>
+              <input
+                type="number"
+                min={1}
+                step={0.01}
+                {...register('price_per_seat_one_way', { valueAsNumber: true })}
+                className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+              {errors.price_per_seat_one_way && (
+                <p className="text-destructive text-sm mt-1">
+                  {errors.price_per_seat_one_way.message}
                 </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 

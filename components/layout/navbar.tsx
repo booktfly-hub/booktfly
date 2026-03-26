@@ -85,12 +85,12 @@ export function Navbar() {
                 key={label}
                 href={href}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition-all",
+                  "inline-flex items-center gap-2 border-none px-4 py-2 text-sm font-bold transition-all",
                   isNavItemActive(href)
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95"
                     : scrolled
-                      ? "border-slate-200 bg-slate-50 text-primary shadow-sm hover:border-primary/20 hover:bg-white"
-                      : "border-white/70 bg-white/80 text-primary shadow-sm backdrop-blur-sm hover:bg-white"
+                      ? "hover:border-primary/20 hover:bg-white"
+                      : "text-primary  hover:bg-white"
                 )}
               >
                 <Icon

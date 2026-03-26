@@ -1,31 +1,10 @@
 import type { Metadata } from 'next'
-import { IBM_Plex_Sans_Arabic, IBM_Plex_Sans, Playfair_Display } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { LocaleShell } from '@/components/layout/locale-shell'
 import '@/app/globals.css'
-
-const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
-  subsets: ['arabic'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-ibm-plex-sans-arabic',
-  display: 'swap',
-})
-
-const ibmPlexSans = IBM_Plex_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-ibm-plex-sans',
-  display: 'swap',
-})
-
-const playfairDisplay = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair-display',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://bookitfly.com'),
@@ -72,7 +51,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} ${playfairDisplay.variable} min-h-screen flex flex-col font-sans antialiased`}>
+      <body className="min-h-screen flex flex-col font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
           <LocaleShell>{children}</LocaleShell>
         </NextIntlClientProvider>

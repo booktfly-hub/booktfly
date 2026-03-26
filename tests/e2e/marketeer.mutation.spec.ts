@@ -16,6 +16,17 @@ function applicantCreds() {
   return { email, password }
 }
 
+function requireApplicantCreds() {
+  const creds = applicantCreds()
+  test.skip(!creds, 'Missing applicant credentials')
+
+  if (!creds) {
+    throw new Error('Missing applicant credentials')
+  }
+
+  return creds
+}
+
 function applicantProfile() {
   return {
     fullName: process.env.E2E_APPLICANT_FULL_NAME || 'Playwright Applicant',
@@ -33,8 +44,7 @@ test.describe('Marketeer flow mutations', () => {
   test('buyer applies and admin approves the application', async ({ browser }) => {
     test.skip(!mutationEnabled, 'Mutation tests are disabled')
 
-    const creds = applicantCreds()
-    test.skip(!creds, 'Missing applicant credentials')
+    const creds = requireApplicantCreds()
 
     const applicant = await browser.newContext()
     const applicantPage = await applicant.newPage()

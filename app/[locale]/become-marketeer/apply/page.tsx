@@ -136,7 +136,7 @@ export default function ApplyMarkeeteerPage() {
   ]
 
   return (
-    <div className="min-h-screen pt-44 pb-12 px-4 bg-muted/20 relative overflow-hidden">
+    <div className="min-h-screen pt-24 pb-12 px-4 bg-muted/20 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl -z-10" />
 

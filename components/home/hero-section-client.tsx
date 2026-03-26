@@ -61,7 +61,7 @@ export function HeroSectionClient({
       ]
 
   return (
-    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#fff7ef_0%,#fffdf8_24%,#eef7ff_68%,#f7fbff_100%)] pt-32 pb-20">
+    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-[linear-gradient(180deg,#fff7ef_0%,#fffdf8_24%,#eef7ff_68%,#f7fbff_100%)] pt-22 pb-20">
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/80 to-transparent" />
         <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.35)_35%,transparent_70%)]" />
@@ -75,7 +75,7 @@ export function HeroSectionClient({
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 lg:px-8">
         <div
-          className="mb-8 flex flex-col items-center justify-center gap-3 animate-fade-in-up sm:flex-row"
+          className="mb-8 flex items-center justify-center gap-3 animate-fade-in-up sm:flex-row"
           style={{ animationDelay: '100ms', animationFillMode: 'both' }}
         >
           <Link href={`/${locale}/become-provider`} className="group flex items-center justify-center gap-3 rounded-full border border-[#f2dfcc] bg-white/90 px-5 py-2.5 shadow-lg shadow-orange-100/40 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#f97316]/30 hover:bg-white">

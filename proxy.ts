@@ -21,7 +21,7 @@ const AUTH_REQUIRED_PATTERNS = [
   '/become-provider/status',
 ]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Strip locale prefix to get the path
   const pathname = request.nextUrl.pathname
   const localeMatch = pathname.match(/^\/(ar|en)(.*)$/)

@@ -92,7 +92,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const stringFields = [
       'airline', 'flight_number', 'origin_city_ar', 'origin_city_en',
       'origin_code', 'destination_city_ar', 'destination_city_en',
-      'destination_code', 'departure_at', 'return_at', 'trip_type',
+      'destination_code', 'departure_at', 'return_at',
       'cabin_class', 'listing_type', 'currency', 'description_ar', 'description_en',
     ]
 

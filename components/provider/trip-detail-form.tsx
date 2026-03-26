@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -36,7 +36,6 @@ type EditableFields = {
   destination_code: string
   departure_at: string
   return_at: string
-  trip_type: string
   cabin_class: string
   listing_type: string
   is_direct: boolean
@@ -148,7 +147,6 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
       destination_code: initialTrip.destination_code || '',
       departure_at: initialTrip.departure_at,
       return_at: initialTrip.return_at || '',
-      trip_type: initialTrip.trip_type,
       cabin_class: initialTrip.cabin_class,
       listing_type: initialTrip.listing_type,
       is_direct: initialTrip.is_direct,
@@ -161,7 +159,6 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
     },
   })
 
-  const tripType = watch('trip_type')
   const currency = watch('currency')
   const departureAt = watch('departure_at')
   const returnAt = watch('return_at')
@@ -169,12 +166,6 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const returnDate = parseDateTimeValue(returnAt)
   const departureTime = getTimeValue(departureAt)
   const returnTime = getTimeValue(returnAt)
-
-  useEffect(() => {
-    if (tripType === 'one_way' && returnAt) {
-      setValue('return_at', '', { shouldDirty: true })
-    }
-  }, [tripType, returnAt, setValue])
 
   const updateDateTimeField = (field: 'departure_at' | 'return_at', nextDate?: Date, nextTime?: string) => {
     const currentValue = field === 'departure_at' ? departureAt : returnAt
@@ -344,13 +335,6 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
           <h2 className="font-semibold">{tt('trip_type')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">{tt('trip_type')} *</label>
-              <select {...register('trip_type')} className={inputClass}>
-                <option value="one_way">{tt('one_way')}</option>
-                <option value="round_trip">{tt('round_trip')}</option>
-              </select>
-            </div>
-            <div>
               <label className="text-sm font-medium block mb-1.5">{tt('cabin_class')} *</label>
               <select {...register('cabin_class')} className={inputClass}>
                 <option value="economy">{tt('economy')}</option>
@@ -379,29 +363,27 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
                 </div>
               </div>
             </div>
-            {tripType === 'round_trip' && (
-              <div>
-                <label className="text-sm font-medium block mb-1.5">{tt('return_date')}</label>
-                <input type="hidden" {...register('return_at')} />
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
-                  <Popover>
-                    <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm', returnDate ? 'text-slate-900' : 'text-slate-500')}>
-                      {returnDate ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS }) : <span>{tt('return_date')}</span>}
-                      <CalendarIcon className="h-4 w-4 opacity-60" />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={returnDate} onSelect={(date) => date && updateDateTimeField('return_at', date)} disabled={(date) => Boolean(departureDate && startOfDay(date) < startOfDay(departureDate))} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="relative">
-                    <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <div className="ps-10">
-                      <TimeSelect value={returnTime} locale={locale} onChange={(v) => updateDateTimeField('return_at', undefined, v)} />
-                    </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{tt('return_date')} <span className="text-muted-foreground">({tc('optional')})</span></label>
+              <input type="hidden" {...register('return_at')} />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+                <Popover>
+                  <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm', returnDate ? 'text-slate-900' : 'text-slate-500')}>
+                    {returnDate ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS }) : <span>{tt('return_date')}</span>}
+                    <CalendarIcon className="h-4 w-4 opacity-60" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={returnDate} onSelect={(date) => date && updateDateTimeField('return_at', date)} disabled={(date) => Boolean(departureDate && startOfDay(date) < startOfDay(departureDate))} initialFocus />
+                  </PopoverContent>
+                </Popover>
+                <div className="relative">
+                  <Clock3 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <div className="ps-10">
+                    <TimeSelect value={returnTime} locale={locale} onChange={(v) => updateDateTimeField('return_at', undefined, v)} />
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" {...register('is_direct')} id="is_direct" className="rounded" />
@@ -425,17 +407,15 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{tt('price_per_seat')} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
+              <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'سعر المقعد (ذهاب وعودة)' : 'Price Per Seat (Round Trip)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
               <input type="number" min={1} step={0.01} {...register('price_per_seat', { valueAsNumber: true })} className={inputClass} />
             </div>
-            {tripType === 'round_trip' && (
-              <div>
-                <label className="text-sm font-medium block mb-1.5">
-                  {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
-                </label>
-                <input type="number" min={1} step={0.01} {...register('price_per_seat_one_way', { valueAsNumber: true })} className={inputClass} />
-              </div>
-            )}
+            <div>
+              <label className="text-sm font-medium block mb-1.5">
+                {locale === 'ar' ? 'سعر المقعد (ذهاب فقط)' : 'Price Per Seat (One Way)'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
+              </label>
+              <input type="number" min={1} step={0.01} {...register('price_per_seat_one_way', { valueAsNumber: true })} className={inputClass} />
+            </div>
           </div>
         </div>
 
