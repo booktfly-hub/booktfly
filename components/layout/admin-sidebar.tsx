@@ -112,7 +112,7 @@ type BadgeCounts = Record<string, number>
 
 function useBadgeCounts() {
   const [counts, setCounts] = useState<BadgeCounts>({})
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
 
   const fetchCounts = useCallback(async () => {
     const [
@@ -143,7 +143,7 @@ function useBadgeCounts() {
 
   useEffect(() => {
     fetchCounts()
-    const interval = setInterval(fetchCounts, 30000)
+    const interval = setInterval(fetchCounts, 60000)
     return () => clearInterval(interval)
   }, [fetchCounts])
 
@@ -269,7 +269,7 @@ export function AdminSidebar() {
   const t = useTranslations('admin')
   const locale = useLocale()
   const pathname = usePathname()
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
   const [mobileOpen, setMobileOpen] = useState(false)
   const badges = useBadgeCounts()
 

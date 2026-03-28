@@ -15,7 +15,7 @@ import {
   LogOut,
   ExternalLink,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { signOutAndRedirect } from '@/lib/auth-client'
@@ -35,7 +35,7 @@ export function ProviderSidebar() {
   const t = useTranslations('provider')
   const locale = useLocale()
   const pathname = usePathname()
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isActive = (href: string) => {

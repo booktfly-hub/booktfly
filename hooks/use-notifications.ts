@@ -12,7 +12,7 @@ export function useNotifications(userId: string | undefined) {
   const [unreadCount, setUnreadCount] = useState(0)
   const locale = useLocale()
   const initialLoadDone = useRef(false)
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
 
   useEffect(() => {
     if (!userId) return

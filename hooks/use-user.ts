@@ -12,6 +12,23 @@ export function useUser() {
   const supabase = useRef(createClient()).current
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle()
+          .then(({ data }) => {
+            setProfile(data)
+            setLoading(false)
+          })
+      } else {
+        setLoading(false)
+      }
+    })
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
