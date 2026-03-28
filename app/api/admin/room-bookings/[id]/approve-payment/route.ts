@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { logActivity } from '@/lib/activity-log'
 import { shortId } from '@/lib/utils'
+import { handleBookingConfirmedRewards } from '@/lib/points'
 
 export async function PATCH(
   request: NextRequest,
@@ -75,6 +77,25 @@ export async function PATCH(
           bodyAr: `حجز غرفة جديد رقم ${ref} - ${booking.rooms_count} غرف - تم إيداع ${booking.provider_payout} في محفظتك`,
           bodyEn: `New room booking #${ref} - ${booking.rooms_count} room(s) - ${booking.provider_payout} credited to your wallet`,
           data: { room_booking_id: id },
+        })
+      }
+
+      logActivity('room_booking_confirmed', { metadata: { bookingId: id } })
+
+      // Award referral points & customer first-booking bonus (off critical path)
+      if (booking.buyer_id) {
+        after(async () => {
+          try {
+            await handleBookingConfirmedRewards({
+              buyerId: booking.buyer_id!,
+              bookingId: id,
+              totalAmount: booking.total_amount,
+              type: 'room',
+              refLabel: `#${ref}`,
+            })
+          } catch (err) {
+            console.error('Room booking rewards error:', err)
+          }
         })
       }
     } else {

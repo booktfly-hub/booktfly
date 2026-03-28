@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Star, Wallet, Loader2, TrendingUp, Users, AlertCircle,
-  Copy, CheckCheck, BarChart3, MessageSquare, ArrowLeft, ArrowRight,
+  Copy, CheckCheck, BarChart3, MessageSquare, ArrowLeft, ArrowRight, Plane,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Marketeer, FlypointsTransaction } from '@/types'
@@ -114,6 +114,16 @@ export default function MarkeeteerDashboardPage() {
   ]
 
   const navCards = [
+    {
+      href: `/${locale}/marketeer/book`,
+      icon: Plane,
+      color: 'text-sky-500',
+      bg: 'bg-sky-500/10',
+      title: isAr ? 'حجز لعميل' : 'Book for Customer',
+      desc: isAr ? 'احجز تذكرة نيابة عن عميلك وارسل له رابط الدفع' : 'Create a booking for your customer and send them a payment link',
+      value: null,
+      unit: null,
+    },
     {
       href: `/${locale}/marketeer/users`,
       icon: Users,
@@ -227,6 +237,53 @@ export default function MarkeeteerDashboardPage() {
             : `Conversion rate: 1 point = ${sar_rate} SAR`}
         </p>
       </div>
+
+      {/* Points Breakdown */}
+      {transactions.length > 0 && (() => {
+        const eventLabels: Record<string, { ar: string; en: string; color: string }> = {
+          registration_bonus: { ar: 'مكافأة التسجيل', en: 'Registration', color: 'bg-emerald-500' },
+          invite_customer: { ar: 'دعوة عملاء', en: 'Customer Invites', color: 'bg-purple-500' },
+          referral_marketeer: { ar: 'دعوة مسوّقين', en: 'Marketeer Invites', color: 'bg-indigo-500' },
+          sell_ticket: { ar: 'بيع تذاكر', en: 'Ticket Sales', color: 'bg-blue-500' },
+          sell_hotel: { ar: 'بيع فنادق', en: 'Hotel Sales', color: 'bg-cyan-500' },
+          referral_client_booking: { ar: 'عمولة مسوّقين', en: 'Sub-marketeer Commission', color: 'bg-amber-500' },
+        }
+        const grouped = transactions.reduce((acc, tx) => {
+          if (tx.points <= 0) return acc
+          acc[tx.event_type] = (acc[tx.event_type] || 0) + tx.points
+          return acc
+        }, {} as Record<string, number>)
+        const entries = Object.entries(grouped).sort((a, b) => b[1] - a[1])
+        if (entries.length === 0) return null
+
+        return (
+          <div
+            className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm animate-fade-in-up"
+            style={{ animationDelay: '400ms' }}
+          >
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
+              {isAr ? 'مصادر النقاط' : 'Points Sources'}
+            </p>
+            <div className="space-y-3">
+              {entries.map(([eventType, pts]) => {
+                const label = eventLabels[eventType] || { ar: eventType, en: eventType, color: 'bg-slate-400' }
+                const pct = total_earned > 0 ? Math.round((pts / total_earned) * 100) : 0
+                return (
+                  <div key={eventType}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-bold text-slate-700">{isAr ? label.ar : label.en}</span>
+                      <span className="font-black text-slate-900">{pts.toLocaleString()} <span className="text-xs text-slate-400">({pct}%)</span></span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className={cn('h-full rounded-full transition-all', label.color)} style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Nav cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

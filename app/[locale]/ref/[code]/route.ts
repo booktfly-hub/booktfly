@@ -7,22 +7,43 @@ export async function GET(
 ) {
   const { locale, code } = await params
 
-  const { data: marketeer } = await supabaseAdmin
-    .from('marketeers')
-    .select('referral_code, status')
-    .eq('referral_code', code)
-    .eq('status', 'active')
-    .maybeSingle()
-
   const response = NextResponse.redirect(new URL(`/${locale}/trips`, request.url))
 
-  if (marketeer) {
-    response.cookies.set('ref_code', code, {
-      maxAge: 60 * 60 * 24 * 30,
-      path: '/',
-      httpOnly: false,
-      sameSite: 'lax',
-    })
+  // Marketeer referral code (MKT-XXXXXX)
+  if (code.startsWith('MKT-')) {
+    const { data: marketeer } = await supabaseAdmin
+      .from('marketeers')
+      .select('referral_code, status')
+      .eq('referral_code', code)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (marketeer) {
+      response.cookies.set('ref_code', code, {
+        maxAge: 60 * 60 * 24 * 30,
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+      })
+    }
+  }
+
+  // Customer referral code (USR-XXXXXX)
+  if (code.startsWith('USR-')) {
+    const { data: referrer } = await supabaseAdmin
+      .from('profiles')
+      .select('referral_code')
+      .eq('referral_code', code)
+      .maybeSingle()
+
+    if (referrer) {
+      response.cookies.set('cref_code', code, {
+        maxAge: 60 * 60 * 24 * 30,
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+      })
+    }
   }
 
   return response

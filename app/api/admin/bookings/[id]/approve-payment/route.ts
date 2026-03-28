@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { logActivity } from '@/lib/activity-log'
 import { shortId } from '@/lib/utils'
+import { handleBookingConfirmedRewards, handleMarkeeteerDirectBookingRewards } from '@/lib/points'
 
 export async function PATCH(
   request: NextRequest,
@@ -80,6 +82,38 @@ export async function PATCH(
           data: { booking_id: id },
         })
       }
+
+      logActivity('booking_confirmed', { userId: booking.buyer_id, metadata: { bookingId: id } })
+      logActivity('payment_received', { metadata: { bookingId: id, amount: booking.total_amount } })
+
+      // Award referral points & customer first-booking bonus (off critical path)
+      after(async () => {
+        try {
+          // If booked by a marketeer directly (guest booking)
+          if (booking.booked_by_marketeer_id) {
+            await handleMarkeeteerDirectBookingRewards({
+              marketeerDbId: booking.booked_by_marketeer_id,
+              bookingId: id,
+              totalAmount: booking.total_amount,
+              passengerName: booking.passenger_name,
+              type: 'flight',
+              refLabel: `#${ref}`,
+            })
+          }
+          // If buyer has an account, award customer & referral marketeer points
+          if (booking.buyer_id) {
+            await handleBookingConfirmedRewards({
+              buyerId: booking.buyer_id,
+              bookingId: id,
+              totalAmount: booking.total_amount,
+              type: 'flight',
+              refLabel: `#${ref}`,
+            })
+          }
+        } catch (err) {
+          console.error('Booking rewards error:', err)
+        }
+      })
     } else {
       // Reject payment
       await supabaseAdmin

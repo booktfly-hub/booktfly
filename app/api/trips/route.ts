@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { tripSchema } from '@/lib/validations'
 import { rateLimit } from '@/lib/rate-limit'
 import { optimizeImage } from '@/lib/optimize-image'
+import { notify } from '@/lib/notifications'
+import { logActivity } from '@/lib/activity-log'
 
 export async function GET(request: NextRequest) {
   try {
@@ -263,6 +265,34 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    logActivity('trip_created', { userId: user.id, metadata: { tripId: trip.id } })
+
+    // Award provider 200 pts for adding a new offer
+    after(async () => {
+      try {
+        await supabaseAdmin.from('provider_points_transactions').insert({
+          provider_id: provider.id,
+          points: 200,
+          event_type: 'add_offer',
+          reference_id: trip.id,
+          description_ar: 'نقاط إضافة عرض رحلة جديد',
+          description_en: 'Points for adding a new trip offer',
+        })
+
+        await notify({
+          userId: user.id,
+          type: 'points_earned',
+          titleAr: 'حصلت على 200 نقطة!',
+          titleEn: 'You earned 200 points!',
+          bodyAr: 'حصلت على 200 نقطة لإضافة عرض رحلة جديد',
+          bodyEn: 'You earned 200 points for adding a new trip offer',
+          data: { points: '200', event: 'add_offer' },
+        })
+      } catch (err) {
+        console.error('Provider add_offer points error:', err)
+      }
+    })
 
     return NextResponse.json({ data: trip, error: null }, { status: 201 })
   } catch (error) {

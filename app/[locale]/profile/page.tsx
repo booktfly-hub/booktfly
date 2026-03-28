@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, Calendar, Lock, Check, LayoutDashboard, BadgeCheck, ShieldCheck } from 'lucide-react'
+import { User, Mail, Phone, Calendar, Lock, Check, LayoutDashboard, BadgeCheck, ShieldCheck, Star, Copy, CheckCheck, Users, Gift } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -21,6 +21,13 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [initialized, setInitialized] = useState(false)
+  const [pointsData, setPointsData] = useState<{
+    balance: number
+    referral_code?: string
+    referral_count?: number
+    transactions: { id: string; points: number; event_type: string; description_ar: string; description_en: string; created_at: string }[]
+  } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!profile || initialized) return
@@ -35,6 +42,15 @@ export default function ProfilePage() {
       router.replace(`/${locale}/auth/login`)
     }
   }, [loading, user, profile, router, locale])
+
+  useEffect(() => {
+    if (!user || !profile) return
+    if (profile.role === 'admin') return
+    fetch('/api/points')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setPointsData(d) })
+      .catch(() => {})
+  }, [user, profile])
 
   if (loading) {
     return (
@@ -155,6 +171,81 @@ export default function ProfilePage() {
             </svg>
           </div>
         </Link>
+      )}
+
+      {/* Points & Referral Section */}
+      {pointsData && profile.role !== 'admin' && (
+        <div className="rounded-2xl border bg-card p-6 mb-6 space-y-5">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            {t('profile.points_title')}
+          </h3>
+
+          {/* Points Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl bg-yellow-500/10 p-4 text-center">
+              <p className="text-2xl font-black text-foreground">{pointsData.balance.toLocaleString()}</p>
+              <p className="text-xs font-bold text-muted-foreground mt-1">{t('profile.points_balance')}</p>
+            </div>
+            {pointsData.referral_count !== undefined && (
+              <div className="rounded-xl bg-purple-500/10 p-4 text-center">
+                <p className="text-2xl font-black text-foreground">{pointsData.referral_count}</p>
+                <p className="text-xs font-bold text-muted-foreground mt-1">{t('profile.friends_invited')}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Referral Link (for buyers) */}
+          {pointsData.referral_code && profile.role === 'buyer' && (
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Gift className="h-4 w-4 text-primary" />
+                {t('profile.invite_friends')}
+              </p>
+              <p className="text-xs text-muted-foreground">{t('profile.invite_friends_desc')}</p>
+              <div className="flex gap-2">
+                <div className="flex-1 rounded-xl border bg-muted/50 px-3 py-2.5 font-mono text-xs text-muted-foreground break-all">
+                  {typeof window !== 'undefined' ? `${window.location.origin}/ref/${pointsData.referral_code}` : `/ref/${pointsData.referral_code}`}
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/ref/${pointsData.referral_code}`)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2500)
+                  }}
+                  className={cn(
+                    'flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold shrink-0 transition-all',
+                    copied
+                      ? 'bg-green-500/10 text-green-600 border border-green-500/20'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  )}
+                >
+                  {copied ? <CheckCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Recent Transactions */}
+          {pointsData.transactions.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-muted-foreground">{t('profile.recent_points')}</p>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {pointsData.transactions.slice(0, 5).map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/30 text-sm">
+                    <span className="text-foreground text-xs">
+                      {isAr ? tx.description_ar : tx.description_en}
+                    </span>
+                    <span className={cn('font-bold text-xs shrink-0 ms-2', tx.points > 0 ? 'text-green-600' : 'text-red-500')}>
+                      {tx.points > 0 ? '+' : ''}{tx.points}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Edit Form */}

@@ -53,7 +53,9 @@ function SignupContent() {
     setIsLoading(true)
     try {
       const supabase = createClient()
-      const refCode = document.cookie.split('; ').find(r => r.startsWith('ref_code='))?.split('=')[1] ?? null
+      const refCode = document.cookie.split('; ').find(r => r.startsWith('ref_code='))?.split('=')[1]
+        ?? document.cookie.split('; ').find(r => r.startsWith('cref_code='))?.split('=')[1]
+        ?? null
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,

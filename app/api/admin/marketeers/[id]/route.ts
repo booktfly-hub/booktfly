@@ -2,6 +2,7 @@ import { after, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { logActivity } from '@/lib/activity-log'
 
 export async function GET(
   _request: Request,
@@ -62,17 +63,36 @@ export async function PATCH(
       }
       const referralCode = codeRow as string
 
-      // 2. Create marketeer row (still pending_review — safe to retry if later steps fail)
+      // 2. Check if this new marketeer was referred by another marketeer
+      const { data: newMktProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('referred_by')
+        .eq('id', application.user_id)
+        .single()
+
+      let referredByMarketeerId: string | null = null
+      if (newMktProfile?.referred_by?.startsWith('MKT-')) {
+        const { data: parentMkt } = await supabaseAdmin
+          .from('marketeers')
+          .select('id, user_id')
+          .eq('referral_code', newMktProfile.referred_by)
+          .eq('status', 'active')
+          .maybeSingle()
+        if (parentMkt) referredByMarketeerId = parentMkt.id
+      }
+
+      // 3. Create marketeer row
       const { error: mktError } = await supabaseAdmin
         .from('marketeers')
         .insert({
-          user_id:        application.user_id,
-          application_id: application.id,
-          full_name:      application.full_name,
-          national_id:    application.national_id,
-          phone:          application.phone,
-          referral_code:  referralCode,
-          status:         'active',
+          user_id:                 application.user_id,
+          application_id:          application.id,
+          full_name:               application.full_name,
+          national_id:             application.national_id,
+          phone:                   application.phone,
+          referral_code:           referralCode,
+          status:                  'active',
+          referred_by_marketeer_id: referredByMarketeerId,
         })
 
       if (mktError) {
@@ -120,10 +140,42 @@ export async function PATCH(
             bodyEn:  `Your marketeer account is now active. Your referral code: ${referralCode}`,
             data:    { referral_code: referralCode },
           })
+
+          // Circle 2: Award 300 pts to the marketeer who invited this new marketeer
+          if (referredByMarketeerId) {
+            const { data: parentMkt } = await supabaseAdmin
+              .from('marketeers')
+              .select('user_id')
+              .eq('id', referredByMarketeerId)
+              .single()
+
+            if (parentMkt) {
+              await supabaseAdmin.from('flypoints_transactions').insert({
+                marketeer_id:   parentMkt.user_id,
+                points:         300,
+                event_type:     'referral_marketeer',
+                reference_id:   application.user_id,
+                description_ar: `نقاط دعوة مسوّق جديد: ${application.full_name}`,
+                description_en: `Points for inviting new marketeer: ${application.full_name}`,
+              })
+
+              await notify({
+                userId:  parentMkt.user_id,
+                type:    'points_earned',
+                titleAr: 'مسوّق جديد انضم عبر رابطك!',
+                titleEn: 'New marketeer joined via your link!',
+                bodyAr:  `${application.full_name} أصبح مسوّقاً عبر رابط إحالتك. حصلت على 300 نقطة!`,
+                bodyEn:  `${application.full_name} became a marketeer via your referral. You earned 300 points!`,
+                data:    { points: '300', event: 'referral_marketeer', marketeer_name: application.full_name },
+              })
+            }
+          }
         } catch (err) {
           console.error('Failed to notify marketeer approval:', err)
         }
       })
+
+      logActivity('marketeer_joined', { userId: application.user_id, metadata: { applicationId: id } })
 
       return NextResponse.json({ success: true, action: 'approved', referral_code: referralCode })
     }

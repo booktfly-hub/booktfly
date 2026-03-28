@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { logActivity, createAlert } from '@/lib/activity-log'
 import { render } from '@react-email/components'
 import ApplicationApproved from '@/emails/application-approved'
 import ApplicationRejected from '@/emails/application-rejected'
@@ -91,7 +92,7 @@ export async function PATCH(
       }
 
       // 2. Create provider row
-      const { error: providerError } = await supabaseAdmin
+      const { data: newProvider, error: providerError } = await supabaseAdmin
         .from('providers')
         .insert({
           user_id: application.user_id,
@@ -110,8 +111,10 @@ export async function PATCH(
           has_civil_aviation: !!application.doc_civil_aviation_url,
           has_iata_permit: !!application.doc_iata_permit_url,
         })
+        .select('id')
+        .single()
 
-      if (providerError) {
+      if (providerError || !newProvider) {
         return NextResponse.json({ error: 'Failed to create provider' }, { status: 500 })
       }
 
@@ -140,6 +143,34 @@ export async function PATCH(
           html: approvedHtml,
         },
       })
+
+      // Award provider 1000 pts registration bonus
+      after(async () => {
+        try {
+          await supabaseAdmin.from('provider_points_transactions').insert({
+            provider_id: newProvider.id,
+            points: 1000,
+            event_type: 'registration_bonus',
+            description_ar: 'مكافأة التسجيل كمزود خدمة',
+            description_en: 'Provider registration bonus',
+          })
+
+          await notify({
+            userId: application.user_id,
+            type: 'points_earned',
+            titleAr: 'حصلت على 1000 نقطة!',
+            titleEn: 'You earned 1000 points!',
+            bodyAr: 'حصلت على 1000 نقطة كمكافأة تسجيل مزود خدمة',
+            bodyEn: 'You earned 1000 points as a provider registration bonus',
+            data: { points: '1000', event: 'registration_bonus' },
+          })
+        } catch (err) {
+          console.error('Provider registration bonus error:', err)
+        }
+      })
+
+      logActivity('provider_joined', { userId: application.user_id, metadata: { applicationId: id, companyName: application.company_name_ar } })
+      createAlert('provider_joined', 'info', 'مزود خدمة جديد انضم', 'New provider joined', application.company_name_ar, application.company_name_en || '')
 
       return NextResponse.json({ success: true, action: 'approved' })
     }

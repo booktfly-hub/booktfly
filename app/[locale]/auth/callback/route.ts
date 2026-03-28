@@ -3,6 +3,7 @@ import { getPostLoginRedirect } from '@/lib/auth-client'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { notify } from '@/lib/notifications'
+import { logActivity } from '@/lib/activity-log'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
     if (userData.user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role, locale, referred_by, referral_code')
+        .select('role, locale, referred_by, referral_code, full_name')
         .eq('id', userData.user.id)
         .maybeSingle()
 
@@ -42,6 +43,8 @@ export async function GET(request: Request) {
           .update({ locale })
           .eq('id', userData.user.id)
       }
+
+      logActivity('user_login', { userId: userData.user.id })
 
       // Award signup points & handle referrals (off the critical path)
       after(async () => {

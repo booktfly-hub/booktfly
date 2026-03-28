@@ -32,6 +32,11 @@ export type FlypointsEventType =
   | 'referral_client_signup'
   | 'referral_client_booking'
   | 'referral_marketeer'
+  | 'invite_customer'
+  | 'sell_ticket'
+  | 'sell_hotel'
+  | 'sell_full_trip'
+  | 'reply_customer'
   | 'weekly_bonus'
   | 'speed_bonus'
   | 'rating_bonus'
@@ -41,6 +46,21 @@ export type FlypointsEventType =
   | 'cancellation_penalty'
   | 'bad_rating_penalty'
   | 'no_response_penalty'
+  | 'manual_adjustment'
+
+export type CustomerPointsEventType =
+  | 'registration_bonus'
+  | 'first_booking'
+  | 'invite_friend'
+  | 'rate_trip'
+  | 'share_offer'
+  | 'manual_adjustment'
+
+export type ProviderPointsEventType =
+  | 'registration_bonus'
+  | 'add_offer'
+  | 'big_discount'
+  | 'exclusive_offer'
   | 'manual_adjustment'
 
 export type NotificationType =
@@ -86,6 +106,8 @@ export type Profile = {
   role: UserRole
   avatar_url: string | null
   locale: string
+  referral_code: string | null
+  referred_by: string | null
   created_at: string
   updated_at: string
 }
@@ -177,6 +199,8 @@ export type Booking = {
   trip_id: string
   buyer_id: string | null
   provider_id: string
+  booked_by_marketeer_id: string | null
+  guest_token: string | null
   passenger_name: string
   passenger_phone: string
   passenger_email: string
@@ -321,6 +345,8 @@ export type RoomBooking = {
   room_id: string
   buyer_id: string | null
   provider_id: string
+  booked_by_marketeer_id: string | null
+  guest_token: string | null
   guest_name: string
   guest_phone: string | null
   guest_email: string | null
@@ -392,6 +418,7 @@ export type Marketeer = {
   national_id: string
   phone: string
   referral_code: string
+  referred_by_marketeer_id: string | null
   status: 'active' | 'suspended'
   created_at: string
   updated_at: string
@@ -408,3 +435,82 @@ export type FlypointsTransaction = {
   expires_at: string
   created_at: string
 }
+
+export type CustomerPointsTransaction = {
+  id: string
+  user_id: string
+  points: number
+  event_type: CustomerPointsEventType
+  reference_id: string | null
+  description_ar: string
+  description_en: string
+  created_at: string
+}
+
+export type ProviderPointsTransaction = {
+  id: string
+  provider_id: string
+  points: number
+  event_type: ProviderPointsEventType
+  reference_id: string | null
+  description_ar: string
+  description_en: string
+  created_at: string
+}
+
+export type ActivityEventType =
+  | 'site_visit'
+  | 'user_registered'
+  | 'user_login'
+  | 'booking_created'
+  | 'booking_confirmed'
+  | 'booking_cancelled'
+  | 'booking_refunded'
+  | 'payment_received'
+  | 'provider_joined'
+  | 'provider_suspended'
+  | 'trip_created'
+  | 'trip_removed'
+  | 'trip_expired'
+  | 'trip_sold_out'
+  | 'room_created'
+  | 'room_removed'
+  | 'room_booking_created'
+  | 'room_booking_confirmed'
+  | 'marketeer_joined'
+  | 'marketeer_application'
+  | 'provider_application'
+  | 'withdrawal_requested'
+  | 'withdrawal_completed'
+  | 'flight_request_created'
+  | 'email_registered'
+  | 'seat_reserved'
+  | 'seat_released'
+
+export type AlertSeverity = 'info' | 'warning' | 'critical'
+
+export type ActivityLog = {
+  id: string
+  event_type: ActivityEventType
+  user_id: string | null
+  metadata: Record<string, unknown>
+  ip_address: string | null
+  user_agent: string | null
+  created_at: string
+}
+
+export type AdminAlert = {
+  id: string
+  alert_type: string
+  severity: AlertSeverity
+  title_ar: string
+  title_en: string
+  body_ar: string | null
+  body_en: string | null
+  metadata: Record<string, unknown>
+  dismissed: boolean
+  dismissed_by: string | null
+  dismissed_at: string | null
+  created_at: string
+}
+
