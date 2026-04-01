@@ -68,7 +68,8 @@
     "notifications": "الإشعارات",
     "profile": "الملف الشخصي",
     "language": "اللغة",
-    "trip_requests": "طلبات الرحلات"
+    "trip_requests": "طلبات الرحلات",
+    "last_minute": "اللحظة الأخيرة"
   },
   "auth": {
     "login_title": "تسجيل الدخول",

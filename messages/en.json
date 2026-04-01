@@ -68,7 +68,8 @@
     "notifications": "Notifications",
     "profile": "Profile",
     "language": "Language",
-    "trip_requests": "Trip Requests"
+    "trip_requests": "Trip Requests",
+    "last_minute": "Last Minute"
   },
   "auth": {
     "login_title": "Log in to your account",

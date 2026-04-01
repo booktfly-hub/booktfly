@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
@@ -47,6 +47,7 @@ export function Navbar() {
     { href: `/${locale}/trips`, label: t('nav.flights'), icon: Plane },
     { href: `/${locale}/rooms`, label: t('nav.hotels'), icon: BedDouble },
     { href: `/${locale}/cars`, label: t('nav.cars'), icon: CarFront },
+    { href: `/${locale}/last-minute`, label: t('nav.last_minute'), icon: Flame, highlight: true },
     ...(user ? [{ href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff, highlight: true }] : []),
   ]
 
@@ -64,7 +65,7 @@ export function Navbar() {
         )}
       >
         <div className={cn("flex items-center justify-between transition-all duration-500", scrolled ? "px-4 sm:px-6 py-1" : "px-2 py-1 md:py-2")}>
-          {/* Logo - Visually huge but layout-friendly using negative margins */}
+          {/* Logo */}
           <Link href={`/${locale}`} className="relative group flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] z-50">
             <Image 
               src="/navbar.png" 
@@ -73,7 +74,7 @@ export function Navbar() {
               height={150} 
               className={cn(
                 "w-auto transition-all duration-500 object-contain", 
-                scrolled ? "h-20 sm:h-12" : "h-24 sm:h-16"
+                scrolled ? "h-14 md:h-12" : "h-18 md:h-16"
               )} 
               priority 
             />
