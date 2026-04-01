@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react'
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useNotifications } from '@/hooks/use-notifications'
+import { useUser } from '@/hooks/use-user'
 import { formatDistanceToNow } from 'date-fns'
 import { ar, enUS } from 'date-fns/locale'
 import Link from 'next/link'
@@ -15,9 +16,10 @@ type Props = {
 export function NotificationBell({ userId }: Props) {
   const t = useTranslations('notifications')
   const locale = useLocale()
+  const { supabase } = useUser()
   const [open, setOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(userId)
+    useNotifications(userId, supabase)
 
   const getNotificationLink = (data: Record<string, string> | null): string | null => {
     if (!data) return null

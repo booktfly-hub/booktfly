@@ -12,7 +12,6 @@ export function LanguageSwitcher() {
   const switchLocale = () => {
     const newLocale = locale === 'ar' ? 'en' : 'ar'
     router.replace(pathname, { locale: newLocale })
-    router.refresh()
   }
 
   return (

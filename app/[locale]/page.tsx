@@ -15,27 +15,29 @@ export default async function HomePage() {
   const locale = await getLocale()
   const supabase = await createClient()
 
-  // Fetch featured trips
-  const { data: featuredTrips } = await supabase
-    .from('trips')
-    .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(6)
-
-  // Fetch last-minute deals
-  const lastMinuteCutoff = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
+  const lastMinuteCutoff = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const now = new Date().toISOString()
 
   const [
+    { data: featuredTrips },
     { data: lastMinuteTrips },
     { data: lastMinuteRooms },
     { data: lastMinuteCars },
+    tripsCount,
+    providersCount,
+    bookingsCount,
   ] = await Promise.all([
     supabase
       .from('trips')
       .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
       .eq('status', 'active')
-      .gt('departure_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(6),
+    supabase
+      .from('trips')
+      .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
+      .eq('status', 'active')
+      .gt('departure_at', now)
       .lte('departure_at', lastMinuteCutoff)
       .order('departure_at', { ascending: true })
       .limit(6),
@@ -51,10 +53,6 @@ export default async function HomePage() {
       .eq('status', 'active')
       .eq('is_last_minute', true)
       .limit(6),
-  ])
-
-  // Fetch stats
-  const [tripsCount, providersCount, bookingsCount] = await Promise.all([
     supabase.from('trips').select('id', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('providers').select('id', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'confirmed'),

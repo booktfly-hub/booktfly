@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN } from '@/lib/utils'
@@ -93,7 +94,7 @@ export function TripCard({ trip, className }: TripCardProps) {
               </p>
               <div className="flex items-center gap-1.5 mt-1">
                 {originCountry && (
-                  <img src={`https://flagcdn.com/w20/${originCountry}.png`} alt={originCountry} className="h-3 w-4 rounded-sm object-cover shadow-sm" />
+                  <Image src={`https://flagcdn.com/w20/${originCountry}.png`} alt={originCountry} width={20} height={15} className="h-3 w-4 rounded-sm object-cover shadow-sm" />
                 )}
                 <span className="text-xs font-bold text-slate-400">{trip.origin_code?.toUpperCase()}</span>
               </div>
@@ -116,7 +117,7 @@ export function TripCard({ trip, className }: TripCardProps) {
               </p>
               <div className="flex items-center justify-end gap-1.5 mt-1">
                 {destCountry && (
-                  <img src={`https://flagcdn.com/w20/${destCountry}.png`} alt={destCountry} className="h-3 w-4 rounded-sm object-cover shadow-sm" />
+                  <Image src={`https://flagcdn.com/w20/${destCountry}.png`} alt={destCountry} width={20} height={15} className="h-3 w-4 rounded-sm object-cover shadow-sm" />
                 )}
                 <span className="text-xs font-bold text-slate-400">{trip.destination_code?.toUpperCase()}</span>
               </div>

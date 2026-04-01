@@ -2,17 +2,16 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useLocale } from 'next-intl'
-import { createClient } from '@/lib/supabase/client'
 import { playNotificationSound } from '@/lib/notification-sound'
 import { toast } from '@/components/ui/toaster'
 import type { Notification } from '@/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-export function useNotifications(userId: string | undefined) {
+export function useNotifications(userId: string | undefined, supabase: SupabaseClient) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const locale = useLocale()
   const initialLoadDone = useRef(false)
-  const supabase = useRef(createClient()).current
 
   useEffect(() => {
     if (!userId) return
@@ -63,7 +62,7 @@ export function useNotifications(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId, locale])
+  }, [userId, locale, supabase])
 
   const markAsRead = async (notificationId: string) => {
     await supabase

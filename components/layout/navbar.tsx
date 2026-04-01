@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame } from 'lucide-react'
@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
 import { NotificationBell } from './notification-bell'
-import { createClient } from '@/lib/supabase/client'
 import { signOutAndRedirect } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
@@ -18,11 +17,10 @@ export function Navbar() {
   const t = useTranslations()
   const locale = useLocale()
   const pathname = usePathname()
-  const { user, profile, loading } = useUser()
+  const { user, profile, loading, supabase } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const supabase = useRef(createClient()).current
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,18 +64,16 @@ export function Navbar() {
       >
         <div className={cn("flex items-center justify-between transition-all duration-500", scrolled ? "px-4 sm:px-6 py-1" : "px-2 py-1 md:py-2")}>
           {/* Logo */}
-          <Link href={`/${locale}`} className="relative group flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] z-50">
-            <Image 
-              src="/navbar.png" 
-              alt="BooktFly" 
-              width={500} 
-              height={150} 
-              className={cn(
-                "w-auto transition-all duration-500 object-contain", 
-                scrolled ? "h-14 md:h-12" : "h-18 md:h-16"
-              )} 
-              priority 
-            />
+          <Link href={`/${locale}`} className="relative flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] z-50">
+            <div className={cn("relative transition-all duration-500 flex items-center justify-center", scrolled ? "w-36 sm:w-36 md:w-44 h-12 sm:h-12 md:h-14" : "w-48 sm:w-48 md:w-56 lg:w-64 h-16 sm:h-16 md:h-20")}>
+              <Image 
+                src="/navbar.png" 
+                alt="BooktFly" 
+                fill
+                className="object-contain scale-[1.8] sm:scale-[1.45] md:scale-[1.55]" 
+                priority 
+              />
+            </div>
           </Link>
 
           {/* Desktop Nav */}

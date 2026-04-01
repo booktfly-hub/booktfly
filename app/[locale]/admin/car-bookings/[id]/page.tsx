@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -159,7 +160,9 @@ export default function AdminCarBookingDetail() {
         {booking.transfer_receipt_url && (
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-semibold mb-3">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
-            <img src={booking.transfer_receipt_url} alt="Transfer receipt" className="w-full max-h-80 object-contain rounded-lg border" />
+            <div className="relative w-full h-80">
+              <Image src={booking.transfer_receipt_url} alt="Transfer receipt" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain rounded-lg border" />
+            </div>
             {booking.transfer_confirmed_at && (
               <p className="text-xs text-muted-foreground mt-2">
                 {isAr ? 'تم التأكيد بتاريخ: ' : 'Confirmed at: '}

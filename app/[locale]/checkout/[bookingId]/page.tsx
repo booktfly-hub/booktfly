@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -330,7 +331,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
 
         {receiptPreview ? (
           <div className="relative w-full h-48 rounded-xl overflow-hidden bg-muted">
-            <img src={receiptPreview} alt="Receipt" className="w-full h-full object-cover" />
+            <Image src={receiptPreview} alt="Receipt" fill sizes="100vw" className="object-cover" unoptimized />
             <button
               type="button"
               onClick={() => handleReceiptChange(null)}

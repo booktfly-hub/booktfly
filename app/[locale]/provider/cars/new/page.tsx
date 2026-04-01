@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -407,7 +408,7 @@ export default function NewCarPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {imagePreviews.map((url, i) => (
                 <div key={i} className="relative rounded-lg overflow-hidden bg-muted h-32">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <Image src={url} alt="" fill sizes="(max-width: 640px) 50vw, 33vw" className="object-cover" unoptimized />
                   <button type="button" onClick={() => handleImageRemove(i)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
                     <X className="h-3 w-3" />
                   </button>

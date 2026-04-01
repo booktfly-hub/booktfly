@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import { BedDouble, MapPin, Users, ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
@@ -51,7 +52,7 @@ export function RoomCard({ room, className }: RoomCardProps) {
         {/* Image */}
         <div className="relative w-full aspect-[16/10] bg-slate-100 overflow-hidden">
           {firstImage ? (
-            <img src={firstImage} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <Image src={firstImage} alt={name} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <BedDouble className="h-12 w-12 text-slate-300" />

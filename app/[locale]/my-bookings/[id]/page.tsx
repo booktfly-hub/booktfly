@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
@@ -388,7 +389,9 @@ export default function BookingDetailPage() {
         {booking.transfer_receipt_url && (
           <div className="rounded-xl border bg-card p-6">
             <h3 className="font-semibold text-foreground mb-3">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
-            <img src={booking.transfer_receipt_url} alt="Receipt" className="w-full max-h-64 object-contain rounded-lg border" />
+            <div className="relative w-full h-64">
+              <Image src={booking.transfer_receipt_url} alt="Receipt" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain rounded-lg border" />
+            </div>
           </div>
         )}
 

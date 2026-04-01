@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Provider } from '@/types'
 
 export function useProvider(userId: string | undefined) {
   const [provider, setProvider] = useState<Provider | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
 
   useEffect(() => {
     if (!userId) {

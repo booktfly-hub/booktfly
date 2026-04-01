@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Suspense, useEffect, useState, use } from 'react'
 import { format, isValid, parseISO, differenceInDays } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
@@ -213,7 +214,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
 
               <div className="flex items-center gap-4 flex-1 ml-4 rtl:ml-0 rtl:mr-4">
                 {firstImage ? (
-                  <img src={firstImage} alt={name} className="h-16 w-16 md:h-20 md:w-20 rounded-xl md:rounded-2xl object-cover shrink-0" />
+                  <Image src={firstImage} alt={name} width={80} height={80} className="h-16 w-16 md:h-20 md:w-20 rounded-xl md:rounded-2xl object-cover shrink-0" />
                 ) : (
                   <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl md:rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
                     <CarIcon className="h-8 w-8 text-slate-300" />

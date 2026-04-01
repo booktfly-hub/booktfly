@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Plane,
   Calendar,
@@ -202,7 +203,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                           <p className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl [overflow-wrap:anywhere]">{originCity}</p>
                           <div className="mt-3 flex items-center gap-2">
                             {originCountry && (
-                              <img src={`https://flagcdn.com/w40/${originCountry}.png`} alt={originCountry} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                              <Image src={`https://flagcdn.com/w40/${originCountry}.png`} alt={originCountry} width={40} height={27} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
                             )}
                             {trip.origin_code && (
                               <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.22em] text-slate-500">{trip.origin_code?.toUpperCase()}</span>
@@ -230,7 +231,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                               <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.22em] text-slate-500">{trip.destination_code?.toUpperCase()}</span>
                             )}
                             {destCountry && (
-                              <img src={`https://flagcdn.com/w40/${destCountry}.png`} alt={destCountry} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                              <Image src={`https://flagcdn.com/w40/${destCountry}.png`} alt={destCountry} width={40} height={27} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
                             )}
                           </div>
                         </div>

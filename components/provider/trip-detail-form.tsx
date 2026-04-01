@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
@@ -437,7 +438,7 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
           <h2 className="font-semibold">{locale === 'ar' ? 'صورة الرحلة' : 'Trip Image'}</h2>
           {imagePreview ? (
             <div className="relative w-full h-40 rounded-lg overflow-hidden bg-muted">
-              <img src={imagePreview} alt="Trip" className="w-full h-full object-cover" />
+              <Image src={imagePreview} alt="Trip" fill sizes="100vw" className="object-cover" unoptimized={imagePreview.startsWith('blob:')} />
               <button type="button" onClick={() => handleImageChange(null)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
                 <X className="h-4 w-4" />
               </button>
