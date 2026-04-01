@@ -161,7 +161,7 @@ export default function ProviderCarsPage() {
                     <tr key={car.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="p-0">
                         <Link
-                          href={`/${locale}/cars/${car.id}`}
+                          href={`/${locale}/provider/cars/${car.id}`}
                           className="flex items-center gap-3 p-5"
                         >
                           {car.images && car.images.length > 0 ? (
@@ -233,7 +233,7 @@ export default function ProviderCarsPage() {
                             </button>
                           )}
                           <Link
-                            href={`/${locale}/cars/${car.id}`}
+                            href={`/${locale}/provider/cars/${car.id}`}
                             className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm"
                           >
                             <Eye className="h-4 w-4" />

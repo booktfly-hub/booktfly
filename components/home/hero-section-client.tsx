@@ -74,42 +74,7 @@ export function HeroSectionClient({
       </div>
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 lg:px-8">
-        <div
-          className="mb-8 flex items-center justify-center gap-3 animate-fade-in-up sm:flex-row"
-          style={{ animationDelay: '100ms', animationFillMode: 'both' }}
-        >
-          <Link href={`/${locale}/become-provider`} className="group flex items-center justify-center gap-3 rounded-full border border-[#f2dfcc] bg-white/90 px-5 py-2.5 shadow-lg shadow-orange-100/40 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#f97316]/30 hover:bg-white">
-            <span className="relative flex h-2 w-2 rounded-full bg-accent">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"></span>
-            </span>
-            <span className="text-sm font-semibold tracking-wide text-slate-700 transition-colors group-hover:text-slate-900">
-              {providerCta}
-            </span>
-            <ArrowRight className="h-4 w-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-slate-700 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
-          </Link>
-
-          <Link href={`/${locale}/become-marketeer`} className="group flex items-center justify-center gap-3 rounded-full border border-[#ede9fe] bg-white/90 px-5 py-2.5 shadow-lg shadow-violet-100/50 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-violet-300/50 hover:bg-white">
-            <span className="relative flex h-2 w-2 rounded-full bg-violet-500">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-75"></span>
-            </span>
-            <span className="text-sm font-semibold tracking-wide text-slate-700 transition-colors group-hover:text-slate-900">
-              {markeeteerCta}
-            </span>
-            <ArrowRight className="h-4 w-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-violet-600 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
-          </Link>
-        </div>
-
         <div className="mx-auto mb-12 max-w-5xl text-center">
-          <div className="mb-5 flex flex-wrap items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
-            {trustBadges.map((badge) => (
-              <span
-                key={badge}
-                className="rounded-full border border-white/80 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur-md"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
           <h1 className="animate-fade-in-up text-[3.2rem] font-black leading-[1.02] tracking-[-0.05em] text-slate-900 sm:text-[4.8rem] lg:text-[6.4rem]" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
             {heroTitle.split(' ').map((word, i, arr) => {
               const isHighlight = i >= arr.length - 2
@@ -175,7 +140,7 @@ export function HeroSectionClient({
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 shadow-sm transition-all active:scale-95"
                     aria-label={isAr ? 'تبديل الوجهتين' : 'Swap origin and destination'}
                   >
-                    <ArrowLeftRight className="h-4 w-4 text-slate-500" />
+                    <ArrowLeftRight className="h-4 w-4 text-slate-500 rotate-90" />
                   </button>
                 </div>
 
@@ -267,37 +232,7 @@ export function HeroSectionClient({
           </div>
         </div>
 
-        <div className="mt-10 grid w-full max-w-5xl gap-4 animate-fade-in-up md:grid-cols-[1.2fr_0.8fr] md:gap-6" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
-          <div className="rounded-[1.75rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(255,247,237,0.88))] p-5 shadow-lg shadow-orange-100/40 backdrop-blur-sm md:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-500">
-              {isAr ? 'موثوق من قبل آلاف المسافرين' : 'Trusted by thousands of travelers'}
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3">
-              {['Saudia', 'Flynas', 'Flyadeal', 'Emirates'].map((brand) => (
-                <span key={brand} className="text-lg font-black tracking-tight text-slate-800 md:text-xl">
-                  {brand}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {quickStats.map((item, idx) => (
-              <div
-                key={item.label}
-                className={cn(
-                  "rounded-[1.5rem] border p-4 text-center shadow-lg backdrop-blur-sm",
-                  idx === 0 && "border-sky-100 bg-[linear-gradient(180deg,#ffffff_0%,#eff6ff_100%)] shadow-sky-100/40",
-                  idx === 1 && "border-orange-100 bg-[linear-gradient(180deg,#ffffff_0%,#fff7ed_100%)] shadow-orange-100/40",
-                  idx === 2 && "border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#ecfeff_100%)] shadow-emerald-100/40"
-                )}
-              >
-                <p className="text-2xl font-black tracking-tight text-slate-900">{item.value}</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{item.label}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </section>
   )
 }

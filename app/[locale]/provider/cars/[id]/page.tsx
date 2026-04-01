@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
 import { getCarSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
@@ -14,6 +14,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
+import type { Car } from '@/types'
 import {
   Loader2,
   ImageIcon,
@@ -22,18 +23,26 @@ import {
   MapPin,
   LocateFixed,
   Check,
+  Power,
+  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react'
 
 type FormData = z.infer<ReturnType<typeof getCarSchema>>
 
-export default function NewCarPage() {
+export default function EditCarPage() {
   const tc = useTranslations('common')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
+  const { id } = useParams<{ id: string }>()
+  const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [imageFiles, setImageFiles] = useState<File[]>([])
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [toggling, setToggling] = useState(false)
+  const [car, setCar] = useState<Car | null>(null)
+  const [existingImages, setExistingImages] = useState<string[]>([])
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([])
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
   const [locating, setLocating] = useState(false)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
@@ -43,6 +52,7 @@ export default function NewCarPage() {
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm<FormData>({
     resolver: zodResolver(getCarSchema(locale)),
     defaultValues: {
@@ -67,19 +77,68 @@ export default function NewCarPage() {
   const availableFromDate = availableFrom ? parseISO(availableFrom) : undefined
   const availableToDate = availableTo ? parseISO(availableTo) : undefined
 
+  const totalImages = existingImages.length + newImageFiles.length
+
+  useEffect(() => {
+    async function fetchCar() {
+      try {
+        const res = await fetch(`/api/cars/${id}`)
+        if (!res.ok) {
+          toast({ title: isAr ? 'السيارة غير موجودة' : 'Car not found', variant: 'destructive' })
+          router.push(`/${locale}/provider/cars`)
+          return
+        }
+        const { car: data } = await res.json()
+        setCar(data)
+        setExistingImages(data.images || [])
+        reset({
+          brand_ar: data.brand_ar,
+          brand_en: data.brand_en || '',
+          model_ar: data.model_ar,
+          model_en: data.model_en || '',
+          year: data.year,
+          city_ar: data.city_ar,
+          city_en: data.city_en || '',
+          category: data.category,
+          price_per_day: data.price_per_day,
+          currency: data.currency,
+          seats_count: data.seats_count,
+          transmission: data.transmission,
+          fuel_type: data.fuel_type,
+          features: data.features || [],
+          instant_book: data.instant_book,
+          available_from: data.available_from || '',
+          available_to: data.available_to || '',
+          pickup_location_ar: data.pickup_location_ar || '',
+          pickup_location_en: data.pickup_location_en || '',
+          pickup_latitude: data.pickup_latitude || undefined,
+          pickup_longitude: data.pickup_longitude || undefined,
+        })
+      } catch {
+        toast({ title: tc('error'), variant: 'destructive' })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCar()
+  }, [id])
+
   function handleImageAdd(files: FileList | null) {
     if (!files) return
-    const newFiles = Array.from(files).slice(0, 5 - imageFiles.length)
-    if (newFiles.length === 0) return
-    const updatedFiles = [...imageFiles, ...newFiles]
-    setImageFiles(updatedFiles)
-    const newPreviews = newFiles.map((f) => URL.createObjectURL(f))
-    setImagePreviews((prev) => [...prev, ...newPreviews])
+    const maxNew = 5 - totalImages
+    const added = Array.from(files).slice(0, maxNew)
+    if (added.length === 0) return
+    setNewImageFiles((prev) => [...prev, ...added])
+    setNewImagePreviews((prev) => [...prev, ...added.map((f) => URL.createObjectURL(f))])
   }
 
-  function handleImageRemove(index: number) {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index))
-    setImagePreviews((prev) => {
+  function handleRemoveExisting(index: number) {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function handleRemoveNew(index: number) {
+    setNewImageFiles((prev) => prev.filter((_, i) => i !== index))
+    setNewImagePreviews((prev) => {
       URL.revokeObjectURL(prev[index])
       return prev.filter((_, i) => i !== index)
     })
@@ -127,6 +186,23 @@ export default function NewCarPage() {
     setValue('features', updated, { shouldDirty: true })
   }
 
+  async function handleToggleStatus() {
+    if (!car || (car.status !== 'active' && car.status !== 'deactivated')) return
+    setToggling(true)
+    try {
+      const res = await fetch(`/api/cars/${id}/deactivate`, { method: 'PATCH' })
+      if (res.ok) {
+        const newStatus = car.status === 'active' ? 'deactivated' : 'active'
+        setCar({ ...car, status: newStatus })
+        toast({ title: tc('success'), variant: 'success' })
+      }
+    } catch {
+      toast({ title: tc('error'), variant: 'destructive' })
+    } finally {
+      setToggling(false)
+    }
+  }
+
   async function onSubmit(data: FormData) {
     setSubmitting(true)
     try {
@@ -139,12 +215,13 @@ export default function NewCarPage() {
           formData.append(key, String(value))
         }
       })
-      imageFiles.forEach((file) => {
+      formData.append('existing_images', JSON.stringify(existingImages))
+      newImageFiles.forEach((file) => {
         formData.append('images', file)
       })
 
-      const res = await fetch('/api/cars', {
-        method: 'POST',
+      const res = await fetch(`/api/cars/${id}`, {
+        method: 'PUT',
         body: formData,
       })
       const result = await res.json()
@@ -163,9 +240,46 @@ export default function NewCarPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!car) return null
+
+  const BackArrow = isAr ? ArrowRight : ArrowLeft
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{isAr ? 'سيارة جديدة' : 'New Car'}</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-muted transition-colors">
+            <BackArrow className="h-5 w-5" />
+          </button>
+          <h1 className="text-2xl font-bold">{isAr ? 'تعديل السيارة' : 'Edit Car'}</h1>
+        </div>
+        {(car.status === 'active' || car.status === 'deactivated') && (
+          <button
+            type="button"
+            onClick={handleToggleStatus}
+            disabled={toggling}
+            className={cn(
+              'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
+              car.status === 'active'
+                ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+            )}
+          >
+            {toggling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+            {car.status === 'active'
+              ? (isAr ? 'تعطيل' : 'Deactivate')
+              : (isAr ? 'تفعيل' : 'Reactivate')}
+          </button>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Brand & Model */}
@@ -403,19 +517,27 @@ export default function NewCarPage() {
             {isAr ? 'صور السيارة' : 'Car Images'}{' '}
             <span className="text-muted-foreground text-sm font-normal">({isAr ? 'حتى 5 صور' : 'Up to 5 images'})</span>
           </h2>
-          {imagePreviews.length > 0 && (
+          {(existingImages.length > 0 || newImagePreviews.length > 0) && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {imagePreviews.map((url, i) => (
-                <div key={i} className="relative rounded-lg overflow-hidden bg-muted h-32">
+              {existingImages.map((url, i) => (
+                <div key={`existing-${i}`} className="relative rounded-lg overflow-hidden bg-muted h-32">
                   <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => handleImageRemove(i)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
+                  <button type="button" onClick={() => handleRemoveExisting(i)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {newImagePreviews.map((url, i) => (
+                <div key={`new-${i}`} className="relative rounded-lg overflow-hidden bg-muted h-32">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => handleRemoveNew(i)} className="absolute top-2 end-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
             </div>
           )}
-          {imageFiles.length < 5 && (
+          {totalImages < 5 && (
             <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{isAr ? 'اضغط لرفع صور' : 'Click to upload images'}</span>
@@ -430,7 +552,7 @@ export default function NewCarPage() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isAr ? 'نشر السيارة' : 'Post Car'}
+          {isAr ? 'حفظ التعديلات' : 'Save Changes'}
         </button>
       </form>
     </div>

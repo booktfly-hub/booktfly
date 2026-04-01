@@ -195,6 +195,10 @@ export function getCarSchema(locale: Locale = 'ar') {
     instant_book: z.boolean(),
     available_from: z.string().optional(),
     available_to: z.string().optional(),
+    pickup_location_ar: z.string().optional(),
+    pickup_location_en: z.string().optional(),
+    pickup_latitude: z.number().optional(),
+    pickup_longitude: z.number().optional(),
   })
 }
 
@@ -209,6 +213,15 @@ export function getCarBookingSchema(locale: Locale = 'ar') {
     number_of_days: z.number().min(1, v(locale, 'days_required')),
   })
 }
+
+export function getTripRequestOfferSchema(locale: Locale = 'ar') {
+  return z.object({
+    price_per_seat: z.number().min(1, v(locale, 'price_required')),
+    notes: z.string().optional(),
+  })
+}
+
+export const tripRequestOfferSchema = getTripRequestOfferSchema('ar')
 
 // Default Arabic schemas for backward compatibility (used in API routes)
 export const signupSchema = getSignupSchema('ar')

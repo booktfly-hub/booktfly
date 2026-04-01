@@ -15,6 +15,7 @@ import {
   LogOut,
   ExternalLink,
   CarFront,
+  PlaneTakeoff,
 } from 'lucide-react'
 import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { key: 'room_bookings', icon: BookOpen, href: '/provider/room-bookings' },
   { key: 'my_cars', icon: CarFront, href: '/provider/cars' },
   { key: 'car_bookings', icon: BookOpen, href: '/provider/car-bookings' },
+  { key: 'trip_requests', icon: PlaneTakeoff, href: '/provider/trip-requests' },
   { key: 'revenue', icon: DollarSign, href: '/provider/revenue' },
   { key: 'profile', icon: User, href: '/provider/profile' },
 ]

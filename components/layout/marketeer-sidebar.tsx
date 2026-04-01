@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Contact,
   Send,
+  PlaneTakeoff,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { key: 'users', icon: Users, href: '/marketeer/users' },
   { key: 'customers', icon: Contact, href: '/marketeer/customers' },
   { key: 'campaigns', icon: Send, href: '/marketeer/campaigns' },
+  { key: 'trip_requests', icon: PlaneTakeoff, href: '/marketeer/trip-requests' },
   { key: 'revenue', icon: BarChart3, href: '/marketeer/revenue' },
   { key: 'wallet', icon: Wallet, href: '/marketeer/wallet' },
   { key: 'reviews', icon: Star, href: '/marketeer/reviews' },
@@ -39,6 +41,7 @@ const LABELS: Record<string, { ar: string; en: string }> = {
   users: { ar: 'المستخدمون', en: 'Users' },
   customers: { ar: 'العملاء', en: 'Customers' },
   campaigns: { ar: 'الحملات', en: 'Campaigns' },
+  trip_requests: { ar: 'طلبات الرحلات', en: 'Trip Requests' },
   revenue: { ar: 'الإيرادات', en: 'Revenue' },
   wallet: { ar: 'المحفظة', en: 'Wallet' },
   reviews: { ar: 'التقييمات', en: 'Reviews' },

@@ -82,6 +82,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
   const brand = isAr ? car.brand_ar : (car.brand_en || car.brand_ar)
   const model = isAr ? car.model_ar : (car.model_en || car.model_ar)
   const city = isAr ? car.city_ar : (car.city_en || car.city_ar)
+  const pickupLocation = isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)
   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : car.category
   const transmissionLabel = TRANSMISSION_TYPES[car.transmission as keyof typeof TRANSMISSION_TYPES]
@@ -235,6 +236,11 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     <MapPin className="h-4 w-4 text-slate-400" />
                     <span className="text-sm md:text-base font-semibold text-slate-600">{city}</span>
                   </div>
+                  {pickupLocation && (
+                    <div className="flex items-start gap-2 ps-6">
+                      <span className="text-xs md:text-sm font-medium text-slate-500">{pickupLocation}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 ps-6">
                     <span className="text-xs md:text-sm font-medium text-slate-400">
                       <Calendar className="inline h-3.5 w-3.5 me-1" />

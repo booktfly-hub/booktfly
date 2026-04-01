@@ -196,6 +196,8 @@ export async function POST(request: NextRequest) {
       description_en: (formData.get('description_en') as string) || undefined,
     }
 
+    const flightRequestId = (formData.get('flight_request_id') as string) || null
+
     const parsed = tripSchema.safeParse(rawData)
     if (!parsed.success) {
       return NextResponse.json(
@@ -253,6 +255,7 @@ export async function POST(request: NextRequest) {
         description_ar: parsed.data.description_ar || null,
         description_en: parsed.data.description_en || null,
         image_url: imageUrl,
+        flight_request_id: flightRequestId,
         status: 'active',
       })
       .select()
@@ -267,6 +270,41 @@ export async function POST(request: NextRequest) {
     }
 
     logActivity('trip_created', { userId: user.id, metadata: { tripId: trip.id } })
+
+    // Notify buyer if this trip is linked to a flight request
+    if (flightRequestId) {
+      after(async () => {
+        try {
+          const { data: fr } = await supabaseAdmin
+            .from('flight_requests')
+            .select('user_id, marketeer_id, name, origin, destination')
+            .eq('id', flightRequestId)
+            .single()
+
+          if (fr) {
+            await supabaseAdmin
+              .from('flight_requests')
+              .update({ status: 'matched' })
+              .eq('id', flightRequestId)
+
+            const notifyUserId = fr.user_id || fr.marketeer_id
+            if (notifyUserId) {
+              await notify({
+                userId: notifyUserId,
+                type: 'trip_request_trip_matched',
+                titleAr: 'تم إنشاء رحلة لطلبك!',
+                titleEn: 'A trip was created for your request!',
+                bodyAr: `تم إنشاء رحلة من ${fr.origin} إلى ${fr.destination} بناءً على طلبك`,
+                bodyEn: `A trip from ${fr.origin} to ${fr.destination} was created based on your request`,
+                data: { flight_request_id: flightRequestId, trip_id: trip.id },
+              })
+            }
+          }
+        } catch (err) {
+          console.error('Flight request match notification error:', err)
+        }
+      })
+    }
 
     // Award provider 200 pts for adding a new offer
     after(async () => {

@@ -169,6 +169,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const pickupLat = formData.get('pickup_latitude') as string | null
+    const pickupLng = formData.get('pickup_longitude') as string | null
+
     const rawData = {
       brand_ar: formData.get('brand_ar') as string,
       brand_en: (formData.get('brand_en') as string) || undefined,
@@ -187,6 +190,10 @@ export async function POST(request: NextRequest) {
       instant_book: formData.get('instant_book') === 'true',
       available_from: (formData.get('available_from') as string) || undefined,
       available_to: (formData.get('available_to') as string) || undefined,
+      pickup_location_ar: (formData.get('pickup_location_ar') as string) || undefined,
+      pickup_location_en: (formData.get('pickup_location_en') as string) || undefined,
+      pickup_latitude: pickupLat ? Number(pickupLat) : undefined,
+      pickup_longitude: pickupLng ? Number(pickupLng) : undefined,
     }
 
     const parsed = carSchema.safeParse(rawData)
@@ -245,6 +252,10 @@ export async function POST(request: NextRequest) {
         instant_book: parsed.data.instant_book ?? false,
         available_from: parsed.data.available_from || null,
         available_to: parsed.data.available_to || null,
+        pickup_location_ar: parsed.data.pickup_location_ar || null,
+        pickup_location_en: parsed.data.pickup_location_en || null,
+        pickup_latitude: parsed.data.pickup_latitude || null,
+        pickup_longitude: parsed.data.pickup_longitude || null,
         status: 'active',
       })
       .select()

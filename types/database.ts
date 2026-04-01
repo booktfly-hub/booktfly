@@ -19,7 +19,8 @@ export type Passenger = {
 }
 
 export type TripEditRequestStatus = 'pending' | 'approved' | 'rejected'
-export type FlightRequestStatus = 'pending' | 'reviewed' | 'cancelled'
+export type FlightRequestStatus = 'pending' | 'reviewed' | 'cancelled' | 'offered' | 'matched' | 'expired'
+export type TripRequestOfferStatus = 'pending' | 'accepted' | 'rejected' | 'expired'
 
 export type WalletTransactionType = 'credit' | 'debit' | 'withdrawal'
 export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'completed'
@@ -109,6 +110,10 @@ export type NotificationType =
   | 'car_booking_cancelled'
   | 'car_booking_refunded'
   | 'car_removed'
+  | 'trip_request_offer_received'
+  | 'trip_request_offer_accepted'
+  | 'trip_request_offer_rejected'
+  | 'trip_request_trip_matched'
 
 export type Profile = {
   id: string
@@ -201,6 +206,7 @@ export type Trip = {
   is_last_minute: boolean
   original_price: number | null
   discount_percentage: number
+  flight_request_id: string | null
   status: TripStatus
   removed_reason: string | null
   removed_by: string | null
@@ -277,6 +283,8 @@ export type TripEditRequest = {
 
 export type FlightRequest = {
   id: string
+  user_id: string | null
+  marketeer_id: string | null
   name: string
   email: string
   phone: string
@@ -292,6 +300,21 @@ export type FlightRequest = {
   admin_notes: string | null
   created_at: string
   updated_at: string
+  offers?: TripRequestOffer[]
+}
+
+export type TripRequestOffer = {
+  id: string
+  request_id: string
+  provider_id: string
+  price_per_seat: number
+  total_price: number
+  notes: string | null
+  status: TripRequestOfferStatus
+  responded_at: string | null
+  created_at: string
+  updated_at: string
+  provider?: Provider
 }
 
 export type ProviderWallet = {
@@ -511,6 +534,8 @@ export type ActivityEventType =
   | 'car_removed'
   | 'car_booking_created'
   | 'car_booking_confirmed'
+  | 'trip_request_offer_created'
+  | 'trip_request_offer_accepted'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 
@@ -563,6 +588,10 @@ export type Car = {
   is_last_minute: boolean
   original_price: number | null
   discount_percentage: number
+  pickup_location_ar: string | null
+  pickup_location_en: string | null
+  pickup_latitude: number | null
+  pickup_longitude: number | null
   status: CarStatus
   removed_reason: string | null
   removed_by: string | null

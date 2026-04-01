@@ -67,7 +67,8 @@
     "admin_panel": "Admin Panel",
     "notifications": "Notifications",
     "profile": "Profile",
-    "language": "Language"
+    "language": "Language",
+    "trip_requests": "Trip Requests"
   },
   "auth": {
     "login_title": "Log in to your account",
@@ -253,6 +254,7 @@
     "room_bookings": "Room Bookings",
     "my_cars": "My Cars",
     "car_bookings": "Car Bookings",
+    "trip_requests": "Trip Requests",
     "new_room": "New Room",
     "post_room": "Post a Room",
     "active_rooms": "Active Rooms",
@@ -412,7 +414,10 @@
     "trip_edit_rejected": "Your trip edit request was rejected.",
     "trip_updated": "Your booked trip has been updated.",
     "cancellation_approved": "Your cancellation request has been approved.",
-    "cancellation_rejected": "Your cancellation request was rejected."
+    "cancellation_rejected": "Your cancellation request was rejected.",
+    "view_all": "View All",
+    "all": "All",
+    "unread": "Unread"
   },
   "errors": {
     "generic": "Something went wrong. Please try again later.",
@@ -472,7 +477,13 @@
     "flight_request_success_title": "Request Sent Successfully!",
     "flight_request_success_desc": "Our team will contact you within 24 hours with the best available options for your trip.",
     "flight_request_new": "Submit Another Request",
-    "flight_request_optional": "optional"
+    "flight_request_optional": "optional",
+    "flight_request_cta_title": "Can't find your flight? Request it now",
+    "flight_request_cta_desc": "Submit your request and providers will compete to give you the best offer",
+    "flight_request_cta_point1": "Submit your trip request with specific details",
+    "flight_request_cta_point2": "Receive price offers from verified providers",
+    "flight_request_cta_point3": "Choose the best offer and book directly",
+    "flight_request_cta_button": "Request Your Trip Now"
   },
   "validation": {
     "name_required": "Name is required",
@@ -703,7 +714,12 @@
     "sort_price_asc": "Price: Low to High",
     "sort_price_desc": "Price: High to Low",
     "not_available": "Not Available",
-    "daily_price": "Daily Price"
+    "daily_price": "Daily Price",
+    "pickup_location": "Pickup Location",
+    "get_current_location": "Get Current Location",
+    "locating": "Locating...",
+    "location_detected": "Location detected successfully",
+    "location_error": "Could not detect location"
   },
   "marketeer_customers": {
     "title": "My Customers",
@@ -722,5 +738,55 @@
     "importing": "Importing...",
     "imported_success": "Successfully imported {count} customers",
     "delete_confirm": "Are you sure you want to delete this customer?"
+  },
+  "trip_requests": {
+    "page_title": "Trip Requests",
+    "tab_submit": "Submit Request",
+    "tab_my_requests": "My Requests",
+    "submit_title": "Request Your Trip",
+    "submit_desc": "Enter your trip details and providers will reach out with their offers",
+    "my_requests_title": "My Requests",
+    "my_requests_empty": "You haven't submitted any requests yet",
+    "my_requests_empty_desc": "Submit a trip request and providers will compete to offer you the best deal",
+    "offers_title": "Offers Received",
+    "offers_count": "{count} offers",
+    "no_offers": "No offers yet",
+    "offer_from": "Offer from",
+    "price_per_seat": "Price per Seat",
+    "total_price": "Total Price",
+    "provider_notes": "Provider Notes",
+    "accept_offer": "Accept Offer",
+    "reject_offer": "Reject Offer",
+    "accepting": "Accepting...",
+    "rejecting": "Rejecting...",
+    "offer_accepted": "Offer accepted",
+    "offer_rejected": "Offer rejected",
+    "provider_title": "Available Trip Requests",
+    "provider_desc": "Browse traveler requests and submit your offers",
+    "provider_empty": "No available requests at the moment",
+    "make_offer": "Make Offer",
+    "create_trip": "Create Trip",
+    "your_offer": "Your Offer",
+    "offer_submitted": "Your offer has been submitted successfully",
+    "submitting_offer": "Submitting offer...",
+    "my_offers": "My Past Offers",
+    "marketeer_title": "Customer Trip Requests",
+    "marketeer_desc": "Submit a trip request on behalf of your customer",
+    "customer_name": "Customer Name",
+    "customer_phone": "Customer Phone",
+    "customer_email": "Customer Email",
+    "my_submissions": "My Submissions",
+    "status_pending": "Pending",
+    "status_offered": "Offers Available",
+    "status_matched": "Matched",
+    "status_reviewed": "Reviewed",
+    "status_cancelled": "Cancelled",
+    "status_expired": "Expired",
+    "offer_status_pending": "Pending",
+    "offer_status_accepted": "Accepted",
+    "offer_status_rejected": "Rejected",
+    "offer_status_expired": "Expired",
+    "login_required": "You need to log in to submit a trip request",
+    "login_button": "Log In"
   }
 }

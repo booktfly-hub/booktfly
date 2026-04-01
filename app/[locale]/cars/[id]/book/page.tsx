@@ -127,6 +127,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
   const model = isAr ? car.model_ar : (car.model_en || car.model_ar)
   const name = `${brand} ${model}`
   const city = isAr ? car.city_ar : (car.city_en || car.city_ar)
+  const pickupLocation = isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)
   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : car.category
   const fmt = (amount: number) => isAr ? formatPrice(amount, car.currency) : formatPriceEN(amount, car.currency)
@@ -224,6 +225,9 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                     <MapPin className="h-3.5 w-3.5 text-slate-400" />
                     <span className="text-sm font-semibold text-slate-500">{city}</span>
                   </div>
+                  {pickupLocation && (
+                    <p className="text-xs text-slate-400 truncate mt-0.5 ps-5">{pickupLocation}</p>
+                  )}
                   <span className="inline-flex mt-2 px-2 md:px-3 py-1 rounded-md md:rounded-lg bg-primary/5 border border-primary/10 text-primary text-[10px] md:text-xs font-bold uppercase tracking-widest">
                     {categoryText}
                   </span>

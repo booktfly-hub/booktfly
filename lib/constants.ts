@@ -189,4 +189,20 @@ export const CAR_STATUS_COLORS: Record<string, string> = {
   removed: 'bg-destructive/10 text-destructive',
 }
 
+export const FLIGHT_REQUEST_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-warning/10 text-warning',
+  offered: 'bg-sky-100 text-sky-700',
+  matched: 'bg-success/10 text-success',
+  reviewed: 'bg-success/10 text-success',
+  cancelled: 'bg-muted text-muted-foreground',
+  expired: 'bg-muted text-muted-foreground',
+}
+
+export const TRIP_REQUEST_OFFER_STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-warning/10 text-warning',
+  accepted: 'bg-success/10 text-success',
+  rejected: 'bg-destructive/10 text-destructive',
+  expired: 'bg-muted text-muted-foreground',
+}
+
 export const MAX_DAYS_PER_CAR_BOOKING = 30

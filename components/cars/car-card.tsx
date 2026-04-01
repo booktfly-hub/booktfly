@@ -21,6 +21,7 @@ export function CarCard({ car, className }: CarCardProps) {
   const brand = isAr ? car.brand_ar : (car.brand_en || car.brand_ar)
   const model = isAr ? car.model_ar : (car.model_en || car.model_ar)
   const city = isAr ? car.city_ar : (car.city_en || car.city_ar)
+  const pickupLocation = isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)
   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : car.category
   const transmissionLabel = TRANSMISSION_TYPES[car.transmission as keyof typeof TRANSMISSION_TYPES]
@@ -77,6 +78,9 @@ export function CarCard({ car, className }: CarCardProps) {
               </div>
               <span className="text-xs font-bold text-slate-400">{car.year}</span>
             </div>
+            {pickupLocation && (
+              <p className="text-xs text-slate-400 truncate mt-0.5 ps-5">{pickupLocation}</p>
+            )}
           </div>
 
           {/* Meta Pills */}

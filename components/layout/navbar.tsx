@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
@@ -47,6 +47,7 @@ export function Navbar() {
     { href: `/${locale}/trips`, label: t('nav.flights'), icon: Plane },
     { href: `/${locale}/rooms`, label: t('nav.hotels'), icon: BedDouble },
     { href: `/${locale}/cars`, label: t('nav.cars'), icon: CarFront },
+    ...(user ? [{ href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff, highlight: true }] : []),
   ]
 
   const isNavItemActive = (href: string) =>
@@ -71,8 +72,8 @@ export function Navbar() {
               width={500} 
               height={150} 
               className={cn(
-                "w-auto transition-all duration-500 object-contain -my-4 sm:-my-10 lg:-my-12", 
-                scrolled ? "h-14 sm:h-24" : "h-16 sm:h-32 lg:h-36"
+                "w-auto transition-all duration-500 object-contain", 
+                scrolled ? "h-20 sm:h-12" : "h-24 sm:h-16"
               )} 
               priority 
             />
@@ -80,17 +81,19 @@ export function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-2">
-            {navItems.map(({ href, label, icon: Icon }) => (
+            {navItems.map(({ href, label, icon: Icon, highlight }) => (
               <Link
                 key={label}
                 href={href}
                 className={cn(
-                  "inline-flex items-center gap-2 border-none px-4 py-2 text-sm font-bold transition-all",
+                  "inline-flex items-center gap-2 border-none px-4 py-2 text-sm font-bold transition-all rounded-xl",
                   isNavItemActive(href)
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95"
-                    : scrolled
-                      ? "hover:border-primary/20 hover:bg-white"
-                      : "text-primary  hover:bg-white"
+                    : highlight
+                      ? "text-amber-600 hover:bg-amber-50"
+                      : scrolled
+                        ? "hover:border-primary/20 hover:bg-white"
+                        : "text-primary hover:bg-white/80"
                 )}
               >
                 <Icon
@@ -98,7 +101,9 @@ export function Navbar() {
                     "h-4 w-4",
                     isNavItemActive(href)
                       ? "text-white"
-                      : "text-primary/70"
+                      : highlight
+                        ? "text-amber-600"
+                        : "text-primary/70"
                   )}
                 />
                 <span>{label}</span>
@@ -250,7 +255,7 @@ export function Navbar() {
               className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem]"
             >
               <div className="p-4 space-y-1">
-                {navItems.map(({ href, label, icon: Icon }) => {
+                {navItems.map(({ href, label, icon: Icon, highlight }) => {
                   const isActive = isNavItemActive(href)
                   return (
                   <Link
@@ -261,10 +266,12 @@ export function Navbar() {
                       'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold transition-colors',
                       isActive
                         ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-sm shadow-[color:var(--color-primary)]/20'
-                        : 'border-slate-200 bg-slate-50 text-foreground hover:bg-white'
+                        : highlight
+                          ? 'border-amber-200 bg-amber-50 text-amber-700'
+                          : 'border-slate-200 bg-slate-50 text-foreground hover:bg-white'
                     )}
                   >
-                    <Icon className={cn('h-4 w-4', isActive ? 'text-white' : 'text-primary/70')} />
+                    <Icon className={cn('h-4 w-4', isActive ? 'text-white' : highlight ? 'text-amber-600' : 'text-primary/70')} />
                     {label}
                   </Link>
                   )

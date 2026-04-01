@@ -126,7 +126,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const existingImages: string[] = existingCar.images || []
+    const pickupData = {
+      pickup_location_ar: (formData.get('pickup_location_ar') as string) || existingCar.pickup_location_ar,
+      pickup_location_en: (formData.get('pickup_location_en') as string) || existingCar.pickup_location_en,
+      pickup_latitude: formData.get('pickup_latitude')
+        ? Number(formData.get('pickup_latitude'))
+        : existingCar.pickup_latitude,
+      pickup_longitude: formData.get('pickup_longitude')
+        ? Number(formData.get('pickup_longitude'))
+        : existingCar.pickup_longitude,
+    }
+
+    const existingImagesRaw = formData.get('existing_images') as string | null
+    const keptImages: string[] = existingImagesRaw
+      ? JSON.parse(existingImagesRaw)
+      : existingCar.images || []
     const newImageFiles = formData.getAll('images') as File[]
     const newImageUrls: string[] = []
 
@@ -153,7 +167,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const allImages = [...existingImages, ...newImageUrls]
+    const allImages = [...keptImages, ...newImageUrls]
 
     const { data: updatedCar, error: updateError } = await supabaseAdmin
       .from('cars')
@@ -176,6 +190,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         instant_book: parsed.data.instant_book ?? false,
         available_from: parsed.data.available_from || null,
         available_to: parsed.data.available_to || null,
+        pickup_location_ar: pickupData.pickup_location_ar || null,
+        pickup_location_en: pickupData.pickup_location_en || null,
+        pickup_latitude: pickupData.pickup_latitude || null,
+        pickup_longitude: pickupData.pickup_longitude || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

@@ -67,7 +67,8 @@
     "admin_panel": "لوحة الإدارة",
     "notifications": "الإشعارات",
     "profile": "الملف الشخصي",
-    "language": "اللغة"
+    "language": "اللغة",
+    "trip_requests": "طلبات الرحلات"
   },
   "auth": {
     "login_title": "تسجيل الدخول",
@@ -253,6 +254,7 @@
     "room_bookings": "حجوزات الغرف",
     "my_cars": "سياراتي",
     "car_bookings": "حجوزات السيارات",
+    "trip_requests": "طلبات الرحلات",
     "new_room": "غرفة جديدة",
     "post_room": "إضافة غرفة",
     "active_rooms": "الغرف النشطة",
@@ -412,7 +414,10 @@
     "trip_edit_rejected": "تم رفض تعديل رحلتك",
     "trip_updated": "تم تحديث رحلتك المحجوزة",
     "cancellation_approved": "تم قبول طلب إلغاء حجزك",
-    "cancellation_rejected": "تم رفض طلب إلغاء حجزك"
+    "cancellation_rejected": "تم رفض طلب إلغاء حجزك",
+    "view_all": "عرض الكل",
+    "all": "الكل",
+    "unread": "غير مقروءة"
   },
   "errors": {
     "generic": "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً",
@@ -472,7 +477,13 @@
     "flight_request_success_title": "تم إرسال طلبك بنجاح!",
     "flight_request_success_desc": "سيتواصل معك فريقنا خلال 24 ساعة بأفضل العروض المتاحة لرحلتك.",
     "flight_request_new": "إرسال طلب جديد",
-    "flight_request_optional": "اختياري"
+    "flight_request_optional": "اختياري",
+    "flight_request_cta_title": "لم تجد رحلتك؟ اطلبها الآن",
+    "flight_request_cta_desc": "أرسل طلبك وسيتنافس مزودو الخدمة لتقديم أفضل عرض لك",
+    "flight_request_cta_point1": "اطلب رحلتك بتفاصيل دقيقة",
+    "flight_request_cta_point2": "استلم عروض أسعار من مزودي خدمة معتمدين",
+    "flight_request_cta_point3": "اختر العرض الأنسب لك واحجز مباشرة",
+    "flight_request_cta_button": "اطلب رحلتك الآن"
   },
   "validation": {
     "name_required": "الاسم مطلوب",
@@ -703,7 +714,12 @@
     "sort_price_asc": "السعر: الأقل أولاً",
     "sort_price_desc": "السعر: الأعلى أولاً",
     "not_available": "غير متاح",
-    "daily_price": "السعر اليومي"
+    "daily_price": "السعر اليومي",
+    "pickup_location": "موقع الاستلام",
+    "get_current_location": "تحديد موقعي الحالي",
+    "locating": "جاري تحديد الموقع...",
+    "location_detected": "تم تحديد الموقع بنجاح",
+    "location_error": "تعذر تحديد الموقع"
   },
   "marketeer_customers": {
     "title": "عملائي",
@@ -722,5 +738,55 @@
     "importing": "جاري الاستيراد...",
     "imported_success": "تم استيراد {count} عميل بنجاح",
     "delete_confirm": "هل أنت متأكد من حذف هذا العميل؟"
+  },
+  "trip_requests": {
+    "page_title": "طلبات الرحلات",
+    "tab_submit": "تقديم طلب",
+    "tab_my_requests": "طلباتي",
+    "submit_title": "اطلب رحلتك",
+    "submit_desc": "أدخل تفاصيل رحلتك وسيتواصل معك مزودو الخدمة بعروضهم",
+    "my_requests_title": "طلباتي",
+    "my_requests_empty": "لم تقدم أي طلبات بعد",
+    "my_requests_empty_desc": "قم بتقديم طلب رحلة وسيتنافس المزودون لتقديم أفضل عرض",
+    "offers_title": "العروض المقدمة",
+    "offers_count": "{count} عرض",
+    "no_offers": "لا توجد عروض بعد",
+    "offer_from": "عرض من",
+    "price_per_seat": "السعر للمقعد",
+    "total_price": "الإجمالي",
+    "provider_notes": "ملاحظات المزود",
+    "accept_offer": "قبول العرض",
+    "reject_offer": "رفض العرض",
+    "accepting": "جارٍ القبول...",
+    "rejecting": "جارٍ الرفض...",
+    "offer_accepted": "تم قبول العرض",
+    "offer_rejected": "تم رفض العرض",
+    "provider_title": "طلبات الرحلات المتاحة",
+    "provider_desc": "تصفح طلبات المسافرين وقدم عروضك",
+    "provider_empty": "لا توجد طلبات متاحة حالياً",
+    "make_offer": "تقديم عرض",
+    "create_trip": "إنشاء رحلة",
+    "your_offer": "عرضك",
+    "offer_submitted": "تم تقديم عرضك بنجاح",
+    "submitting_offer": "جارٍ تقديم العرض...",
+    "my_offers": "عروضي السابقة",
+    "marketeer_title": "طلبات رحلات العملاء",
+    "marketeer_desc": "قدم طلب رحلة نيابة عن عميلك",
+    "customer_name": "اسم العميل",
+    "customer_phone": "رقم جوال العميل",
+    "customer_email": "بريد العميل الإلكتروني",
+    "my_submissions": "طلباتي المقدمة",
+    "status_pending": "قيد الانتظار",
+    "status_offered": "توجد عروض",
+    "status_matched": "تمت المطابقة",
+    "status_reviewed": "تمت المراجعة",
+    "status_cancelled": "ملغي",
+    "status_expired": "منتهي",
+    "offer_status_pending": "قيد الانتظار",
+    "offer_status_accepted": "مقبول",
+    "offer_status_rejected": "مرفوض",
+    "offer_status_expired": "منتهي",
+    "login_required": "يجب تسجيل الدخول لتقديم طلب رحلة",
+    "login_button": "تسجيل الدخول"
   }
 }

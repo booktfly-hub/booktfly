@@ -23,6 +23,7 @@ export function NotificationBell({ userId }: Props) {
     if (!data) return null
     if (data.booking_id) return `/${locale}/my-bookings/${data.booking_id}`
     if (data.room_booking_id) return `/${locale}/my-bookings/rooms/${data.room_booking_id}`
+    if (data.car_booking_id) return `/${locale}/my-bookings/cars/${data.car_booking_id}`
     if (data.trip_id) return `/${locale}/trips/${data.trip_id}`
     if (data.application_id) return `/${locale}/become-provider/status`
     return null
@@ -101,6 +102,14 @@ export function NotificationBell({ userId }: Props) {
                 })
               )}
             </div>
+
+            <Link
+              href={`/${locale}/notifications`}
+              onClick={() => setOpen(false)}
+              className="block p-3 border-t text-center text-sm font-semibold text-primary hover:bg-muted/50 transition-colors"
+            >
+              {t('view_all')}
+            </Link>
           </div>
         </>
       )}
