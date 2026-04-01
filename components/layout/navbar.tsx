@@ -48,7 +48,7 @@ export function Navbar() {
     { href: `/${locale}/rooms`, label: t('nav.hotels'), icon: BedDouble },
     { href: `/${locale}/cars`, label: t('nav.cars'), icon: CarFront },
     { href: `/${locale}/last-minute`, label: t('nav.last_minute'), icon: Flame, highlight: true },
-    ...(user ? [{ href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff, highlight: true }] : []),
+    { href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff },
   ]
 
   const isNavItemActive = (href: string) =>
