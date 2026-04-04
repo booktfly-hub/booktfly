@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Navbar } from '@/components/layout/navbar'
@@ -59,7 +59,7 @@ export function LocaleShell({ children }: Props) {
         )}
       </main>
       {!hidePublicChrome && <Footer />}
-      <AccessDeniedToast />
+      <Suspense><AccessDeniedToast /></Suspense>
       <Toaster />
     </UserProvider>
   )

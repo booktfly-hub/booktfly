@@ -35,8 +35,9 @@ export async function POST(request: NextRequest) {
       guest_phone,
       guest_email,
       number_of_people,
-      guest_token,
     } = parsed.data
+
+    const guest_token = body.guest_token as string | undefined
 
     const { data: pkg, error: pkgError } = await supabase
       .from('packages')
