@@ -27,6 +27,7 @@ export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'completed'
 
 export type RoomStatus = 'active' | 'deactivated' | 'removed'
 export type CarStatus = 'active' | 'deactivated' | 'removed'
+export type PackageStatus = 'active' | 'deactivated' | 'removed'
 export type CarCategory = 'sedan' | 'suv' | 'luxury' | 'van' | 'economy'
 export type TransmissionType = 'automatic' | 'manual'
 export type FuelType = 'petrol' | 'diesel' | 'electric' | 'hybrid'
@@ -114,6 +115,12 @@ export type NotificationType =
   | 'trip_request_offer_accepted'
   | 'trip_request_offer_rejected'
   | 'trip_request_trip_matched'
+  | 'new_package_booking'
+  | 'package_booking_confirmed'
+  | 'package_booking_rejected'
+  | 'package_booking_cancelled'
+  | 'package_booking_refunded'
+  | 'package_removed'
 
 export type Profile = {
   id: string
@@ -536,6 +543,10 @@ export type ActivityEventType =
   | 'car_booking_confirmed'
   | 'trip_request_offer_created'
   | 'trip_request_offer_accepted'
+  | 'package_created'
+  | 'package_removed'
+  | 'package_booking_created'
+  | 'package_booking_confirmed'
 
 export type AlertSeverity = 'info' | 'warning' | 'critical'
 
@@ -563,6 +574,9 @@ export type AdminAlert = {
   dismissed_at: string | null
   created_at: string
 }
+
+export type PickupReturnType = 'airport' | 'branch'
+export type ReturnLocationType = 'same_location' | 'airport' | 'branch'
 
 export type Car = {
   id: string
@@ -592,6 +606,16 @@ export type Car = {
   pickup_location_en: string | null
   pickup_latitude: number | null
   pickup_longitude: number | null
+  pickup_type: PickupReturnType | null
+  pickup_branch_name_ar: string | null
+  pickup_branch_name_en: string | null
+  return_type: ReturnLocationType | null
+  return_branch_name_ar: string | null
+  return_branch_name_en: string | null
+  pickup_hour_from: string | null
+  pickup_hour_to: string | null
+  return_hour_from: string | null
+  return_hour_to: string | null
   status: CarStatus
   removed_reason: string | null
   removed_by: string | null
@@ -627,12 +651,110 @@ export type CarBooking = {
   paid_at: string | null
   refunded_at: string | null
   refunded_by: string | null
+  pickup_time: string | null
+  return_time: string | null
   cancelled_at: string | null
   cancelled_by: string | null
   admin_notes: string | null
   created_at: string
   updated_at: string
   car?: Car
+  provider?: Provider
+  buyer?: Profile
+}
+
+export type Package = {
+  id: string
+  provider_id: string
+  name_ar: string
+  name_en: string | null
+  description_ar: string | null
+  description_en: string | null
+  destination_city_ar: string
+  destination_city_en: string | null
+  includes_flight: boolean
+  includes_hotel: boolean
+  includes_car: boolean
+  trip_id: string | null
+  room_id: string | null
+  car_id: string | null
+  flight_airline: string | null
+  flight_number: string | null
+  flight_origin_ar: string | null
+  flight_origin_en: string | null
+  flight_origin_code: string | null
+  flight_destination_ar: string | null
+  flight_destination_en: string | null
+  flight_destination_code: string | null
+  flight_departure_at: string | null
+  flight_return_at: string | null
+  flight_cabin_class: string | null
+  flight_seats_included: number | null
+  hotel_name_ar: string | null
+  hotel_name_en: string | null
+  hotel_category: string | null
+  hotel_nights: number | null
+  hotel_city_ar: string | null
+  hotel_city_en: string | null
+  car_brand_ar: string | null
+  car_brand_en: string | null
+  car_model_ar: string | null
+  car_model_en: string | null
+  car_category: string | null
+  car_rental_days: number | null
+  total_price: number
+  original_price: number | null
+  discount_percentage: number
+  currency: Currency
+  start_date: string | null
+  end_date: string | null
+  images: string[]
+  max_bookings: number
+  current_bookings: number
+  is_last_minute: boolean
+  status: PackageStatus
+  removed_reason: string | null
+  removed_by: string | null
+  created_at: string
+  updated_at: string
+  provider?: Provider
+  trip?: Trip
+  room?: Room
+  car?: Car
+}
+
+export type PackageBooking = {
+  id: string
+  package_id: string
+  buyer_id: string | null
+  provider_id: string
+  booked_by_marketeer_id: string | null
+  guest_token: string | null
+  guest_name: string
+  guest_phone: string | null
+  guest_email: string | null
+  number_of_people: number
+  start_date: string
+  end_date: string
+  total_amount: number
+  commission_rate: number
+  commission_amount: number
+  provider_payout: number
+  status: BookingStatus
+  transfer_receipt_url: string | null
+  transfer_confirmed_at: string | null
+  payment_reviewed_by: string | null
+  payment_reviewed_at: string | null
+  payment_rejection_reason: string | null
+  paid_at: string | null
+  refunded_at: string | null
+  refunded_by: string | null
+  cancelled_at: string | null
+  cancelled_by: string | null
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+  package?: Package
   provider?: Provider
   buyer?: Profile
 }

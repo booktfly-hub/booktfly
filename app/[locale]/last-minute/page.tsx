@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { TripCard } from '@/components/trips/trip-card'
@@ -20,41 +20,44 @@ export default function LastMinutePage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
 
-  const supabase = createClient()
-
-  const fetchTrips = useCallback(async (offset = 0) => {
+  const fetchTrips = async (offset = 0) => {
     const isInitial = offset === 0
     if (isInitial) setLoading(true)
     else setLoadingMore(true)
 
-    const now = new Date().toISOString()
-    const cutoff = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString()
+    try {
+      const supabase = createClient()
+      const now = new Date().toISOString()
+      const cutoff = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
-    const { data } = await supabase
-      .from('trips')
-      .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
-      .eq('status', 'active')
-      .gt('departure_at', now)
-      .lte('departure_at', cutoff)
-      .order('departure_at', { ascending: true })
-      .range(offset, offset + PAGE_SIZE - 1)
+      const { data } = await supabase
+        .from('trips')
+        .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
+        .eq('status', 'active')
+        .gt('departure_at', now)
+        .lte('departure_at', cutoff)
+        .order('departure_at', { ascending: true })
+        .range(offset, offset + PAGE_SIZE - 1)
 
-    if (data) {
-      if (isInitial) setTrips(data as Trip[])
-      else setTrips((prev) => [...prev, ...(data as Trip[])])
-      setHasMore(data.length === PAGE_SIZE)
+      if (data) {
+        if (isInitial) setTrips(data as Trip[])
+        else setTrips((prev) => [...prev, ...(data as Trip[])])
+        setHasMore(data.length === PAGE_SIZE)
+      }
+    } catch {
+      // query failed
+    } finally {
+      if (isInitial) setLoading(false)
+      else setLoadingMore(false)
     }
-
-    if (isInitial) setLoading(false)
-    else setLoadingMore(false)
-  }, [])
+  }
 
   useEffect(() => {
     fetchTrips()
-  }, [fetchTrips])
+  }, [])
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-200">
           <Flame className="h-5 w-5 text-orange-500" />

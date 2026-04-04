@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { formatPrice, cn, shortId } from '@/lib/utils'
 import { TRIP_STATUS_COLORS, BOOKING_STATUS_COLORS } from '@/lib/constants'
 import { toast } from '@/components/ui/toaster'
@@ -125,6 +126,7 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const tt = useTranslations('trips')
   const ts = useTranslations('status')
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const router = useRouter()
 
@@ -210,7 +212,7 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
       const result = await res.json()
 
       if (!res.ok) {
-        toast({ title: result.error || tc('error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
 
@@ -236,7 +238,7 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
       const res = await fetch(`/api/trips/${trip.id}/deactivate`, { method: 'PATCH' })
       const result = await res.json()
       if (!res.ok) {
-        toast({ title: result.error || tc('error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
       setTrip(result.data)

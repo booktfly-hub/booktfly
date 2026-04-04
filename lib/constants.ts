@@ -3,7 +3,7 @@ export const APP_NAME_AR = 'بوكت فلاي'
 export const APP_DOMAIN = 'booktfly.com'
 
 export const DEFAULT_COMMISSION_RATE = 10.0
-export const LAST_MINUTE_THRESHOLD_HOURS = 72
+export const LAST_MINUTE_THRESHOLD_HOURS = 168
 
 export const MAX_SEATS_PER_BOOKING = 10
 
@@ -206,3 +206,18 @@ export const TRIP_REQUEST_OFFER_STATUS_COLORS: Record<string, string> = {
 }
 
 export const MAX_DAYS_PER_CAR_BOOKING = 30
+
+export const PACKAGE_STATUS_COLORS: Record<string, string> = {
+  active: 'bg-success/10 text-success',
+  deactivated: 'bg-warning/10 text-warning',
+  removed: 'bg-destructive/10 text-destructive',
+}
+
+export const PACKAGE_CATEGORIES = {
+  hajj: { ar: 'حج', en: 'Hajj' },
+  umrah: { ar: 'عمرة', en: 'Umrah' },
+  tourism: { ar: 'سياحة', en: 'Tourism' },
+  honeymoon: { ar: 'شهر عسل', en: 'Honeymoon' },
+  family: { ar: 'عائلي', en: 'Family' },
+  business: { ar: 'أعمال', en: 'Business' },
+} as const

@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       pickup_date,
       return_date,
       number_of_days,
+      pickup_time,
+      return_time,
     } = parsed.data
 
     const { data: car, error: carError } = await supabase
@@ -108,6 +110,8 @@ export async function POST(request: NextRequest) {
         pickup_date,
         return_date,
         number_of_days,
+        pickup_time: pickup_time || null,
+        return_time: return_time || null,
         price_per_day: car.price_per_day,
         total_amount: totalAmount,
         commission_rate: commissionRate,

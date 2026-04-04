@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { getRoomSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -27,6 +28,7 @@ type FormData = z.infer<ReturnType<typeof getRoomSchema>>
 export default function NewRoomPage() {
   const t = useTranslations('provider')
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
@@ -116,7 +118,7 @@ export default function NewRoomPage() {
 
       if (!res.ok) {
         toast({
-          title: result.error || tc('error'),
+          title: resolveApiErrorMessage(result.error, te),
           variant: 'destructive',
         })
         return

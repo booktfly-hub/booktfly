@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { getProviderApplicationSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { motion } from 'framer-motion'
@@ -79,6 +80,7 @@ function withTimeout<T>(
 export default function ApplyProviderPage() {
   const t = useTranslations('become_provider')
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
@@ -261,7 +263,7 @@ export default function ApplyProviderPage() {
 
       if (!res.ok) {
         toast({
-          title: result.error || tc('error'),
+          title: resolveApiErrorMessage(result.error, te),
           variant: 'destructive',
         })
         return
@@ -278,7 +280,7 @@ export default function ApplyProviderPage() {
           ? error.message
           : tc('error')
 
-      toast({ title: message, variant: 'destructive' })
+      toast({ title: te('network_error'), variant: 'destructive' })
     } finally {
       setSubmitting(false)
       setSubmitStatus('')

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +29,7 @@ type AppWithProfile = MarkeeteerApplication & { profiles?: { full_name: string; 
 
 function AdminMarketeersContent() {
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -59,7 +61,7 @@ function AdminMarketeersContent() {
       })
       const result = await res.json()
       if (!res.ok) {
-        toast({ title: result.error || t('common.error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
       toast({

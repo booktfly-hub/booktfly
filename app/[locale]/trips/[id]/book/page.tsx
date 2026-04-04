@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import {
   Plane,
   ArrowRight,
@@ -56,6 +57,7 @@ export default function BookTripPage({ params }: { params: Promise<{ id: string,
 
 function BookTripContent({ params }: { params: Promise<{ id: string, locale: string }> }) {
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
@@ -145,7 +147,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       const res = await fetch('/api/extract-passport', { method: 'POST', body: formData })
       const result = await res.json()
       if (!res.ok) {
-        toast({ title: isAr ? 'خطأ' : 'Error', description: result.error || (isAr ? 'فشل قراءة الجواز' : 'Failed to read passport'), variant: 'destructive' })
+        toast({
+          title: isAr ? 'خطأ' : 'Error',
+          description: resolveApiErrorMessage(result.error, te, 'image_process_failed'),
+          variant: 'destructive',
+        })
         return
       }
       const d = result.data
@@ -211,7 +217,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       if (!res.ok) {
         toast({
           title: t('common.error'),
-          description: result.error || t('errors.generic'),
+          description: resolveApiErrorMessage(result.error, te),
           variant: 'destructive',
         })
         return

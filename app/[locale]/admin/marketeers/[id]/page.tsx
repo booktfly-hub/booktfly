@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { toast } from '@/components/ui/toaster'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,7 @@ export default function AdminMarkeeteerDetail() {
   const { id } = useParams<{ id: string }>()
   const locale = useLocale()
   const t = useTranslations()
+  const te = useTranslations('errors')
   const router = useRouter()
 
   const [app, setApp] = useState<MarkeeteerApplication | null>(null)
@@ -44,7 +46,7 @@ export default function AdminMarkeeteerDetail() {
       })
       const result = await res.json()
       if (!res.ok) {
-        toast({ title: result.error || t('common.error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
       toast({

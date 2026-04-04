@@ -27,6 +27,7 @@ import {
   BarChart3,
   TrendingUp,
   CarFront,
+  PackageIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -87,6 +88,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    key: 'group_packages',
+    items: [
+      { key: 'packages', icon: PackageIcon, href: '/admin/packages' },
+      { key: 'package_bookings', icon: PackageIcon, href: '/admin/package-bookings', badgeKey: 'packageBookings' },
+    ],
+  },
+  {
     key: 'group_providers',
     items: [
       { key: 'applications', icon: FileText, href: '/admin/applications', badgeKey: 'applications' },
@@ -130,6 +138,7 @@ function useBadgeCounts() {
       { count: bookings },
       { count: roomBookings },
       { count: carBookings },
+      { count: packageBookings },
       alertsRes,
     ] = await Promise.all([
       supabase.from('provider_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
@@ -138,6 +147,7 @@ function useBadgeCounts() {
       supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
       supabase.from('room_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
       supabase.from('car_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
+      supabase.from('package_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
       fetch('/api/admin/alerts?filter=active&page=0').then(r => r.ok ? r.json() : { total: 0 }).catch(() => ({ total: 0 })),
     ])
 
@@ -149,6 +159,7 @@ function useBadgeCounts() {
       roomBookings: roomBookings ?? 0,
       alerts: alertsRes.total ?? 0,
       carBookings: carBookings ?? 0,
+      packageBookings: packageBookings ?? 0,
     })
   }, [supabase])
 

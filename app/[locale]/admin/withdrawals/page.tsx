@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { WITHDRAWAL_STATUS_COLORS } from '@/lib/constants'
 import { toast } from '@/components/ui/toaster'
 import { cn, formatPrice } from '@/lib/utils'
@@ -21,6 +22,7 @@ type WithdrawalRow = {
 
 export default function AdminWithdrawalsPage() {
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([])
@@ -53,7 +55,7 @@ export default function AdminWithdrawalsPage() {
       )
     } else {
       const err = await res.json()
-      toast({ title: err.error || t('errors.generic'), variant: 'destructive' })
+      toast({ title: resolveApiErrorMessage(err.error, te), variant: 'destructive' })
     }
     setSubmitting(null)
   }

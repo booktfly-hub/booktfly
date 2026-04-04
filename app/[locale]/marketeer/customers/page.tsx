@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { toast } from '@/components/ui/toaster'
 import {
   Loader2,
@@ -24,6 +25,7 @@ type Customer = {
 export default function MarketeerCustomersPage() {
   const t = useTranslations('marketeer_customers')
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale()
   const isAr = locale === 'ar'
 
@@ -108,7 +110,7 @@ export default function MarketeerCustomersPage() {
         toast({ title: `${isAr ? 'تم استيراد' : 'Imported'} ${data.imported} ${isAr ? 'عميل' : 'customers'}`, variant: 'success' })
         fetchCustomers()
       } else {
-        toast({ title: data.error || tc('error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(data.error, te), variant: 'destructive' })
       }
     } finally {
       setImporting(false)

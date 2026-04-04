@@ -3,12 +3,13 @@
 import Image from 'next/image'
 import { Suspense, useEffect, useState, use } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import {
   BedDouble,
   MapPin,
@@ -25,7 +26,7 @@ import {
   CalendarIcon,
   Users,
 } from 'lucide-react'
-import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
+import { cn, formatPriceEN } from '@/lib/utils'
 import { ROOM_CATEGORIES, MAX_ROOMS_PER_BOOKING } from '@/lib/constants'
 import { RoomBookingPageSkeleton } from '@/components/shared/loading-skeleton'
 import { getRoomBookingSchema } from '@/lib/validations'
@@ -54,6 +55,7 @@ export default function BookRoomPage({ params }: { params: Promise<{ id: string;
 
 function BookRoomContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
@@ -68,7 +70,6 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
   const initialDays = Math.max(parseInt(searchParams.get('days') || '1', 10), 1)
 
   const Back = isAr ? ChevronRight : ChevronLeft
-  const localeDate = isAr ? arSA : enUS
 
   const schema = getRoomBookingSchema(locale).omit({ room_id: true })
 
@@ -132,7 +133,8 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
   const city = isAr ? room.city_ar : (room.city_en || room.city_ar)
   const categoryLabel = ROOM_CATEGORIES[room.category as keyof typeof ROOM_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : room.category
-  const fmt = (amount: number) => isAr ? formatPrice(amount, room.currency) : formatPriceEN(amount, room.currency)
+  const fmt = (amount: number) => formatPriceEN(amount, room.currency)
+  const formatDisplayNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
   const totalPrice = room.price_per_night * numberOfDays * roomsCount
   const firstImage = room.images?.[0]
 
@@ -165,7 +167,7 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
       if (!res.ok) {
         toast({
           title: t('common.error'),
-          description: result.error || t('errors.generic'),
+          description: resolveApiErrorMessage(result.error, te),
           variant: 'destructive',
         })
         return
@@ -351,7 +353,7 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                       >
                         <span>
                           {checkInDate
-                            ? format(parseISO(checkInDate), 'PPP', { locale: localeDate })
+                            ? format(parseISO(checkInDate), 'PPP', { locale: enUS })
                             : (isAr ? 'اختر تاريخ الدخول' : 'Select check-in date')}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
@@ -391,9 +393,9 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                         <Minus className="h-3.5 w-3.5" />
                       </button>
                       <div className="text-center">
-                        <span className="block text-xl md:text-2xl font-black text-slate-950">{numberOfPeople}</span>
-                        <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                          {isAr ? `الحد ${maxGuests}` : `Max ${maxGuests}`}
+                        <span className="block text-xl md:text-2xl font-black text-slate-950" dir="ltr">{formatDisplayNumber(numberOfPeople)}</span>
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400" dir="ltr">
+                          {`Max ${formatDisplayNumber(maxGuests)}`}
                         </span>
                       </div>
                       <button
@@ -429,7 +431,7 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="text-xl md:text-2xl font-black text-slate-950">{numberOfDays}</span>
+                      <span className="text-xl md:text-2xl font-black text-slate-950" dir="ltr">{formatDisplayNumber(numberOfDays)}</span>
                       <button
                         type="button"
                         onClick={() => setValue('number_of_days', numberOfDays + 1, { shouldValidate: true, shouldDirty: true })}
@@ -459,7 +461,7 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="text-xl md:text-2xl font-black text-slate-950">{roomsCount}</span>
+                      <span className="text-xl md:text-2xl font-black text-slate-950" dir="ltr">{formatDisplayNumber(roomsCount)}</span>
                       <button
                         type="button"
                         onClick={() => setValue('rooms_count', Math.min(MAX_ROOMS_PER_BOOKING, roomsCount + 1), { shouldValidate: true })}
@@ -494,11 +496,11 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                   </div>
                   <div className="flex items-center justify-between text-sm font-medium text-slate-300">
                     <span>{t('room_booking.number_of_days')}</span>
-                    <span className="font-mono bg-white/10 px-2 py-1 rounded">{numberOfDays}</span>
+                    <span className="font-mono bg-white/10 px-2 py-1 rounded" dir="ltr">{formatDisplayNumber(numberOfDays)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm font-medium text-slate-300">
                     <span>{t('room_booking.rooms_count')}</span>
-                    <span className="font-mono bg-white/10 px-2 py-1 rounded">{roomsCount}</span>
+                    <span className="font-mono bg-white/10 px-2 py-1 rounded" dir="ltr">{formatDisplayNumber(roomsCount)}</span>
                   </div>
 
                   <div className="border-t border-white/10 pt-6 mt-6">

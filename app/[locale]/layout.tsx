@@ -1,10 +1,18 @@
 import type { Metadata } from 'next'
+import { Cairo } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { LocaleShell } from '@/components/layout/locale-shell'
 import '@/app/globals.css'
+
+const cairo = Cairo({
+  subsets: ['arabic', 'latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-cairo',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://bookitfly.com'),
@@ -51,7 +59,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col font-sans antialiased">
+      <body className={`min-h-screen flex flex-col font-sans antialiased ${cairo.variable}`}>
         <NextIntlClientProvider messages={messages}>
           <LocaleShell>{children}</LocaleShell>
         </NextIntlClientProvider>

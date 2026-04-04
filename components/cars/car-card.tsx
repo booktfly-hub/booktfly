@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
-import { Car as CarIcon, MapPin, Users, Fuel, ArrowRight, ArrowLeft, Gauge } from 'lucide-react'
+import { Car as CarIcon, MapPin, Users, Fuel, ArrowRight, ArrowLeft, Gauge, Plane, Building } from 'lucide-react'
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
@@ -98,6 +98,12 @@ export function CarCard({ car, className }: CarCardProps) {
               <Fuel className="h-3.5 w-3.5 text-slate-400" />
               <span className="text-xs font-semibold">{fuelText}</span>
             </div>
+            {car.pickup_type && (
+              <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10 text-primary">
+                {car.pickup_type === 'airport' ? <Plane className="h-3.5 w-3.5" /> : <Building className="h-3.5 w-3.5" />}
+                <span className="text-xs font-semibold">{car.pickup_type === 'airport' ? (isAr ? 'مطار' : 'Airport') : (isAr ? 'فرع' : 'Branch')}</span>
+              </div>
+            )}
           </div>
 
           <div className="mt-auto">

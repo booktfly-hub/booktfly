@@ -199,6 +199,16 @@ export function getCarSchema(locale: Locale = 'ar') {
     pickup_location_en: z.string().optional(),
     pickup_latitude: z.number().optional(),
     pickup_longitude: z.number().optional(),
+    pickup_type: z.enum(['airport', 'branch']).optional(),
+    pickup_branch_name_ar: z.string().optional(),
+    pickup_branch_name_en: z.string().optional(),
+    return_type: z.enum(['same_location', 'airport', 'branch']).optional(),
+    return_branch_name_ar: z.string().optional(),
+    return_branch_name_en: z.string().optional(),
+    pickup_hour_from: z.string().optional(),
+    pickup_hour_to: z.string().optional(),
+    return_hour_from: z.string().optional(),
+    return_hour_to: z.string().optional(),
   })
 }
 
@@ -211,6 +221,8 @@ export function getCarBookingSchema(locale: Locale = 'ar') {
     pickup_date: z.string().min(1, v(locale, 'pickup_required')),
     return_date: z.string().min(1, v(locale, 'return_required')),
     number_of_days: z.number().min(1, v(locale, 'days_required')),
+    pickup_time: z.string().optional(),
+    return_time: z.string().optional(),
   })
 }
 
@@ -222,6 +234,65 @@ export function getTripRequestOfferSchema(locale: Locale = 'ar') {
 }
 
 export const tripRequestOfferSchema = getTripRequestOfferSchema('ar')
+
+export function getPackageSchema(locale: Locale = 'ar') {
+  return z.object({
+    name_ar: z.string().min(2, v(locale, 'name_required')),
+    name_en: z.string().optional(),
+    description_ar: z.string().optional(),
+    description_en: z.string().optional(),
+    destination_city_ar: z.string().min(1, v(locale, 'destination_required')),
+    destination_city_en: z.string().optional(),
+    includes_flight: z.boolean(),
+    includes_hotel: z.boolean(),
+    includes_car: z.boolean(),
+    trip_id: z.string().uuid().optional().nullable(),
+    room_id: z.string().uuid().optional().nullable(),
+    car_id: z.string().uuid().optional().nullable(),
+    flight_airline: z.string().optional(),
+    flight_number: z.string().optional(),
+    flight_origin_ar: z.string().optional(),
+    flight_origin_en: z.string().optional(),
+    flight_origin_code: z.string().optional(),
+    flight_destination_ar: z.string().optional(),
+    flight_destination_en: z.string().optional(),
+    flight_destination_code: z.string().optional(),
+    flight_departure_at: z.string().optional(),
+    flight_return_at: z.string().optional(),
+    flight_cabin_class: z.string().optional(),
+    flight_seats_included: z.number().optional(),
+    hotel_name_ar: z.string().optional(),
+    hotel_name_en: z.string().optional(),
+    hotel_category: z.string().optional(),
+    hotel_nights: z.number().optional(),
+    hotel_city_ar: z.string().optional(),
+    hotel_city_en: z.string().optional(),
+    car_brand_ar: z.string().optional(),
+    car_brand_en: z.string().optional(),
+    car_model_ar: z.string().optional(),
+    car_model_en: z.string().optional(),
+    car_category: z.string().optional(),
+    car_rental_days: z.number().optional(),
+    total_price: z.number().min(1, v(locale, 'price_required')),
+    original_price: z.number().optional(),
+    currency: z.enum(['SAR', 'USD']),
+    start_date: z.string().optional(),
+    end_date: z.string().optional(),
+    max_bookings: z.number().min(1).optional(),
+  })
+}
+
+export function getPackageBookingSchema(locale: Locale = 'ar') {
+  return z.object({
+    package_id: z.string().uuid(),
+    guest_name: z.string().min(2, v(locale, 'name_required')),
+    guest_phone: z.string().optional(),
+    guest_email: z.string().email(v(locale, 'email_invalid')).optional(),
+    number_of_people: z.number().min(1),
+    start_date: z.string().min(1, v(locale, 'departure_required')),
+    end_date: z.string().min(1, v(locale, 'return_required')),
+  })
+}
 
 // Default Arabic schemas for backward compatibility (used in API routes)
 export const signupSchema = getSignupSchema('ar')
@@ -237,3 +308,5 @@ export const carSchema = getCarSchema('ar')
 export const carBookingSchema = getCarBookingSchema('ar')
 export const markeeteerApplicationSchema = getMarkeeteerApplicationSchema('ar')
 export const flightRequestSchema = getFlightRequestSchema('ar')
+export const packageSchema = getPackageSchema('ar')
+export const packageBookingSchema = getPackageBookingSchema('ar')

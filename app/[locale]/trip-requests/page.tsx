@@ -363,10 +363,6 @@ export default function TripRequestsPage() {
                   <Input {...register('email')} type="email" aria-invalid={!!errors.email} />
                   {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_budget')} <span className="font-normal normal-case text-muted-foreground">({tHome('flight_request_optional')})</span></Label>
-                  <Input {...register('budget_max', { valueAsNumber: true })} type="number" min={0} />
-                </div>
                 <div className="sm:col-span-2 space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_notes')} <span className="font-normal normal-case text-muted-foreground">({tHome('flight_request_optional')})</span></Label>
                   <Textarea {...register('notes')} rows={3} className="resize-none min-h-[76px]" />

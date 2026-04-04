@@ -1,9 +1,11 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster, toast } from '@/components/ui/toaster'
 import { UserProvider } from '@/contexts/user-context'
 
 type Props = {
@@ -11,6 +13,32 @@ type Props = {
 }
 
 const HIDDEN_CHROME_SEGMENTS = new Set(['admin', 'provider', 'marketeer', 'auth'])
+
+const ROLE_TOAST_KEYS: Record<string, string> = {
+  buyer: 'access_denied_buyer',
+  provider: 'access_denied_provider',
+  marketeer: 'access_denied_marketeer',
+  admin: 'access_denied_admin',
+}
+
+function AccessDeniedToast() {
+  const t = useTranslations('errors')
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const role = searchParams.get('access_denied')
+    if (!role) return
+
+    const key = ROLE_TOAST_KEYS[role] || 'access_denied_generic'
+    toast({ title: t(key), variant: 'destructive' })
+
+    const url = new URL(window.location.href)
+    url.searchParams.delete('access_denied')
+    window.history.replaceState({}, '', url.pathname)
+  }, [searchParams, t])
+
+  return null
+}
 
 export function LocaleShell({ children }: Props) {
   const pathname = usePathname()
@@ -31,6 +59,7 @@ export function LocaleShell({ children }: Props) {
         )}
       </main>
       {!hidePublicChrome && <Footer />}
+      <AccessDeniedToast />
       <Toaster />
     </UserProvider>
   )

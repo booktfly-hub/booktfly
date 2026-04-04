@@ -159,12 +159,6 @@ export default function ProviderTripRequestsPage() {
                       <span className="text-slate-500">{isAr ? 'الدرجة' : 'Class'}: </span>
                       <span className="font-medium text-slate-900">{CABIN_CLASSES[req.cabin_class as keyof typeof CABIN_CLASSES]?.[isAr ? 'ar' : 'en'] || req.cabin_class}</span>
                     </div>
-                    {req.budget_max && (
-                      <div>
-                        <span className="text-slate-500">{isAr ? 'الميزانية' : 'Budget'}: </span>
-                        <span className="font-medium text-slate-900">{req.budget_max.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}</span>
-                      </div>
-                    )}
                   </div>
                   {req.notes && (
                     <p className="mt-2 text-xs text-slate-500">{req.notes}</p>

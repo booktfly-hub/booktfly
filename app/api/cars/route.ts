@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const pickupDate = searchParams.get('pickup_date')
     const returnDate = searchParams.get('return_date')
     const providerId = searchParams.get('provider_id')
+    const pickupType = searchParams.get('pickup_type')
     const sort = searchParams.get('sort') || 'newest'
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '12', 10)
@@ -63,6 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (fuelType) {
       query = query.eq('fuel_type', fuelType)
+    }
+
+    if (pickupType) {
+      query = query.eq('pickup_type', pickupType)
     }
 
     if (pickupDate) {
@@ -194,6 +199,16 @@ export async function POST(request: NextRequest) {
       pickup_location_en: (formData.get('pickup_location_en') as string) || undefined,
       pickup_latitude: pickupLat ? Number(pickupLat) : undefined,
       pickup_longitude: pickupLng ? Number(pickupLng) : undefined,
+      pickup_type: (formData.get('pickup_type') as string) || undefined,
+      pickup_branch_name_ar: (formData.get('pickup_branch_name_ar') as string) || undefined,
+      pickup_branch_name_en: (formData.get('pickup_branch_name_en') as string) || undefined,
+      return_type: (formData.get('return_type') as string) || undefined,
+      return_branch_name_ar: (formData.get('return_branch_name_ar') as string) || undefined,
+      return_branch_name_en: (formData.get('return_branch_name_en') as string) || undefined,
+      pickup_hour_from: (formData.get('pickup_hour_from') as string) || undefined,
+      pickup_hour_to: (formData.get('pickup_hour_to') as string) || undefined,
+      return_hour_from: (formData.get('return_hour_from') as string) || undefined,
+      return_hour_to: (formData.get('return_hour_to') as string) || undefined,
     }
 
     const parsed = carSchema.safeParse(rawData)
@@ -256,6 +271,16 @@ export async function POST(request: NextRequest) {
         pickup_location_en: parsed.data.pickup_location_en || null,
         pickup_latitude: parsed.data.pickup_latitude || null,
         pickup_longitude: parsed.data.pickup_longitude || null,
+        pickup_type: parsed.data.pickup_type || null,
+        pickup_branch_name_ar: parsed.data.pickup_branch_name_ar || null,
+        pickup_branch_name_en: parsed.data.pickup_branch_name_en || null,
+        return_type: parsed.data.return_type || null,
+        return_branch_name_ar: parsed.data.return_branch_name_ar || null,
+        return_branch_name_en: parsed.data.return_branch_name_en || null,
+        pickup_hour_from: parsed.data.pickup_hour_from || null,
+        pickup_hour_to: parsed.data.pickup_hour_to || null,
+        return_hour_from: parsed.data.return_hour_from || null,
+        return_hour_to: parsed.data.return_hour_to || null,
         status: 'active',
       })
       .select()

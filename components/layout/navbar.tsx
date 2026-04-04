@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   const t = useTranslations()
   const locale = useLocale()
+  const isAr = locale === 'ar'
   const pathname = usePathname()
   const { user, profile, loading, supabase } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -109,7 +110,7 @@ export function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex flex-nowrap items-center gap-1.5 sm:gap-6 min-w-0 shrink-0">
             <div className="hidden sm:flex items-center">
                <LanguageSwitcher />
             </div>
@@ -124,7 +125,7 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex flex-nowrap items-center gap-1.5 sm:gap-4 min-w-0 shrink-0">
                 {user ? (
                   <>
                     <NotificationBell userId={user.id} />
@@ -214,16 +215,22 @@ export function Navbar() {
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex flex-nowrap items-center gap-1 sm:gap-2 min-w-0 shrink-0">
                     <Link
                       href={`/${locale}/auth/login`}
-                      className="inline-flex text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap"
+                      className={cn(
+                        "inline-flex shrink-0 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap",
+                        isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
+                      )}
                     >
                       {t('common.login')}
                     </Link>
                     <Link
                       href={`/${locale}/auth/signup`}
-                      className="text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap"
+                      className={cn(
+                        "shrink-0 rounded-xl bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap",
+                        isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
+                      )}
                     >
                       {t('common.signup')}
                     </Link>
@@ -234,7 +241,7 @@ export function Navbar() {
 
             {/* Mobile hamburger */}
             <button
-              className="md:hidden p-2 rounded-xl hover:bg-muted transition-colors"
+              className="md:hidden shrink-0 self-center p-2 rounded-xl hover:bg-muted transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

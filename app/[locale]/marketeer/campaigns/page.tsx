@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { toast } from '@/components/ui/toaster'
 import { Loader2, Send, Mail } from 'lucide-react'
 
 export default function MarketeerCampaignsPage() {
   const locale = useLocale()
   const isAr = locale === 'ar'
+  const te = useTranslations('errors')
   const [sending, setSending] = useState(false)
 
   const [form, setForm] = useState({
@@ -25,7 +27,7 @@ export default function MarketeerCampaignsPage() {
 
   async function handleSend() {
     if (!form.subject || !form.title || !form.bookingUrl) {
-      toast({ title: isAr ? 'الموضوع والعنوان ورابط الحجز مطلوبة' : 'Subject, title, and booking URL are required', variant: 'destructive' })
+      toast({ title: te('campaign_required_fields'), variant: 'destructive' })
       return
     }
     setSending(true)
@@ -51,10 +53,10 @@ export default function MarketeerCampaignsPage() {
           variant: 'success',
         })
       } else {
-        toast({ title: data.error || (isAr ? 'خطأ' : 'Error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(data.error, te), variant: 'destructive' })
       }
     } catch {
-      toast({ title: isAr ? 'خطأ في الشبكة' : 'Network error', variant: 'destructive' })
+      toast({ title: te('network_error'), variant: 'destructive' })
     } finally {
       setSending(false)
     }

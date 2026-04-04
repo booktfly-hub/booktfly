@@ -8,17 +8,23 @@ const intlMiddleware = createMiddleware(routing)
 const PROTECTED_ROUTES: Record<string, string[]> = {
   '/provider': ['provider', 'admin'],
   '/admin': ['admin'],
+  '/marketeer': ['marketeer', 'admin'],
   '/my-bookings': ['buyer', 'provider', 'admin'],
   '/become-provider/apply': ['buyer'],
   '/become-provider/status': ['buyer'],
+  '/become-marketeer/apply': ['buyer'],
+  '/become-marketeer/status': ['buyer'],
 }
 
 const AUTH_REQUIRED_PATTERNS = [
   '/provider',
   '/admin',
+  '/marketeer',
   '/my-bookings',
   '/become-provider/apply',
   '/become-provider/status',
+  '/become-marketeer/apply',
+  '/become-marketeer/status',
 ]
 
 export async function proxy(request: NextRequest) {
@@ -46,8 +52,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Check role-based access
-  if (user) {
+  // Check role-based access (only fetch profile when on a protected route)
+  const needsRoleCheck = user && AUTH_REQUIRED_PATTERNS.some((p) => pathWithoutLocale.startsWith(p))
+  if (needsRoleCheck) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -60,13 +67,15 @@ export async function proxy(request: NextRequest) {
       if (pathWithoutLocale.startsWith(route)) {
         if (!allowedRoles.includes(role)) {
           const locale = localeMatch ? localeMatch[1] : 'ar'
-          return NextResponse.redirect(new URL(`/${locale}`, request.url))
+          const url = new URL(`/${locale}`, request.url)
+          url.searchParams.set('access_denied', role)
+          return NextResponse.redirect(url)
         }
       }
     }
 
-    // Provider routes: check if provider is suspended
-    if (pathWithoutLocale.startsWith('/provider') && role === 'provider') {
+    // Provider routes: check if provider is suspended (exempt /provider/suspended to avoid loop)
+    if (pathWithoutLocale.startsWith('/provider') && pathWithoutLocale !== '/provider/suspended' && role === 'provider') {
       const { data: provider } = await supabase
         .from('providers')
         .select('status')

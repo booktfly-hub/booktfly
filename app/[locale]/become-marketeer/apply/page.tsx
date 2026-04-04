@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { getMarkeeteerApplicationSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ const CLIENT_TIMEOUT_MS = 30_000
 export default function ApplyMarkeeteerPage() {
   const t = useTranslations('become_marketeer')
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
@@ -89,15 +91,14 @@ export default function ApplyMarkeeteerPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        toast({ title: result.error || tc('error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
 
       toast({ title: t('application_received'), variant: 'success' })
       router.push(`/${locale}/become-marketeer/status`)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : tc('error')
-      toast({ title: message, variant: 'destructive' })
+    } catch {
+      toast({ title: te('network_error'), variant: 'destructive' })
     } finally {
       setSubmitting(false)
     }

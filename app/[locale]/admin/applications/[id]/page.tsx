@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { toast } from '@/components/ui/toaster'
 import { APPLICATION_STATUS_COLORS, PROVIDER_TYPES } from '@/lib/constants'
 import type { ProviderApplication } from '@/types'
@@ -18,6 +19,7 @@ import {
 export default function AdminApplicationDetail() {
   const { id } = useParams<{ id: string }>()
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale()
   const router = useRouter()
   const supabase = createClient()
@@ -54,7 +56,7 @@ export default function AdminApplicationDetail() {
         router.push(`/${locale}/admin/applications`)
       } else {
         const data = await res.json()
-        toast({ title: data.error || t('errors.generic'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(data.error, te), variant: 'destructive' })
       }
     } finally {
       setSubmitting(false)
@@ -75,7 +77,7 @@ export default function AdminApplicationDetail() {
         router.push(`/${locale}/admin/applications`)
       } else {
         const data = await res.json()
-        toast({ title: data.error || t('errors.generic'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(data.error, te), variant: 'destructive' })
       }
     } finally {
       setSubmitting(false)

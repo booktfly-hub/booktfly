@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Wallet, Star, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/components/ui/toaster'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 
 type WithdrawalRow = {
   id: string
@@ -40,6 +41,7 @@ const STATUS_LABELS: Record<string, { ar: string; en: string }> = {
 export default function MarkeeteerWalletPage() {
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
+  const te = useTranslations('errors')
   const [walletData, setWalletData] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -72,7 +74,7 @@ export default function MarkeeteerWalletPage() {
       })
       const result = await res.json()
       if (!res.ok) {
-        toast({ title: result.error, variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
       toast({ title: isAr ? 'تم إرسال طلب السحب' : 'Withdrawal request submitted', variant: 'success' })

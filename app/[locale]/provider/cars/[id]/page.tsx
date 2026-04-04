@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { getCarSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -27,12 +28,16 @@ import {
   Power,
   ArrowRight,
   ArrowLeft,
+  Plane,
+  Building,
+  Clock,
 } from 'lucide-react'
 
 type FormData = z.infer<ReturnType<typeof getCarSchema>>
 
 export default function EditCarPage() {
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
@@ -66,6 +71,8 @@ export default function EditCarPage() {
       category: '',
       transmission: 'automatic',
       fuel_type: 'petrol',
+      pickup_type: 'branch',
+      return_type: 'same_location',
     },
   })
 
@@ -74,6 +81,8 @@ export default function EditCarPage() {
   const availableFrom = watch('available_from')
   const availableTo = watch('available_to')
   const selectedFeatures = watch('features') || []
+  const pickupType = watch('pickup_type')
+  const returnType = watch('return_type')
 
   const availableFromDate = availableFrom ? parseISO(availableFrom) : undefined
   const availableToDate = availableTo ? parseISO(availableTo) : undefined
@@ -114,6 +123,16 @@ export default function EditCarPage() {
           pickup_location_en: data.pickup_location_en || '',
           pickup_latitude: data.pickup_latitude || undefined,
           pickup_longitude: data.pickup_longitude || undefined,
+          pickup_type: data.pickup_type || 'branch',
+          pickup_branch_name_ar: data.pickup_branch_name_ar || '',
+          pickup_branch_name_en: data.pickup_branch_name_en || '',
+          return_type: data.return_type || 'same_location',
+          return_branch_name_ar: data.return_branch_name_ar || '',
+          return_branch_name_en: data.return_branch_name_en || '',
+          pickup_hour_from: data.pickup_hour_from || '',
+          pickup_hour_to: data.pickup_hour_to || '',
+          return_hour_from: data.return_hour_from || '',
+          return_hour_to: data.return_hour_to || '',
         })
       } catch {
         toast({ title: tc('error'), variant: 'destructive' })
@@ -228,7 +247,7 @@ export default function EditCarPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        toast({ title: result.error || tc('error'), variant: 'destructive' })
+        toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
 
@@ -391,6 +410,107 @@ export default function EditCarPage() {
           </div>
           <input type="hidden" {...register('pickup_latitude', { valueAsNumber: true })} />
           <input type="hidden" {...register('pickup_longitude', { valueAsNumber: true })} />
+        </div>
+
+        {/* Pickup & Return Type */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold flex items-center gap-2">
+            <Building className="h-4 w-4 text-primary" />
+            {isAr ? 'نوع الاستلام والإرجاع' : 'Pickup & Return Type'}
+          </h2>
+
+          <div>
+            <label className="text-sm font-medium block mb-2">{isAr ? 'نوع الاستلام' : 'Pickup Type'} *</label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['airport', 'branch'] as const).map((type) => (
+                <label
+                  key={type}
+                  className={cn(
+                    'flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all',
+                    pickupType === type
+                      ? 'border-primary bg-primary/5 text-primary font-bold'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                  )}
+                >
+                  <input type="radio" {...register('pickup_type')} value={type} className="sr-only" />
+                  {type === 'airport' ? <Plane className="h-5 w-5" /> : <Building className="h-5 w-5" />}
+                  <span className="text-sm">{type === 'airport' ? (isAr ? 'توصيل للمطار' : 'Airport Delivery') : (isAr ? 'فرع الشركة' : 'Company Branch')}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {pickupType === 'branch' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفرع' : 'Branch Name'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                <input {...register('pickup_branch_name_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder={isAr ? 'مثال: فرع الرياض - حي العليا' : 'e.g. Riyadh Branch - Olaya'} />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفرع' : 'Branch Name'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                <input {...register('pickup_branch_name_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g. Riyadh Branch - Olaya" />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium block mb-2">{isAr ? 'نوع الإرجاع' : 'Return Type'}</label>
+            <div className="grid grid-cols-3 gap-3">
+              {(['same_location', 'airport', 'branch'] as const).map((type) => (
+                <label
+                  key={type}
+                  className={cn(
+                    'flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all text-sm',
+                    returnType === type
+                      ? 'border-primary bg-primary/5 text-primary font-bold'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                  )}
+                >
+                  <input type="radio" {...register('return_type')} value={type} className="sr-only" />
+                  <span>{type === 'same_location' ? (isAr ? 'نفس الموقع' : 'Same Location') : type === 'airport' ? (isAr ? 'المطار' : 'Airport') : (isAr ? 'فرع مختلف' : 'Different Branch')}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {returnType === 'branch' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم فرع الإرجاع' : 'Return Branch Name'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                <input {...register('return_branch_name_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم فرع الإرجاع' : 'Return Branch Name'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                <input {...register('return_branch_name_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pickup & Return Hours */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" />
+            {isAr ? 'ساعات الاستلام والإرجاع' : 'Pickup & Return Hours'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الاستلام من' : 'Pickup From'}</label>
+              <input type="time" {...register('pickup_hour_from')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الاستلام حتى' : 'Pickup To'}</label>
+              <input type="time" {...register('pickup_hour_to')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الإرجاع من' : 'Return From'}</label>
+              <input type="time" {...register('return_hour_from')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الإرجاع حتى' : 'Return To'}</label>
+              <input type="time" {...register('return_hour_to')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+          </div>
         </div>
 
         {/* Category, Specs & Pricing */}

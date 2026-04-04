@@ -3,11 +3,12 @@
 import Image from 'next/image'
 import { Suspense, useEffect, useState, use } from 'react'
 import { format, isValid, parseISO, differenceInDays } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import {
   Car as CarIcon,
   MapPin,
@@ -20,8 +21,9 @@ import {
   ArrowRight,
   CheckCircle,
   CalendarIcon,
+  Clock,
 } from 'lucide-react'
-import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
+import { cn, formatPriceEN } from '@/lib/utils'
 import { CAR_CATEGORIES, MAX_DAYS_PER_CAR_BOOKING } from '@/lib/constants'
 import { RoomBookingPageSkeleton } from '@/components/shared/loading-skeleton'
 import { getCarBookingSchema } from '@/lib/validations'
@@ -37,6 +39,8 @@ type CarBookingFormData = {
   pickup_date: string
   return_date: string
   number_of_days: number
+  pickup_time: string
+  return_time: string
 }
 
 export default function BookCarPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
@@ -49,6 +53,7 @@ export default function BookCarPage({ params }: { params: Promise<{ id: string; 
 
 function BookCarContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const t = useTranslations()
+  const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
@@ -59,7 +64,6 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
   const [submitting, setSubmitting] = useState(false)
 
   const Back = isAr ? ChevronRight : ChevronLeft
-  const localeDate = isAr ? arSA : enUS
 
   const schema = getCarBookingSchema(locale).omit({ car_id: true })
 
@@ -79,6 +83,8 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
       pickup_date: '',
       return_date: '',
       number_of_days: 1,
+      pickup_time: '',
+      return_time: '',
     },
   })
 
@@ -131,7 +137,8 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
   const pickupLocation = isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)
   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : car.category
-  const fmt = (amount: number) => isAr ? formatPrice(amount, car.currency) : formatPriceEN(amount, car.currency)
+  const fmt = (amount: number) => formatPriceEN(amount, car.currency)
+  const formatDisplayNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
   const totalPrice = car.price_per_day * numberOfDays
   const firstImage = car.images?.[0]
 
@@ -155,6 +162,8 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
           pickup_date: data.pickup_date,
           return_date: data.return_date,
           number_of_days: data.number_of_days,
+          pickup_time: data.pickup_time || undefined,
+          return_time: data.return_time || undefined,
         }),
       })
 
@@ -163,7 +172,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
       if (!res.ok) {
         toast({
           title: t('common.error'),
-          description: result.error || t('errors.generic'),
+          description: resolveApiErrorMessage(result.error, te),
           variant: 'destructive',
         })
         return
@@ -352,7 +361,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                       >
                         <span>
                           {pickupDate
-                            ? format(parseISO(pickupDate), 'PPP', { locale: localeDate })
+                            ? format(parseISO(pickupDate), 'PPP', { locale: enUS })
                             : (isAr ? 'اختر تاريخ الاستلام' : 'Select pickup date')}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
@@ -390,7 +399,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                       >
                         <span>
                           {returnDate
-                            ? format(parseISO(returnDate), 'PPP', { locale: localeDate })
+                            ? format(parseISO(returnDate), 'PPP', { locale: enUS })
                             : (isAr ? 'اختر تاريخ الإرجاع' : 'Select return date')}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
@@ -421,11 +430,47 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                     </label>
                     <div className="flex items-center justify-center rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50 p-2 h-12 md:h-14">
                       <span className="text-xl md:text-2xl font-black text-slate-950">
-                        {numberOfDays} {isAr ? (numberOfDays === 1 ? 'يوم' : 'أيام') : (numberOfDays === 1 ? 'day' : 'days')}
+                        <span dir="ltr">{formatDisplayNumber(numberOfDays)} {numberOfDays === 1 ? 'day' : 'days'}</span>
                       </span>
                     </div>
                     {errors.number_of_days && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.number_of_days.message}</p>
+                    )}
+                  </div>
+
+                  {/* Pickup Time */}
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className={labelClass}>
+                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      {t('cars.pickup_time')}
+                    </label>
+                    <input
+                      type="time"
+                      {...register('pickup_time')}
+                      min={car.pickup_hour_from || undefined}
+                      max={car.pickup_hour_to || undefined}
+                      className={cn(inputClass)}
+                    />
+                    {car.pickup_hour_from && car.pickup_hour_to && (
+                      <p className="text-xs text-slate-400">{isAr ? 'الساعات المتاحة:' : 'Available:'} {car.pickup_hour_from} — {car.pickup_hour_to}</p>
+                    )}
+                  </div>
+
+                  {/* Return Time */}
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className={labelClass}>
+                      <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      {t('cars.return_time')}
+                    </label>
+                    <input
+                      type="time"
+                      {...register('return_time')}
+                      min={car.return_hour_from || undefined}
+                      max={car.return_hour_to || undefined}
+                      className={cn(inputClass)}
+                    />
+                    {car.return_hour_from && car.return_hour_to && (
+                      <p className="text-xs text-slate-400">{isAr ? 'الساعات المتاحة:' : 'Available:'} {car.return_hour_from} — {car.return_hour_to}</p>
                     )}
                   </div>
                 </div>
@@ -449,7 +494,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                   </div>
                   <div className="flex items-center justify-between text-sm font-medium text-slate-300">
                     <span>{t('cars.number_of_days')}</span>
-                    <span className="font-mono bg-white/10 px-2 py-1 rounded">{numberOfDays}</span>
+                    <span className="font-mono bg-white/10 px-2 py-1 rounded" dir="ltr">{formatDisplayNumber(numberOfDays)}</span>
                   </div>
 
                   <div className="border-t border-white/10 pt-6 mt-6">

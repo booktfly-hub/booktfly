@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
+import { resolveApiErrorMessage } from '@/lib/api-error'
 import { formatPrice } from '@/lib/utils'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,7 @@ export function WalletSection({ providerIban }: Props) {
   const locale = useLocale()
   const isAr = locale === 'ar'
   const tc = useTranslations('common')
+  const te = useTranslations('errors')
 
   const [balance, setBalance] = useState(0)
   const [transactions, setTransactions] = useState<WalletTransaction[]>([])
@@ -52,11 +54,11 @@ export function WalletSection({ providerIban }: Props) {
   const handleWithdraw = async () => {
     const amount = Number(withdrawAmount)
     if (!amount || amount <= 0 || amount > balance) {
-      toast({ title: isAr ? 'مبلغ غير صالح' : 'Invalid amount', variant: 'destructive' })
+      toast({ title: te('invalid_amount'), variant: 'destructive' })
       return
     }
     if (!providerIban) {
-      toast({ title: isAr ? 'يرجى إضافة IBAN في ملفك الشخصي أولاً' : 'Please add your IBAN in your profile first', variant: 'destructive' })
+      toast({ title: te('iban_required'), variant: 'destructive' })
       return
     }
 
@@ -75,7 +77,7 @@ export function WalletSection({ providerIban }: Props) {
       toast({ title: tc('success'), variant: 'success' })
     } else {
       const err = await res.json()
-      toast({ title: err.error || tc('error'), variant: 'destructive' })
+      toast({ title: resolveApiErrorMessage(err.error, te), variant: 'destructive' })
     }
     setSubmitting(false)
   }

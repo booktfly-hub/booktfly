@@ -116,6 +116,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : existingCar.instant_book,
       available_from: (formData.get('available_from') as string) || existingCar.available_from,
       available_to: (formData.get('available_to') as string) || existingCar.available_to,
+      pickup_type: (formData.get('pickup_type') as string) || existingCar.pickup_type,
+      pickup_branch_name_ar: (formData.get('pickup_branch_name_ar') as string) || existingCar.pickup_branch_name_ar,
+      pickup_branch_name_en: (formData.get('pickup_branch_name_en') as string) || existingCar.pickup_branch_name_en,
+      return_type: (formData.get('return_type') as string) || existingCar.return_type,
+      return_branch_name_ar: (formData.get('return_branch_name_ar') as string) || existingCar.return_branch_name_ar,
+      return_branch_name_en: (formData.get('return_branch_name_en') as string) || existingCar.return_branch_name_en,
+      pickup_hour_from: (formData.get('pickup_hour_from') as string) || existingCar.pickup_hour_from,
+      pickup_hour_to: (formData.get('pickup_hour_to') as string) || existingCar.pickup_hour_to,
+      return_hour_from: (formData.get('return_hour_from') as string) || existingCar.return_hour_from,
+      return_hour_to: (formData.get('return_hour_to') as string) || existingCar.return_hour_to,
     }
 
     const parsed = carSchema.safeParse(rawData)
@@ -194,6 +204,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         pickup_location_en: pickupData.pickup_location_en || null,
         pickup_latitude: pickupData.pickup_latitude || null,
         pickup_longitude: pickupData.pickup_longitude || null,
+        pickup_type: parsed.data.pickup_type || null,
+        pickup_branch_name_ar: parsed.data.pickup_branch_name_ar || null,
+        pickup_branch_name_en: parsed.data.pickup_branch_name_en || null,
+        return_type: parsed.data.return_type || null,
+        return_branch_name_ar: parsed.data.return_branch_name_ar || null,
+        return_branch_name_en: parsed.data.return_branch_name_en || null,
+        pickup_hour_from: parsed.data.pickup_hour_from || null,
+        pickup_hour_to: parsed.data.pickup_hour_to || null,
+        return_hour_from: parsed.data.return_hour_from || null,
+        return_hour_to: parsed.data.return_hour_to || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

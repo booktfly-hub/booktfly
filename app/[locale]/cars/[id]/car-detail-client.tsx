@@ -20,6 +20,8 @@ import {
   Fuel,
   Check,
   Calendar,
+  Plane,
+  Clock,
 } from 'lucide-react'
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES, CAR_FEATURES, MAX_DAYS_PER_CAR_BOOKING } from '@/lib/constants'
@@ -83,6 +85,8 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
   const model = isAr ? car.model_ar : (car.model_en || car.model_ar)
   const city = isAr ? car.city_ar : (car.city_en || car.city_ar)
   const pickupLocation = isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)
+  const pickupBranch = isAr ? car.pickup_branch_name_ar : (car.pickup_branch_name_en || car.pickup_branch_name_ar)
+  const returnBranch = isAr ? car.return_branch_name_ar : (car.return_branch_name_en || car.return_branch_name_ar)
   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
   const categoryText = categoryLabel ? (isAr ? categoryLabel.ar : categoryLabel.en) : car.category
   const transmissionLabel = TRANSMISSION_TYPES[car.transmission as keyof typeof TRANSMISSION_TYPES]
@@ -248,6 +252,60 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     </span>
                   </div>
                 </div>
+
+                {/* Pickup & Return Info */}
+                {(car.pickup_type || car.pickup_hour_from || car.return_type) && (
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 mb-6 space-y-3">
+                    {car.pickup_type && (
+                      <div className="flex items-center gap-2.5">
+                        {car.pickup_type === 'airport' ? <Plane className="h-4 w-4 text-primary" /> : <Building2 className="h-4 w-4 text-primary" />}
+                        <div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'الاستلام' : 'Pickup'}</span>
+                          <p className="text-sm font-semibold text-slate-700">
+                            {car.pickup_type === 'airport' ? (isAr ? 'توصيل للمطار' : 'Airport Delivery') : (isAr ? 'فرع الشركة' : 'Company Branch')}
+                            {pickupBranch && <span className="text-slate-500"> — {pickupBranch}</span>}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {car.return_type && car.return_type !== 'same_location' && (
+                      <div className="flex items-center gap-2.5">
+                        {car.return_type === 'airport' ? <Plane className="h-4 w-4 text-accent" /> : <Building2 className="h-4 w-4 text-accent" />}
+                        <div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'الإرجاع' : 'Return'}</span>
+                          <p className="text-sm font-semibold text-slate-700">
+                            {car.return_type === 'airport' ? (isAr ? 'المطار' : 'Airport') : (isAr ? 'فرع مختلف' : 'Different Branch')}
+                            {returnBranch && <span className="text-slate-500"> — {returnBranch}</span>}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {car.return_type === 'same_location' && (
+                      <div className="flex items-center gap-2.5">
+                        <Check className="h-4 w-4 text-emerald-500" />
+                        <span className="text-sm font-semibold text-slate-600">{isAr ? 'الإرجاع في نفس موقع الاستلام' : 'Return at same pickup location'}</span>
+                      </div>
+                    )}
+                    {(car.pickup_hour_from || car.pickup_hour_to) && (
+                      <div className="flex items-center gap-2.5">
+                        <Clock className="h-4 w-4 text-slate-400" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'ساعات الاستلام' : 'Pickup Hours'}</span>
+                          <p className="text-sm font-semibold text-slate-700">{car.pickup_hour_from || '—'} → {car.pickup_hour_to || '—'}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(car.return_hour_from || car.return_hour_to) && (
+                      <div className="flex items-center gap-2.5">
+                        <Clock className="h-4 w-4 text-slate-400" />
+                        <div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'ساعات الإرجاع' : 'Return Hours'}</span>
+                          <p className="text-sm font-semibold text-slate-700">{car.return_hour_from || '—'} → {car.return_hour_to || '—'}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Info cards */}
                 <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 mb-6">

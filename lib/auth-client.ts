@@ -92,7 +92,7 @@ export async function signOutAndRedirect(
   const { error } = await supabase.auth.signOut()
 
   if (error) {
-    throw error
+    console.error('Sign out failed:', error.message)
   }
 
   window.location.replace(`/${locale}`)
