@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       guest_phone,
       guest_email,
       number_of_people,
-      guest_token,
+      start_date,
+      end_date,
     } = parsed.data
 
     const { data: pkg, error: pkgError } = await supabase
@@ -95,8 +96,9 @@ export async function POST(request: NextRequest) {
         guest_name,
         guest_phone,
         guest_email,
-        guest_token: guest_token || null,
         number_of_people,
+        start_date,
+        end_date,
         total_amount: totalAmount,
         commission_rate: commissionRate,
         commission_amount: commissionAmount,

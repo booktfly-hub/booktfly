@@ -22,7 +22,7 @@ import {
 import { formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { toast } from '@/components/ui/toaster'
 import { CheckoutPageSkeleton } from '@/components/shared/loading-skeleton'
-import type { Booking, RoomBooking, CarBooking } from '@/types'
+import type { Booking, RoomBooking, CarBooking, PackageBooking } from '@/types'
 
 type CheckoutState = 'transfer' | 'uploading' | 'submitted' | 'confirmed' | 'failed'
 
@@ -44,10 +44,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   const bookingType = searchParams.get('type')
   const isRoomBooking = bookingType === 'room'
   const isCarBooking = bookingType === 'car'
+  const isPackageBooking = bookingType === 'package'
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [roomBooking, setRoomBooking] = useState<RoomBooking | null>(null)
   const [carBooking, setCarBooking] = useState<CarBooking | null>(null)
+  const [packageBooking, setPackageBooking] = useState<PackageBooking | null>(null)
   const [bankInfo, setBankInfo] = useState<BankInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [state, setState] = useState<CheckoutState>('transfer')
@@ -56,17 +58,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
 
   const Back = isAr ? ChevronRight : ChevronLeft
-  const currency = carBooking?.car?.currency || roomBooking?.room?.currency || booking?.trip?.currency || 'SAR'
+  const currency = packageBooking?.package?.currency || carBooking?.car?.currency || roomBooking?.room?.currency || booking?.trip?.currency || 'SAR'
   const fmt = (amount: number) => isAr ? formatPrice(amount, currency) : formatPriceEN(amount, currency)
-  const detailHref = isCarBooking ? `/${locale}/my-bookings/cars/${bookingId}` : isRoomBooking ? `/${locale}/my-bookings/rooms/${bookingId}` : `/${locale}/my-bookings/${bookingId}`
-  const browseHref = isCarBooking ? `/${locale}/cars` : isRoomBooking ? `/${locale}/rooms` : `/${locale}/trips`
-  const backHref = isCarBooking ? `/${locale}/cars` : isRoomBooking ? `/${locale}/rooms` : `/${locale}/my-bookings/${bookingId}`
-  const bookingRecord = isCarBooking ? carBooking : isRoomBooking ? roomBooking : booking
+  const detailHref = isPackageBooking ? `/${locale}/my-bookings/packages/${bookingId}` : isCarBooking ? `/${locale}/my-bookings/cars/${bookingId}` : isRoomBooking ? `/${locale}/my-bookings/rooms/${bookingId}` : `/${locale}/my-bookings/${bookingId}`
+  const browseHref = isPackageBooking ? `/${locale}/packages` : isCarBooking ? `/${locale}/cars` : isRoomBooking ? `/${locale}/rooms` : `/${locale}/trips`
+  const backHref = isPackageBooking ? `/${locale}/packages` : isCarBooking ? `/${locale}/cars` : isRoomBooking ? `/${locale}/rooms` : `/${locale}/my-bookings/${bookingId}`
+  const bookingRecord = isPackageBooking ? packageBooking : isCarBooking ? carBooking : isRoomBooking ? roomBooking : booking
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const apiPath = isCarBooking ? `/api/car-bookings/${bookingId}` : isRoomBooking ? `/api/room-bookings/${bookingId}` : `/api/bookings/${bookingId}`
+        const apiPath = isPackageBooking ? `/api/package-bookings/${bookingId}` : isCarBooking ? `/api/car-bookings/${bookingId}` : isRoomBooking ? `/api/room-bookings/${bookingId}` : `/api/bookings/${bookingId}`
         const [bookingRes, bankRes] = await Promise.all([
           fetch(apiPath),
           fetch('/api/bank-info'),
@@ -75,7 +77,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         const bankData = await bankRes.json()
 
         if (bookingData.booking) {
-          if (isCarBooking) {
+          if (isPackageBooking) {
+            setPackageBooking(bookingData.booking)
+          } else if (isCarBooking) {
             setCarBooking(bookingData.booking)
           } else if (isRoomBooking) {
             setRoomBooking(bookingData.booking)
@@ -120,7 +124,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       if (receiptFile) {
         const formData = new FormData()
         formData.append('receipt', receiptFile)
-        const uploadPath = isCarBooking ? `/api/car-bookings/${bookingId}/upload-receipt` : isRoomBooking ? `/api/room-bookings/${bookingId}/upload-receipt` : `/api/bookings/${bookingId}/upload-receipt`
+        const uploadPath = isPackageBooking ? `/api/package-bookings/${bookingId}/upload-receipt` : isCarBooking ? `/api/car-bookings/${bookingId}/upload-receipt` : isRoomBooking ? `/api/room-bookings/${bookingId}/upload-receipt` : `/api/bookings/${bookingId}/upload-receipt`
         const uploadRes = await fetch(uploadPath, {
           method: 'POST',
           body: formData,
@@ -132,7 +136,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       }
 
       // Confirm transfer
-      const confirmPath = isCarBooking ? `/api/car-bookings/${bookingId}/confirm` : isRoomBooking ? `/api/room-bookings/${bookingId}/confirm` : `/api/bookings/${bookingId}/confirm`
+      const confirmPath = isPackageBooking ? `/api/package-bookings/${bookingId}/confirm` : isCarBooking ? `/api/car-bookings/${bookingId}/confirm` : isRoomBooking ? `/api/room-bookings/${bookingId}/confirm` : `/api/bookings/${bookingId}/confirm`
       const res = await fetch(confirmPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -187,7 +191,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             {t('booking.view_booking')}
           </Link>
           <Link href={browseHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-50 text-slate-700 border border-slate-200 text-sm md:text-base font-bold hover:bg-slate-100 transition-all">
-            {isAr ? (isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
+            {isAr ? (isPackageBooking ? 'تصفح الباقات' : isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isPackageBooking ? 'Browse Packages' : isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
           </Link>
         </div>
       </div>
@@ -215,7 +219,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             {t('booking.view_booking')}
           </Link>
           <Link href={browseHref} className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-slate-50 text-slate-700 border border-slate-200 text-sm font-bold hover:bg-slate-100 transition-all">
-            {isAr ? (isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
+            {isAr ? (isPackageBooking ? 'تصفح الباقات' : isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isPackageBooking ? 'Browse Packages' : isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
           </Link>
         </div>
       </div>
@@ -248,11 +252,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         <h3 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6">{t('booking.price_summary')}</h3>
         <div className="flex justify-between items-center text-sm md:text-base font-semibold text-slate-700 mb-4 md:mb-6">
           <span>
-            {isCarBooking && carBooking
-              ? `${fmt(carBooking.price_per_day)} × ${carBooking.number_of_days} ${isAr ? 'يوم' : 'days'}`
-              : isRoomBooking && roomBooking
-                ? `${fmt(roomBooking.price_per_night)} × ${roomBooking.number_of_days} ${isAr ? 'ليالٍ' : 'nights'} × ${roomBooking.rooms_count} ${isAr ? 'غرف' : 'rooms'}`
-                : `${fmt(booking!.price_per_seat)} × ${booking!.seats_count} ${t('common.seats')}`}
+            {isPackageBooking && packageBooking
+              ? `${fmt(packageBooking.total_amount / packageBooking.number_of_people)} × ${packageBooking.number_of_people} ${isAr ? 'أشخاص' : 'people'}`
+              : isCarBooking && carBooking
+                ? `${fmt(carBooking.price_per_day)} × ${carBooking.number_of_days} ${isAr ? 'يوم' : 'days'}`
+                : isRoomBooking && roomBooking
+                  ? `${fmt(roomBooking.price_per_night)} × ${roomBooking.number_of_days} ${isAr ? 'ليالٍ' : 'nights'} × ${roomBooking.rooms_count} ${isAr ? 'غرف' : 'rooms'}`
+                  : `${fmt(booking!.price_per_seat)} × ${booking!.seats_count} ${t('common.seats')}`}
           </span>
           <span className="text-slate-900 bg-slate-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-slate-100">{fmt(bookingRecord.total_amount)}</span>
         </div>

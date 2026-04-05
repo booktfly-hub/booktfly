@@ -13,17 +13,19 @@ import {
   BedDouble,
   Clock,
   CarFront,
+  PackageIcon,
 } from 'lucide-react'
 import { capitalizeFirst, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
-import type { Booking, RoomBooking, CarBooking } from '@/types'
+import type { Booking, RoomBooking, CarBooking, PackageBooking } from '@/types'
 
 type BuyerBookingItem =
   | { kind: 'flight'; item: Booking }
   | { kind: 'room'; item: RoomBooking }
   | { kind: 'car'; item: CarBooking }
+  | { kind: 'package'; item: PackageBooking }
 
 export default function MyBookingsPage() {
   const t = useTranslations()
@@ -38,16 +40,18 @@ export default function MyBookingsPage() {
   useEffect(() => {
     async function fetchBookings() {
       try {
-        const [flightRes, roomRes, carRes] = await Promise.all([
+        const [flightRes, roomRes, carRes, packageRes] = await Promise.all([
           fetch('/api/bookings/mine'),
           fetch('/api/room-bookings/mine'),
           fetch('/api/car-bookings/mine'),
+          fetch('/api/package-bookings/mine'),
         ])
-        const [flightData, roomData, carData] = await Promise.all([flightRes.json(), roomRes.json(), carRes.json()])
+        const [flightData, roomData, carData, packageData] = await Promise.all([flightRes.json(), roomRes.json(), carRes.json(), packageRes.json()])
         const merged: BuyerBookingItem[] = [
           ...((flightData.bookings || []).map((item: Booking) => ({ kind: 'flight' as const, item }))),
           ...((roomData.bookings || []).map((item: RoomBooking) => ({ kind: 'room' as const, item }))),
           ...((carData.bookings || []).map((item: CarBooking) => ({ kind: 'car' as const, item }))),
+          ...((packageData.bookings || []).map((item: PackageBooking) => ({ kind: 'package' as const, item }))),
         ].sort((a, b) => new Date(b.item.created_at).getTime() - new Date(a.item.created_at).getTime())
         setBookings(merged)
       } catch {
@@ -85,9 +89,11 @@ export default function MyBookingsPage() {
           {bookings.map(({ kind, item }) => {
             const isRoom = kind === 'room'
             const isCar = kind === 'car'
-            const booking = !isRoom && !isCar ? item as Booking : null
+            const isPackage = kind === 'package'
+            const booking = !isRoom && !isCar && !isPackage ? item as Booking : null
             const roomBooking = isRoom ? item as RoomBooking : null
             const carBooking = isCar ? item as CarBooking : null
+            const packageBooking = isPackage ? item as PackageBooking : null
             const trip = booking?.trip
             const room = roomBooking?.room
             const car = carBooking?.car
@@ -119,7 +125,7 @@ export default function MyBookingsPage() {
             return (
               <Link
                 key={item.id}
-                href={isCar ? `/${locale}/my-bookings/cars/${item.id}` : isRoom ? `/${locale}/my-bookings/rooms/${item.id}` : `/${locale}/my-bookings/${item.id}`}
+                href={isPackage ? `/${locale}/my-bookings/packages/${item.id}` : isCar ? `/${locale}/my-bookings/cars/${item.id}` : isRoom ? `/${locale}/my-bookings/rooms/${item.id}` : `/${locale}/my-bookings/${item.id}`}
                 className="block"
               >
                 <div className="rounded-xl border bg-card p-5 hover:shadow-md hover:border-accent/30 transition-all">
@@ -129,7 +135,7 @@ export default function MyBookingsPage() {
                         #{shortId(item.id)}
                       </span>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                        {isCar ? (isAr ? 'سيارة' : 'Car') : isRoom ? (isAr ? 'غرفة' : 'Room') : (isAr ? 'رحلة' : 'Flight')}
+                        {isPackage ? (isAr ? 'باقة' : 'Package') : isCar ? (isAr ? 'سيارة' : 'Car') : isRoom ? (isAr ? 'غرفة' : 'Room') : (isAr ? 'رحلة' : 'Flight')}
                       </span>
                       <span>{createdDate}</span>
                     </div>
@@ -197,6 +203,29 @@ export default function MyBookingsPage() {
                     </>
                   )}
 
+                  {packageBooking && (
+                    <>
+                      <div className="flex items-center gap-3 mb-2">
+                        <PackageIcon className="h-4 w-4 text-accent shrink-0" />
+                        <span className="font-semibold">
+                          {isAr
+                            ? (packageBooking.package as PackageBooking['package'])?.name_ar
+                            : ((packageBooking.package as PackageBooking['package'])?.name_en || (packageBooking.package as PackageBooking['package'])?.name_ar)}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {packageBooking.start_date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" />
+                          {packageBooking.number_of_people} {isAr ? 'أشخاص' : 'people'}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
                   <div className="flex items-center justify-between pt-3 border-t">
                     <div className="flex items-center gap-4 text-sm">
                       {booking && (
@@ -217,9 +246,15 @@ export default function MyBookingsPage() {
                           {carBooking.number_of_days} {isAr ? 'يوم' : 'day(s)'}
                         </span>
                       )}
+                      {packageBooking && (
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Users className="h-3.5 w-3.5" />
+                          {packageBooking.number_of_people} {isAr ? 'أشخاص' : 'people'}
+                        </span>
+                      )}
                     </div>
                     <span className="text-lg font-bold text-accent">
-                      {fmt(item.total_amount, booking?.trip?.currency || room?.currency || car?.currency)}
+                      {fmt(item.total_amount, booking?.trip?.currency || room?.currency || car?.currency || packageBooking?.package?.currency)}
                     </span>
                   </div>
                 </div>

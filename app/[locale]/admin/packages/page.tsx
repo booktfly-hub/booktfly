@@ -116,9 +116,9 @@ export default function AdminPackages() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-1.5">
-                          {pkg.includes_flight && <Plane className="h-4 w-4 text-blue-500" title={isAr ? 'طيران' : 'Flight'} />}
-                          {pkg.includes_hotel && <BedDouble className="h-4 w-4 text-amber-500" title={isAr ? 'فندق' : 'Hotel'} />}
-                          {pkg.includes_car && <CarFront className="h-4 w-4 text-green-500" title={isAr ? 'سيارة' : 'Car'} />}
+                          {pkg.includes_flight && <Plane className="h-4 w-4 text-blue-500" />}
+                          {pkg.includes_hotel && <BedDouble className="h-4 w-4 text-amber-500" />}
+                          {pkg.includes_car && <CarFront className="h-4 w-4 text-green-500" />}
                         </div>
                       </td>
                       <td className="p-3">
