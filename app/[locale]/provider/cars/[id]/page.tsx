@@ -76,6 +76,20 @@ export default function EditCarPage() {
     },
   })
 
+  function onValidationError(fieldErrors: Record<string, unknown>) {
+    const firstKey = Object.keys(fieldErrors)[0]
+    if (firstKey) {
+      const el = document.querySelector(`[name="${firstKey}"]`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    const messages = Object.values(fieldErrors)
+      .map((e) => (e as { message?: string })?.message)
+      .filter(Boolean)
+    if (messages.length > 0) {
+      toast({ title: messages[0] as string, variant: 'destructive' })
+    }
+  }
+
   const currency = watch('currency')
   const instantBook = watch('instant_book')
   const availableFrom = watch('available_from')
@@ -301,7 +315,7 @@ export default function EditCarPage() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit, onValidationError)} className="space-y-6">
         {/* Brand & Model */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">{isAr ? 'الماركة والموديل' : 'Brand & Model'}</h2>
@@ -666,6 +680,15 @@ export default function EditCarPage() {
             </label>
           )}
         </div>
+
+        {Object.keys(errors).length > 0 && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 space-y-1">
+            <p className="text-destructive font-semibold text-sm">{isAr ? 'يرجى تصحيح الأخطاء التالية:' : 'Please fix the following errors:'}</p>
+            {Object.entries(errors).map(([key, err]) => (
+              <p key={key} className="text-destructive text-sm">• {(err as { message?: string })?.message || key}</p>
+            ))}
+          </div>
+        )}
 
         <button
           type="submit"

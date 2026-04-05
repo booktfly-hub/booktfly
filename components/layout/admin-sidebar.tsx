@@ -33,8 +33,8 @@ import {
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { signOutAndRedirect } from '@/lib/auth-client'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { useUser } from '@/hooks/use-user'
 
 type NavItem = {
   key: string
@@ -291,7 +291,7 @@ export function AdminSidebar() {
   const t = useTranslations('admin')
   const locale = useLocale()
   const pathname = usePathname()
-  const supabase = useRef(createClient()).current
+  const { signOut } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
   const badges = useBadgeCounts()
 
@@ -305,7 +305,8 @@ export function AdminSidebar() {
   const effectiveBadges = onAlertsPage ? { ...badges, alerts: 0 } : badges
 
   const handleSignOut = async () => {
-    await signOutAndRedirect(supabase, locale)
+    setMobileOpen(false)
+    await signOut()
   }
 
   const closeMobile = () => setMobileOpen(false)

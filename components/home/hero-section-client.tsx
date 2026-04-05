@@ -1,15 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, Sparkles, MapPin, Car as CarIcon } from 'lucide-react'
-import Link from 'next/link'
+import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { ROOM_CATEGORIES } from '@/lib/constants'
 
 interface HeroSectionClientProps {
   locale: string
@@ -42,18 +46,44 @@ export function HeroSectionClient({
 }: HeroSectionClientProps) {
   const isAr = locale === 'ar'
   const router = useRouter()
+  const t = useTranslations()
   const [searchMode, setSearchMode] = useState<'flights'|'hotels'|'cars'>('flights')
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
   const [tripType, setTripType] = useState('round_trip')
   const [departureDate, setDepartureDate] = useState<Date>()
   const [returnDate, setReturnDate] = useState<Date>()
+  const [hotelCity, setHotelCity] = useState('')
+  const [hotelCategory, setHotelCategory] = useState('')
+  const [hotelCheckIn, setHotelCheckIn] = useState<Date>()
+  const [hotelDays, setHotelDays] = useState('')
+  const [hotelRoomsCount, setHotelRoomsCount] = useState('')
+  const [hotelPassengers, setHotelPassengers] = useState('')
+  const [hotelPriceMin, setHotelPriceMin] = useState('')
+  const [hotelPriceMax, setHotelPriceMax] = useState('')
+  const [hotelCapacityMin, setHotelCapacityMin] = useState('')
+  const [hotelSort, setHotelSort] = useState('newest')
+  const [showHotelFilters, setShowHotelFilters] = useState(false)
   const [carPickupType, setCarPickupType] = useState('')
   const [carReturnSame, setCarReturnSame] = useState(true)
   const [carReturnCity, setCarReturnCity] = useState('')
 
   const getActionUrl = () => {
-    if (searchMode === 'hotels') return `/${locale}/rooms`
+    if (searchMode === 'hotels') {
+      const params = new URLSearchParams()
+      if (hotelCity) params.set('city', hotelCity)
+      if (hotelCategory) params.set('category', hotelCategory)
+      if (hotelCheckIn) params.set('check_in', format(hotelCheckIn, 'yyyy-MM-dd'))
+      if (hotelDays) params.set('days', hotelDays)
+      if (hotelRoomsCount) params.set('rooms_count', hotelRoomsCount)
+      if (hotelPassengers) params.set('passengers', hotelPassengers)
+      if (hotelPriceMin) params.set('price_min', hotelPriceMin)
+      if (hotelPriceMax) params.set('price_max', hotelPriceMax)
+      if (hotelCapacityMin) params.set('capacity_min', hotelCapacityMin)
+      if (hotelSort) params.set('sort', hotelSort)
+      const qs = params.toString()
+      return `/${locale}/rooms${qs ? `?${qs}` : ''}`
+    }
     if (searchMode === 'cars') {
       const params = new URLSearchParams()
       if (origin) params.set('city', origin)
@@ -67,6 +97,278 @@ export function HeroSectionClient({
   }
 
   const inputClass = "w-full h-14 px-5 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all shadow-sm"
+
+  const resetHotelFilters = () => {
+    setHotelCity('')
+    setHotelCategory('')
+    setHotelCheckIn(undefined)
+    setHotelDays('')
+    setHotelRoomsCount('')
+    setHotelPassengers('')
+    setHotelPriceMin('')
+    setHotelPriceMax('')
+    setHotelCapacityMin('')
+    setHotelSort('newest')
+  }
+
+  const hasActiveHotelFilters = [
+    hotelCity,
+    hotelCategory,
+    hotelCheckIn ? '1' : '',
+    hotelDays,
+    hotelRoomsCount,
+    hotelPassengers,
+    hotelPriceMin,
+    hotelPriceMax,
+    hotelCapacityMin,
+  ].some(Boolean)
+
+  const renderHotelSearchForm = () => (
+    <>
+      <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
+        <div className="sm:col-span-1">
+          <Input
+            type="text"
+            value={hotelCity}
+            onChange={(e) => setHotelCity(e.target.value)}
+            placeholder={t('rooms.filter_city')}
+            className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+          />
+        </div>
+
+        <Popover>
+          <PopoverTrigger
+            className={cn(
+              'sm:col-span-1 flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-none transition-colors hover:bg-slate-100 md:h-14',
+              hotelCategory ? 'text-slate-700' : 'text-slate-500'
+            )}
+          >
+            <span className="truncate">
+              {hotelCategory
+                ? isAr
+                  ? ROOM_CATEGORIES[hotelCategory as keyof typeof ROOM_CATEGORIES]?.ar
+                  : ROOM_CATEGORIES[hotelCategory as keyof typeof ROOM_CATEGORIES]?.en
+                : t('rooms.filter_category')}
+            </span>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" align="start">
+            <div className="grid gap-1">
+              <Button
+                variant={!hotelCategory ? 'secondary' : 'ghost'}
+                className="h-10 justify-start rounded-xl"
+                onClick={() => setHotelCategory('')}
+              >
+                {t('rooms.filter_category')}
+              </Button>
+              {Object.entries(ROOM_CATEGORIES).map(([key, val]) => (
+                <Button
+                  key={key}
+                  variant={hotelCategory === key ? 'secondary' : 'ghost'}
+                  className="h-10 justify-start rounded-xl"
+                  onClick={() => setHotelCategory(key)}
+                >
+                  {isAr ? val.ar : val.en}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-4 sm:grid-cols-4">
+        <Popover>
+          <PopoverTrigger
+            className={cn(
+              'flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-none transition-colors hover:bg-slate-100 md:h-14',
+              hotelCheckIn ? 'text-slate-700' : 'text-slate-500'
+            )}
+          >
+            <span className="flex min-w-0 items-center gap-2 truncate">
+              <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
+              {hotelCheckIn
+                ? format(hotelCheckIn, 'PPP', { locale: isAr ? arSA : enUS })
+                : t('rooms.filter_date')}
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={hotelCheckIn}
+              onSelect={setHotelCheckIn}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+
+        <div className="relative">
+          <Moon className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            type="number"
+            min="1"
+            value={hotelDays}
+            onChange={(e) => setHotelDays(e.target.value)}
+            placeholder={t('rooms.filter_days')}
+            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+          />
+        </div>
+
+        <div className="relative">
+          <DoorOpen className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            type="number"
+            min="1"
+            value={hotelRoomsCount}
+            onChange={(e) => setHotelRoomsCount(e.target.value)}
+            placeholder={t('rooms.filter_rooms_count')}
+            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+          />
+        </div>
+
+        <div className="relative">
+          <Users className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            type="number"
+            min="1"
+            value={hotelPassengers}
+            onChange={(e) => setHotelPassengers(e.target.value)}
+            placeholder={t('rooms.filter_passengers')}
+            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+        <div className="flex items-center gap-3">
+          <Popover>
+            <PopoverTrigger className="flex h-10 w-40 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-semibold text-slate-700 shadow-none transition-colors hover:bg-slate-100 md:w-48 md:text-sm">
+              <span className="flex items-center gap-2 truncate">
+                <ArrowUpDown className="h-4 w-4 text-slate-400" />
+                {hotelSort === 'price_asc'
+                  ? t('rooms.sort_price_asc')
+                  : hotelSort === 'price_desc'
+                    ? t('rooms.sort_price_desc')
+                    : t('rooms.sort_newest')}
+              </span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2" align="start">
+              <div className="grid gap-1">
+                <Button
+                  variant={hotelSort === 'newest' ? 'secondary' : 'ghost'}
+                  className="h-10 justify-start rounded-xl"
+                  onClick={() => setHotelSort('newest')}
+                >
+                  {t('rooms.sort_newest')}
+                </Button>
+                <Button
+                  variant={hotelSort === 'price_asc' ? 'secondary' : 'ghost'}
+                  className="h-10 justify-start rounded-xl"
+                  onClick={() => setHotelSort('price_asc')}
+                >
+                  {t('rooms.sort_price_asc')}
+                </Button>
+                <Button
+                  variant={hotelSort === 'price_desc' ? 'secondary' : 'ghost'}
+                  className="h-10 justify-start rounded-xl"
+                  onClick={() => setHotelSort('price_desc')}
+                >
+                  {t('rooms.sort_price_desc')}
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Button
+            type="button"
+            variant={showHotelFilters ? 'secondary' : 'outline'}
+            onClick={() => setShowHotelFilters(!showHotelFilters)}
+            className={cn(
+              'h-10 rounded-xl px-4 text-xs font-bold md:text-sm',
+              showHotelFilters && 'bg-accent text-white hover:bg-accent/90'
+            )}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {t('common.filter')}
+          </Button>
+        </div>
+
+        {hasActiveHotelFilters && (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={resetHotelFilters}
+            className="rounded-full px-3 py-1.5 text-xs font-semibold"
+          >
+            <X className="h-3.5 w-3.5" />
+            {t('common.cancel')}
+          </Button>
+        )}
+      </div>
+
+      {showHotelFilters && (
+        <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white p-5 shadow-xl shadow-slate-200/40 animate-fade-in-up md:rounded-[2rem] md:p-8">
+          <h3 className="mb-5 text-base font-bold text-slate-900 md:mb-6 md:text-lg">{t('common.filter')}</h3>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
+            <div className="space-y-1.5 md:space-y-2">
+              <Label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 md:text-xs">
+                {t('rooms.filter_price')} ({t('common.from')})
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                value={hotelPriceMin}
+                onChange={(e) => setHotelPriceMin(e.target.value)}
+                placeholder="0"
+                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 shadow-none hover:bg-slate-100"
+              />
+            </div>
+
+            <div className="space-y-1.5 md:space-y-2">
+              <Label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 md:text-xs">
+                {t('rooms.filter_price')} ({t('common.to')})
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                value={hotelPriceMax}
+                onChange={(e) => setHotelPriceMax(e.target.value)}
+                placeholder="10000"
+                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 shadow-none hover:bg-slate-100"
+              />
+            </div>
+
+            <div className="space-y-1.5 md:space-y-2">
+              <Label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 md:text-xs">
+                {t('rooms.filter_capacity')}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                value={hotelCapacityMin}
+                onChange={(e) => setHotelCapacityMin(e.target.value)}
+                placeholder="1"
+                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-sm font-medium text-slate-700 shadow-none hover:bg-slate-100"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="pt-2">
+        <Button
+          type="submit"
+          className="h-12 w-full rounded-2xl px-6 font-bold shadow-sm shadow-primary/20 md:h-14"
+        >
+          <Search className="h-5 w-5" />
+          <span>{t('common.search')}</span>
+        </Button>
+      </div>
+    </>
+  )
 
   const renderCarSearchForm = () => (
     <>
@@ -204,6 +506,7 @@ export function HeroSectionClient({
   )
 
   const renderSearchForm = () => {
+    if (searchMode === 'hotels') return renderHotelSearchForm()
     if (searchMode === 'cars') return renderCarSearchForm()
 
     return (
@@ -291,7 +594,7 @@ export function HeroSectionClient({
                 !departureDate ? "text-slate-400" : "text-slate-700"
               )}
             >
-              {departureDate ? format(departureDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{searchMode === 'hotels' ? (isAr ? 'تاريخ الوصول' : 'Check-in') : departureDateLabel}</span>}
+              {departureDate ? format(departureDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{departureDateLabel}</span>}
               <CalendarIcon className="h-4 w-4 text-slate-400" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
@@ -313,7 +616,7 @@ export function HeroSectionClient({
                 !returnDate ? "text-slate-400" : "text-slate-700"
               )}
             >
-              {returnDate ? format(returnDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{searchMode === 'hotels' ? (isAr ? 'تاريخ المغادرة' : 'Check-out') : returnDateLabel}</span>}
+              {returnDate ? format(returnDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{returnDateLabel}</span>}
               <CalendarIcon className="h-4 w-4 text-slate-400" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
@@ -396,7 +699,7 @@ export function HeroSectionClient({
               action={getActionUrl()}
               className="space-y-4"
               onSubmit={(e) => {
-                if (searchMode === 'cars') {
+                if (searchMode === 'cars' || searchMode === 'hotels') {
                   e.preventDefault()
                   router.push(getActionUrl())
                 }

@@ -33,7 +33,7 @@ export type ActivityEventType =
   | 'car_booking_created'
   | 'car_booking_confirmed'
   | 'package_created'
-  | 'package_status_changed'
+  | 'package_removed'
   | 'package_booking_created'
   | 'package_booking_confirmed'
   | 'package_booking_cancelled'

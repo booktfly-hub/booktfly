@@ -88,6 +88,8 @@ export function TrendingDestinations({ locale }: TrendingDestinationsProps) {
                 src={dest.image}
                 alt={isAr ? dest.nameAr : dest.nameEn}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                loading="lazy"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               />
               

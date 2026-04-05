@@ -5,12 +5,10 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
 import { NotificationBell } from './notification-bell'
-import { signOutAndRedirect } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
 export function Navbar() {
@@ -18,7 +16,7 @@ export function Navbar() {
   const locale = useLocale()
   const isAr = locale === 'ar'
   const pathname = usePathname()
-  const { user, profile, loading, supabase } = useUser()
+  const { user, profile, loading, signOut } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -32,7 +30,8 @@ export function Navbar() {
   }, [])
 
   const handleSignOut = async () => {
-    await signOutAndRedirect(supabase, locale)
+    setUserMenuOpen(false)
+    await signOut()
   }
 
   const getDashboardLink = () => {
@@ -46,6 +45,7 @@ export function Navbar() {
     { href: `/${locale}/trips`, label: t('nav.flights'), icon: Plane },
     { href: `/${locale}/rooms`, label: t('nav.hotels'), icon: BedDouble },
     { href: `/${locale}/cars`, label: t('nav.cars'), icon: CarFront },
+    { href: `/${locale}/packages`, label: t('nav.packages'), icon: PackageIcon },
     { href: `/${locale}/last-minute`, label: t('nav.last_minute'), icon: Flame, highlight: true },
     { href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff },
   ]
@@ -63,15 +63,15 @@ export function Navbar() {
             : "max-w-7xl rounded-none bg-transparent"
         )}
       >
-        <div className={cn("flex items-center justify-between transition-all duration-500", scrolled ? "px-4 sm:px-6 py-1" : "px-2 py-1 md:py-2")}>
+        <div className={cn("flex items-center justify-between transition-all duration-500 px-4 sm:px-6 py-1 gap-4")}>
           {/* Logo */}
-          <Link href={`/${locale}`} className="relative flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] z-50">
-            <div className={cn("relative transition-all duration-500 flex items-center justify-center", scrolled ? "w-36 sm:w-36 md:w-44 h-12 sm:h-12 md:h-14" : "w-48 sm:w-48 md:w-56 lg:w-64 h-16 sm:h-16 md:h-20")}>
+          <Link href={`/${locale}`} className="relative flex z-5">
+            <div className={cn("relative transition-all duration-500 flex items-center justify-center w-30 h-12 overflow-hidden rounded-lg")}>
               <Image 
-                src="/navbar.png" 
+                src="/navbar.png"   
+                width={120} height={48}
                 alt="BooktFly" 
-                fill
-                className="object-contain scale-[1.8] sm:scale-[1.45] md:scale-[1.55]" 
+                className="object-cover" 
                 priority 
               />
             </div>
@@ -132,11 +132,9 @@ export function Navbar() {
 
                     {/* User dropdown */}
                     <div className="relative">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 rounded-2xl bg-white border border-slate-200 p-1.5 pe-4 shadow-sm hover:shadow-md transition-all"
+                        className="flex items-center gap-2 rounded-2xl bg-white border border-slate-200 p-1.5 pe-4 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
                         <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">
                           {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
@@ -145,24 +143,16 @@ export function Navbar() {
                           {profile?.full_name || user.email}
                         </span>
                         <ChevronDown className={cn("h-4 w-4 text-primary/50 transition-transform duration-300", userMenuOpen && "rotate-180")} />
-                      </motion.button>
+                      </button>
 
-                      <AnimatePresence>
-                        {userMenuOpen && (
-                          <>
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              className="fixed inset-0 z-10"
-                              onClick={() => setUserMenuOpen(false)}
-                            />
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: 10, x: locale === 'ar' ? 20 : -20 }}
-                              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                              className="absolute end-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl z-20 overflow-hidden p-2 origin-top-right"
-                            >
+                      {userMenuOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setUserMenuOpen(false)}
+                          />
+                          <div className="absolute end-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl z-20 overflow-hidden p-2 origin-top-right animate-in fade-in zoom-in-95 duration-150"
+                          >
                               <div className="px-4 py-3 bg-muted/30 rounded-xl mb-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t('common.account')}</p>
                                 <p className="text-sm font-bold truncate text-foreground">{profile?.full_name || user.email}</p>
@@ -208,10 +198,9 @@ export function Navbar() {
                                 <LogOut className="h-4 w-4" />
                                 {t('common.logout')}
                               </button>
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -219,7 +208,7 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/login`}
                       className={cn(
-                        "inline-flex shrink-0 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap",
+                        "z-10inline-flex shrink-0 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap",
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -228,7 +217,7 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/signup`}
                       className={cn(
-                        "shrink-0 rounded-xl bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap",
+                        "z-100 shrink-0 rounded-lg bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap",
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -250,14 +239,12 @@ export function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem]"
-            >
+        <div
+          className={cn(
+            "md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem] transition-[max-height,opacity] duration-300 ease-in-out",
+            mobileOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+          )}
+        >
               <div className="p-4 space-y-1">
                 {navItems.map(({ href, label, icon: Icon, highlight }) => {
                   const isActive = isNavItemActive(href)
@@ -336,9 +323,7 @@ export function Navbar() {
                   </>
                 )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
       </nav>
     </div>
   )

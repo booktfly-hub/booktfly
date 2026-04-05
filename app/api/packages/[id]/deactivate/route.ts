@@ -93,7 +93,7 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    logActivity('package_status_changed', {
+    logActivity('package_removed', {
       userId: user.id,
       metadata: { packageId: id, newStatus },
     })
