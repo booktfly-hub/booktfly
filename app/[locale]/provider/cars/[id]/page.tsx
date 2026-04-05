@@ -33,8 +33,6 @@ import {
   Clock,
 } from 'lucide-react'
 
-type FormData = z.infer<ReturnType<typeof getCarSchema>>
-
 export default function EditCarPage() {
   const tc = useTranslations('common')
   const te = useTranslations('errors')
@@ -51,6 +49,10 @@ export default function EditCarPage() {
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
   const [locating, setLocating] = useState(false)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const schema = getCarSchema(locale)
+
+  type FormInput = z.input<typeof schema>
+  type FormData = z.output<typeof schema>
 
   const {
     register,
@@ -59,8 +61,8 @@ export default function EditCarPage() {
     watch,
     setValue,
     reset,
-  } = useForm<FormData>({
-    resolver: zodResolver(getCarSchema(locale)),
+  } = useForm<FormInput, unknown, FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       currency: 'SAR',
       price_per_day: 0,
@@ -422,8 +424,18 @@ export default function EditCarPage() {
               <input {...register('pickup_location_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g. King Khalid Airport, Exit 15" />
             </div>
           </div>
-          <input type="hidden" {...register('pickup_latitude', { valueAsNumber: true })} />
-          <input type="hidden" {...register('pickup_longitude', { valueAsNumber: true })} />
+          <input
+            type="hidden"
+            {...register('pickup_latitude', {
+              setValueAs: (value) => value === '' || value == null ? undefined : Number(value),
+            })}
+          />
+          <input
+            type="hidden"
+            {...register('pickup_longitude', {
+              setValueAs: (value) => value === '' || value == null ? undefined : Number(value),
+            })}
+          />
         </div>
 
         {/* Pickup & Return Type */}
