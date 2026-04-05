@@ -67,10 +67,12 @@ export default function NewCarPage() {
   })
 
   function onValidationError(fieldErrors: Record<string, unknown>) {
-    const firstKey = Object.keys(fieldErrors)[0]
-    if (firstKey) {
-      const el = document.querySelector(`[name="${firstKey}"]`)
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    for (const key of Object.keys(fieldErrors)) {
+      const el = document.querySelector(`[name="${key}"]`) as HTMLInputElement | null
+      if (el && el.type !== 'hidden') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        break
+      }
     }
     const messages = Object.values(fieldErrors)
       .map((e) => (e as { message?: string })?.message)
@@ -127,8 +129,8 @@ export default function NewCarPage() {
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en`),
           ])
           const [arData, enData] = await Promise.all([arRes.json(), enRes.json()])
-          if (arData.display_name) setValue('pickup_location_ar', arData.display_name, { shouldDirty: true })
-          if (enData.display_name) setValue('pickup_location_en', enData.display_name, { shouldDirty: true })
+          if (arData.display_name) setValue('pickup_location_ar', arData.display_name, { shouldDirty: true, shouldValidate: true })
+          if (enData.display_name) setValue('pickup_location_en', enData.display_name, { shouldDirty: true, shouldValidate: true })
           setLocationStatus('success')
         } catch {
           setLocationStatus('error')
@@ -248,7 +250,7 @@ export default function NewCarPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'سنة الصنع' : 'Year'} *</label>
-              <input type="number" min={2000} max={2030} {...register('year', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              <input type="number" min={2000} max={2027} {...register('year', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.year && <p className="text-destructive text-sm mt-1">{errors.year.message}</p>}
             </div>
           </div>
@@ -461,7 +463,7 @@ export default function NewCarPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'السعر لكل يوم' : 'Price Per Day'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
-              <input type="number" min={1} step={0.01} {...register('price_per_day', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              <input type="number" min={1} max={999999} step={0.01} {...register('price_per_day', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.price_per_day && <p className="text-destructive text-sm mt-1">{errors.price_per_day.message}</p>}
             </div>
           </div>
