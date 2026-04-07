@@ -1,14 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { TripCard } from '@/components/trips/trip-card'
 import { EmptyState } from '@/components/shared/empty-state'
 import type { Trip } from '@/types'
-import { Loader2, Flame } from 'lucide-react'
+import { Loader2, Flame, Users, ArrowLeftRight, CheckCircle2 } from 'lucide-react'
 
 const PAGE_SIZE = 12
+const PREFS_KEY = 'bkf_prefs'
+
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY)
+    if (raw) return JSON.parse(raw) as { tripType?: string; passengers?: number }
+  } catch {}
+  return {}
+}
+
+function savePrefs(patch: { tripType?: string; passengers?: number }) {
+  try {
+    const current = loadPrefs()
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ ...current, ...patch }))
+  } catch {}
+}
 
 interface LastMinuteContentProps {
   initialTrips: Trip[]
@@ -22,6 +38,22 @@ export function LastMinuteContent({ initialTrips, initialHasMore }: LastMinuteCo
   const [trips, setTrips] = useState<Trip[]>(initialTrips)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(initialHasMore)
+
+  const [passengers, setPassengers] = useState(1)
+  const [tripType, setTripType] = useState<'round_trip' | 'one_way'>('round_trip')
+  const [prefsConfirmed, setPrefsConfirmed] = useState(false)
+
+  useEffect(() => {
+    const prefs = loadPrefs()
+    if (prefs.passengers) setPassengers(prefs.passengers)
+    if (prefs.tripType === 'one_way' || prefs.tripType === 'round_trip') setTripType(prefs.tripType)
+    if (prefs.passengers || prefs.tripType) setPrefsConfirmed(true)
+  }, [])
+
+  function handleConfirm() {
+    savePrefs({ passengers, tripType })
+    setPrefsConfirmed(true)
+  }
 
   const loadMore = async () => {
     setLoadingMore(true)
@@ -58,6 +90,67 @@ export function LastMinuteContent({ initialTrips, initialHasMore }: LastMinuteCo
         </div>
         <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('title')}</h1>
         <p className="text-slate-500 text-lg max-w-md mx-auto">{t('subtitle')}</p>
+      </div>
+
+      {/* Preferences prompt */}
+      <div className="max-w-xl mx-auto rounded-2xl border border-orange-100 bg-orange-50/60 p-5 space-y-4">
+        <p className="text-sm font-bold text-orange-700 flex items-center gap-2">
+          {prefsConfirmed ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <Flame className="h-4 w-4" />}
+          {isAr ? 'اختر تفضيلات رحلتك' : 'Set your trip preferences'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Passengers */}
+          <div className="flex items-center gap-2 flex-1 bg-white border border-slate-200 rounded-xl px-4 h-12">
+            <Users className="h-4 w-4 text-slate-400 shrink-0" />
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={passengers}
+              onChange={e => {
+                const v = Math.max(1, Number(e.target.value))
+                setPassengers(v)
+                savePrefs({ passengers: v })
+              }}
+              className="w-full text-sm font-semibold bg-transparent outline-none"
+              placeholder={isAr ? 'عدد المسافرين' : 'Passengers'}
+            />
+          </div>
+
+          {/* Trip type */}
+          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 h-12">
+            <button
+              type="button"
+              onClick={() => { setTripType('round_trip'); savePrefs({ tripType: 'round_trip' }) }}
+              className={`flex items-center gap-1.5 px-3 h-full rounded-lg text-xs font-bold transition-all ${tripType === 'round_trip' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5" />
+              {isAr ? 'ذهاب وعودة' : 'Round trip'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTripType('one_way'); savePrefs({ tripType: 'one_way' }) }}
+              className={`flex items-center gap-1.5 px-3 h-full rounded-lg text-xs font-bold transition-all ${tripType === 'one_way' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              {isAr ? 'ذهاب فقط' : 'One way'}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="h-12 px-5 rounded-xl bg-primary text-white text-sm font-bold hover:brightness-95 transition-all shrink-0"
+          >
+            {isAr ? 'حفظ' : 'Save'}
+          </button>
+        </div>
+        {prefsConfirmed && (
+          <p className="text-xs text-slate-500">
+            {isAr
+              ? `${passengers} ${passengers === 1 ? 'مسافر' : 'مسافرين'} · ${tripType === 'round_trip' ? 'ذهاب وعودة' : 'ذهاب فقط'}`
+              : `${passengers} ${passengers === 1 ? 'passenger' : 'passengers'} · ${tripType === 'round_trip' ? 'Round trip' : 'One way'}`}
+          </p>
+        )}
       </div>
 
       {trips.length === 0 ? (

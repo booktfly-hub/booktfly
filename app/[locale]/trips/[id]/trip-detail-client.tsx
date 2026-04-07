@@ -29,6 +29,7 @@ import { TripStatusBadge } from '@/components/trips/trip-status-badge'
 import { TripDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { getCountryCode } from '@/lib/countries'
 import { buttonVariants } from '@/components/ui/button'
+import { SeatMap } from '@/components/trips/seat-map'
 import type { Trip, Room } from '@/types'
 import { RoomCard } from '@/components/rooms/room-card'
 import { BedDouble } from 'lucide-react'
@@ -131,6 +132,12 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const tripDesc = isAr
     ? trip.description_ar
     : (trip.description_en || trip.description_ar)
+  const tripBenefits = [
+    trip.checked_baggage_kg ? (isAr ? `أمتعة مشحونة ${trip.checked_baggage_kg} كجم` : `Checked baggage ${trip.checked_baggage_kg} kg`) : null,
+    trip.cabin_baggage_kg ? (isAr ? `أمتعة يدوية ${trip.cabin_baggage_kg} كجم` : `Cabin baggage ${trip.cabin_baggage_kg} kg`) : null,
+    trip.meal_included ? (isAr ? 'تشمل وجبة' : 'Meal included') : null,
+    trip.seat_selection_included ? (isAr ? 'يشمل اختيار المقعد' : 'Seat selection included') : null,
+  ].filter(Boolean) as string[]
 
   const originCountry = getCountryCode(trip.origin_code, trip.origin_city_en || trip.origin_city_ar)
   const destCountry = getCountryCode(trip.destination_code, trip.destination_city_en || trip.destination_city_ar)
@@ -291,6 +298,42 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                 </div>
               </div>
               <p className="text-sm font-medium leading-7 text-slate-600 md:text-base">{tripDesc}</p>
+            </div>
+          )}
+
+          {(tripBenefits.length > 0 || (trip.seat_map_enabled && trip.seat_map_config)) && (
+            <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-950 md:text-xl">{isAr ? 'مزايا الرحلة' : 'Trip Benefits'}</h3>
+                  <p className="text-sm font-medium text-slate-500">{isAr ? 'تفاصيل إضافية عن الخدمة والمقاعد' : 'Extra service and seat details'}</p>
+                </div>
+              </div>
+
+              {tripBenefits.length > 0 && (
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {tripBenefits.map((benefit) => (
+                    <span key={benefit} className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+                      {benefit}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {trip.seat_map_enabled && trip.seat_map_config && (
+                <div>
+                  <p className="mb-3 text-sm font-medium text-slate-500">
+                    {isAr ? 'يمكنك اختيار المقعد أثناء الحجز. المقاعد غير المتاحة معطلة تلقائياً.' : 'Travelers can choose exact seats during booking. Unavailable seats are disabled automatically.'}
+                  </p>
+                  <SeatMap
+                    config={trip.seat_map_config}
+                    unavailableSeats={trip.unavailable_seat_numbers || []}
+                  />
+                </div>
+              )}
             </div>
           )}
 

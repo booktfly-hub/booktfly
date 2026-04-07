@@ -26,12 +26,17 @@ import {
   Phone,
   Mail,
   User,
+  CalendarDays,
+  ChevronDown,
 } from 'lucide-react'
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { RoomDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
 import type { Package as PackageType } from '@/types/database'
 
 export default function PackageDetailClient({ params, initialPkg }: { params: Promise<{ id: string; locale: string }>; initialPkg?: PackageType | null }) {
@@ -121,9 +126,24 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
     : (isAr ? pkg.hotel_name_ar : (pkg.hotel_name_en || pkg.hotel_name_ar))
   const hotelCategory = pkg.room?.category || pkg.hotel_category
   const hotelNights = pkg.hotel_nights
+  const durationDays = pkg.duration_days
+  const roomBasisLabel = pkg.room_basis
+    ? ({
+        single: isAr ? 'فردية' : 'Single Room',
+        double: isAr ? 'مزدوجة' : 'Double Room',
+        triple: isAr ? 'ثلاثية' : 'Triple Room',
+        quad: isAr ? 'رباعية' : 'Quad Room',
+      }[pkg.room_basis] || pkg.room_basis)
+    : null
   const hotelCity = pkg.room
     ? (isAr ? pkg.room.city_ar : (pkg.room.city_en || pkg.room.city_ar))
     : (isAr ? pkg.hotel_city_ar : (pkg.hotel_city_en || pkg.hotel_city_ar))
+  const includedServices = [
+    pkg.breakfast_included ? (isAr ? 'وجبة الإفطار' : 'Breakfast') : null,
+    pkg.airport_transfer_included ? (isAr ? 'استقبال وتوديع المطار' : 'Airport Transfer') : null,
+    pkg.tour_guide_included ? (isAr ? 'مرشد سياحي' : 'Tour Guide') : null,
+    pkg.sightseeing_tours_included ? (isAr ? 'جولات سياحية' : 'Sightseeing Tours') : null,
+  ].filter(Boolean) as string[]
 
   // Car details (from linked car or inline fields)
   const carBrand = pkg.car
@@ -136,7 +156,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
   const carRentalDays = pkg.car_rental_days
 
   const formatDateTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(isAr ? 'ar-SA' : 'en-SA', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -146,7 +166,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
   }
 
   const formatDateOnly = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(isAr ? 'ar-SA' : 'en-SA', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -279,22 +299,50 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('packages.start_date')}</label>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium shadow-none"
-                />
+                <Popover>
+                  <PopoverTrigger className={cn(
+                    'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium shadow-none transition-colors hover:bg-slate-50',
+                    startDate ? 'text-slate-900' : 'text-slate-400'
+                  )}>
+                    <span className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
+                      {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarUI
+                      mode="single"
+                      selected={startDate && isValid(parseISO(startDate)) ? parseISO(startDate) : undefined}
+                      onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('packages.end_date')}</label>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate || undefined}
-                  className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium shadow-none"
-                />
+                <Popover>
+                  <PopoverTrigger className={cn(
+                    'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium shadow-none transition-colors hover:bg-slate-50',
+                    endDate ? 'text-slate-900' : 'text-slate-400'
+                  )}>
+                    <span className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
+                      {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarUI
+                      mode="single"
+                      selected={endDate && isValid(parseISO(endDate)) ? parseISO(endDate) : undefined}
+                      onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                      disabled={(date) => startDate && isValid(parseISO(startDate)) ? date < parseISO(startDate) : false}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </div>
@@ -501,6 +549,23 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                   </div>
                 )}
 
+                {(durationDays || roomBasisLabel) && (
+                  <div className="mb-6 flex flex-wrap gap-2">
+                    {durationDays && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+                        <Clock className="h-4 w-4 text-slate-400" />
+                        {durationDays} {isAr ? 'أيام' : 'Days'}
+                      </span>
+                    )}
+                    {roomBasisLabel && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+                        <BedDouble className="h-4 w-4 text-slate-400" />
+                        {roomBasisLabel}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Description */}
                 {description && (
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 mb-6">
@@ -616,6 +681,18 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                         <p className="text-base font-bold text-slate-900">{hotelNights} {isAr ? 'ليالي' : 'Nights'}</p>
                       </div>
                     )}
+                    {durationDays && (
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'المدة' : 'Duration'}</p>
+                        <p className="text-base font-bold text-slate-900">{durationDays} {isAr ? 'أيام' : 'Days'}</p>
+                      </div>
+                    )}
+                    {roomBasisLabel && (
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'نوع الإقامة' : 'Room Basis'}</p>
+                        <p className="text-base font-bold text-slate-900">{roomBasisLabel}</p>
+                      </div>
+                    )}
                     {hotelCity && (
                       <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'المدينة' : 'City'}</p>
@@ -623,6 +700,18 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                       </div>
                     )}
                   </div>
+                  {includedServices.length > 0 && (
+                    <div className="mt-4">
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'الخدمات المشمولة' : 'Included Services'}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {includedServices.map((service) => (
+                          <span key={service} className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700">
+                            {service}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

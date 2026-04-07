@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { resolveApiErrorMessage } from '@/lib/api-error'
 import { toast } from '@/components/ui/toaster'
-import { Loader2, Send, Mail } from 'lucide-react'
+import { Loader2, Send, Mail, CalendarDays, ChevronDown } from 'lucide-react'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 export default function MarketeerCampaignsPage() {
   const locale = useLocale()
@@ -153,12 +157,28 @@ export default function MarketeerCampaignsPage() {
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
               {isAr ? 'التاريخ' : 'Date'}
             </label>
-            <input
-              type="date"
-              value={form.departureOrDate}
-              onChange={(e) => update('departureOrDate', e.target.value)}
-              className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
+            <Popover>
+              <PopoverTrigger className={cn(
+                'flex w-full items-center justify-between rounded-xl border bg-background px-4 py-3 text-sm transition-colors hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                form.departureOrDate ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                <span className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  {form.departureOrDate && isValid(parseISO(form.departureOrDate))
+                    ? format(parseISO(form.departureOrDate), 'd MMM yyyy')
+                    : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarUI
+                  mode="single"
+                  selected={form.departureOrDate && isValid(parseISO(form.departureOrDate)) ? parseISO(form.departureOrDate) : undefined}
+                  onSelect={(date) => update('departureOrDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">

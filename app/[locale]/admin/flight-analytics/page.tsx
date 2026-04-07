@@ -15,6 +15,8 @@ import {
   ArrowUpDown,
   Filter,
   Calendar,
+  CalendarDays,
+  ChevronDown,
   Users,
   DollarSign,
   Armchair,
@@ -22,6 +24,9 @@ import {
   Clock,
   PartyPopper,
 } from 'lucide-react'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
 
 type Trip = {
   id: string
@@ -480,22 +485,44 @@ export default function FlightAnalyticsPage() {
           </select>
 
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder={isAr ? 'من' : 'From'}
-            />
+            <Popover>
+              <PopoverTrigger className={cn(
+                'flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm transition-colors hover:bg-slate-50',
+                dateFrom ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                <CalendarDays className="h-4 w-4 shrink-0" />
+                {dateFrom && isValid(parseISO(dateFrom)) ? format(parseISO(dateFrom), 'd MMM yyyy') : (isAr ? 'من' : 'From')}
+                <ChevronDown className="h-3.5 w-3.5" />
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarUI
+                  mode="single"
+                  selected={dateFrom && isValid(parseISO(dateFrom)) ? parseISO(dateFrom) : undefined}
+                  onSelect={(date) => setDateFrom(date ? format(date, 'yyyy-MM-dd') : '')}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
             <span className="text-muted-foreground text-sm">{isAr ? 'إلى' : 'to'}</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder={isAr ? 'إلى' : 'To'}
-            />
+            <Popover>
+              <PopoverTrigger className={cn(
+                'flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm transition-colors hover:bg-slate-50',
+                dateTo ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                <CalendarDays className="h-4 w-4 shrink-0" />
+                {dateTo && isValid(parseISO(dateTo)) ? format(parseISO(dateTo), 'd MMM yyyy') : (isAr ? 'إلى' : 'To')}
+                <ChevronDown className="h-3.5 w-3.5" />
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarUI
+                  mode="single"
+                  selected={dateTo && isValid(parseISO(dateTo)) ? parseISO(dateTo) : undefined}
+                  onSelect={(date) => setDateTo(date ? format(date, 'yyyy-MM-dd') : '')}
+                  disabled={(date) => dateFrom && isValid(parseISO(dateFrom)) ? date < parseISO(dateFrom) : false}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="flex items-center gap-2">

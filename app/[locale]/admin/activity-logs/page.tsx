@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   Activity,
   Calendar,
+  CalendarDays,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -20,6 +21,9 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
 
 type ActivityLog = {
   id: string
@@ -472,19 +476,44 @@ export default function AdminActivityLogs() {
 
           {dateRange === 'custom' && (
             <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={customFrom}
-                onChange={(e) => { setCustomFrom(e.target.value); setPage(0) }}
-                className="rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-muted/50',
+                  customFrom ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <CalendarDays className="h-4 w-4 shrink-0" />
+                  {customFrom && isValid(parseISO(customFrom)) ? format(parseISO(customFrom), 'd MMM yyyy') : (isAr ? 'من' : 'From')}
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={customFrom && isValid(parseISO(customFrom)) ? parseISO(customFrom) : undefined}
+                    onSelect={(date) => { setCustomFrom(date ? format(date, 'yyyy-MM-dd') : ''); setPage(0) }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <span className="text-muted-foreground text-sm">{isAr ? 'إلى' : 'to'}</span>
-              <input
-                type="date"
-                value={customTo}
-                onChange={(e) => { setCustomTo(e.target.value); setPage(0) }}
-                className="rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-muted/50',
+                  customTo ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <CalendarDays className="h-4 w-4 shrink-0" />
+                  {customTo && isValid(parseISO(customTo)) ? format(parseISO(customTo), 'd MMM yyyy') : (isAr ? 'إلى' : 'To')}
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={customTo && isValid(parseISO(customTo)) ? parseISO(customTo) : undefined}
+                    onSelect={(date) => { setCustomTo(date ? format(date, 'yyyy-MM-dd') : ''); setPage(0) }}
+                    disabled={(date) => customFrom && isValid(parseISO(customFrom)) ? date < parseISO(customFrom) : false}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 

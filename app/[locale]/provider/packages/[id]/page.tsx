@@ -21,7 +21,12 @@ import {
   Power,
   ArrowRight,
   ArrowLeft,
+  CalendarDays,
+  ChevronDown,
 } from 'lucide-react'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
 
 export default function EditPackagePage() {
   const tc = useTranslations('common')
@@ -91,8 +96,10 @@ export default function EditPackagePage() {
   const [carRentalDays, setCarRentalDays] = useState<number | ''>('')
 
   // Pricing
-  const [totalPrice, setTotalPrice] = useState<number | ''>('')
-  const [originalPrice, setOriginalPrice] = useState<number | ''>('')
+  const [tripPrice, setTripPrice] = useState<number | ''>('')
+  const [carPrice, setCarPrice] = useState<number | ''>('')
+  const [hotelPrice, setHotelPrice] = useState<number | ''>('')
+  const [offerPrice, setOfferPrice] = useState<number | ''>('')
   const [currency, setCurrency] = useState('SAR')
   const [maxBookings, setMaxBookings] = useState<number | ''>(10)
 
@@ -178,8 +185,10 @@ export default function EditPackagePage() {
         setCarCategory(p.car_category || '')
         setCarRentalDays(p.car_rental_days || '')
 
-        setTotalPrice(p.total_price)
-        setOriginalPrice(p.original_price || '')
+        setTripPrice(p.trip_price || '')
+        setCarPrice(p.car_price || '')
+        setHotelPrice(p.hotel_price || '')
+        setOfferPrice(p.original_price != null && p.original_price > p.total_price ? p.total_price : '')
         setCurrency(p.currency)
         setMaxBookings(p.max_bookings)
         setStartDate(p.start_date || '')
@@ -233,9 +242,18 @@ export default function EditPackagePage() {
 
   const atLeastOneIncluded = includesFlight || includesHotel || includesCar
 
+  const componentSum =
+    (includesFlight && tripPrice ? Number(tripPrice) : 0) +
+    (includesCar && carPrice ? Number(carPrice) : 0) +
+    (includesHotel && hotelPrice ? Number(hotelPrice) : 0)
+
+  const computedTotal = componentSum > 0 ? componentSum : (pkg?.total_price ?? 0)
+
+  const savings = offerPrice && computedTotal > Number(offerPrice) ? computedTotal - Number(offerPrice) : 0
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!nameAr || !destinationCityAr || !totalPrice || !atLeastOneIncluded) {
+    if (!nameAr || !destinationCityAr || !atLeastOneIncluded || computedTotal <= 0) {
       toast({ title: isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', variant: 'destructive' })
       return
     }
@@ -299,8 +317,11 @@ export default function EditPackagePage() {
         }
       }
 
-      formData.append('total_price', String(totalPrice))
-      if (originalPrice) formData.append('original_price', String(originalPrice))
+      if (includesFlight && tripPrice) formData.append('trip_price', String(tripPrice))
+      if (includesCar && carPrice) formData.append('car_price', String(carPrice))
+      if (includesHotel && hotelPrice) formData.append('hotel_price', String(hotelPrice))
+      if (offerPrice) formData.append('offer_price', String(offerPrice))
+      formData.append('total_price', String(computedTotal))
       formData.append('currency', currency)
       if (maxBookings) formData.append('max_bookings', String(maxBookings))
       if (startDate) formData.append('start_date', startDate)
@@ -708,17 +729,86 @@ export default function EditPackagePage() {
             <DollarSign className="h-4 w-4 text-primary" />
             {isAr ? 'التسعير' : 'Pricing'}
           </h2>
+
+          {/* Component prices */}
+          <div className="space-y-3">
+            {includesFlight && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر الرحلة' : 'Flight Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={tripPrice}
+                  onChange={e => setTripPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+            {includesHotel && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر الفندق' : 'Hotel Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={hotelPrice}
+                  onChange={e => setHotelPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+            {includesCar && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر السيارة' : 'Car Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={carPrice}
+                  onChange={e => setCarPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Auto total */}
+          {atLeastOneIncluded && (
+            <div className="rounded-lg bg-slate-50 border px-4 py-3 flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-600">
+                {isAr ? 'الإجمالي' : 'Total'}
+              </span>
+              <span className="text-lg font-black text-slate-900">
+                {computedTotal.toLocaleString(isAr ? 'ar-SA' : 'en-SA')} {currency}
+              </span>
+            </div>
+          )}
+
+          {/* Offer price */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">
+              {isAr ? 'سعر العرض (الباقة)' : 'Package Offer Price'}{' '}
+              <span className="text-muted-foreground text-xs">({tc('optional')})</span>
+            </label>
+            <input
+              type="number" min={0} step={0.01}
+              value={offerPrice}
+              onChange={e => setOfferPrice(e.target.value ? Number(e.target.value) : '')}
+              className={inputClass}
+              placeholder={isAr ? 'أدخل سعراً مخفضاً للباقة...' : 'Enter a discounted package price...'}
+            />
+            {savings > 0 && (
+              <p className="mt-1.5 text-sm font-semibold text-emerald-600">
+                {isAr ? `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة` : `Save ${savings.toLocaleString('en-SA')} ${currency} with the package`}
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'السعر الإجمالي' : 'Total Price'} *</label>
-              <input type="number" min={1} step={0.01} value={totalPrice} onChange={e => setTotalPrice(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'السعر الأصلي' : 'Original Price'} <span className="text-muted-foreground">({tc('optional')})</span>
-              </label>
-              <input type="number" min={1} step={0.01} value={originalPrice} onChange={e => setOriginalPrice(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
-            </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{tc('currency')} *</label>
               <select value={currency} onChange={e => setCurrency(e.target.value)} className={selectClass}>
@@ -742,11 +832,50 @@ export default function EditPackagePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ البداية' : 'Start Date'}</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputClass} />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  `${inputClass} flex items-center justify-between`,
+                  startDate ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={startDate && isValid(parseISO(startDate)) ? parseISO(startDate) : undefined}
+                    onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ النهاية' : 'End Date'}</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputClass} />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  `${inputClass} flex items-center justify-between`,
+                  endDate ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={endDate && isValid(parseISO(endDate)) ? parseISO(endDate) : undefined}
+                    onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                    disabled={(date) => startDate && isValid(parseISO(startDate)) ? date < parseISO(startDate) : false}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>

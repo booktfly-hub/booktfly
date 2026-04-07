@@ -192,6 +192,14 @@ export async function POST(request: NextRequest) {
       hotel_nights: formData.get('hotel_nights')
         ? Number(formData.get('hotel_nights'))
         : undefined,
+      duration_days: formData.get('duration_days')
+        ? Number(formData.get('duration_days'))
+        : undefined,
+      room_basis: (formData.get('room_basis') as string) || undefined,
+      breakfast_included: formData.get('breakfast_included') === 'true',
+      airport_transfer_included: formData.get('airport_transfer_included') === 'true',
+      tour_guide_included: formData.get('tour_guide_included') === 'true',
+      sightseeing_tours_included: formData.get('sightseeing_tours_included') === 'true',
       hotel_city_ar: (formData.get('hotel_city_ar') as string) || undefined,
       hotel_city_en: (formData.get('hotel_city_en') as string) || undefined,
       car_brand_ar: (formData.get('car_brand_ar') as string) || undefined,
@@ -202,6 +210,10 @@ export async function POST(request: NextRequest) {
       car_rental_days: formData.get('car_rental_days')
         ? Number(formData.get('car_rental_days'))
         : undefined,
+      trip_price: formData.get('trip_price') ? Number(formData.get('trip_price')) : undefined,
+      car_price: formData.get('car_price') ? Number(formData.get('car_price')) : undefined,
+      hotel_price: formData.get('hotel_price') ? Number(formData.get('hotel_price')) : undefined,
+      offer_price: formData.get('offer_price') ? Number(formData.get('offer_price')) : undefined,
       total_price: Number(formData.get('total_price')),
       original_price: formData.get('original_price')
         ? Number(formData.get('original_price'))
@@ -280,6 +292,12 @@ export async function POST(request: NextRequest) {
         hotel_name_en: parsed.data.hotel_name_en || null,
         hotel_category: parsed.data.hotel_category || null,
         hotel_nights: parsed.data.hotel_nights || null,
+        duration_days: parsed.data.duration_days || null,
+        room_basis: parsed.data.room_basis || null,
+        breakfast_included: parsed.data.breakfast_included || false,
+        airport_transfer_included: parsed.data.airport_transfer_included || false,
+        tour_guide_included: parsed.data.tour_guide_included || false,
+        sightseeing_tours_included: parsed.data.sightseeing_tours_included || false,
         hotel_city_ar: parsed.data.hotel_city_ar || null,
         hotel_city_en: parsed.data.hotel_city_en || null,
         car_brand_ar: parsed.data.car_brand_ar || null,
@@ -288,8 +306,11 @@ export async function POST(request: NextRequest) {
         car_model_en: parsed.data.car_model_en || null,
         car_category: parsed.data.car_category || null,
         car_rental_days: parsed.data.car_rental_days || null,
-        total_price: parsed.data.total_price,
-        original_price: parsed.data.original_price || null,
+        trip_price: parsed.data.trip_price ?? null,
+        car_price: parsed.data.car_price ?? null,
+        hotel_price: parsed.data.hotel_price ?? null,
+        total_price: parsed.data.offer_price ?? parsed.data.total_price,
+        original_price: parsed.data.offer_price ? parsed.data.total_price : null,
         currency: parsed.data.currency,
         start_date: parsed.data.start_date || null,
         end_date: parsed.data.end_date || null,
