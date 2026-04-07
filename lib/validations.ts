@@ -11,6 +11,15 @@ function v(locale: Locale, key: keyof typeof ar.validation): string {
   return messages[locale].validation[key]
 }
 
+const seatMapConfigSchema = z.object({
+  rows: z.number().int().min(1).max(80),
+  left_columns: z.array(z.string().regex(/^[A-Z]$/)).min(1).max(6),
+  right_columns: z.array(z.string().regex(/^[A-Z]$/)).min(1).max(6),
+  blocked_seats: z.array(z.string().regex(/^\d+[A-Z]$/)).default([]),
+  up_front_rows: z.array(z.number().int().min(1)).default([]),
+  extra_legroom_rows: z.array(z.number().int().min(1)).default([]),
+})
+
 export function getSignupSchema(locale: Locale = 'ar') {
   return z.object({
     full_name: z.string().min(2, v(locale, 'name_required')),
@@ -64,6 +73,12 @@ export function getTripSchema(locale: Locale = 'ar') {
     price_per_seat: z.number().min(1, v(locale, 'price_required')),
     price_per_seat_one_way: z.number().min(1, v(locale, 'price_required')),
     currency: z.enum(['SAR', 'USD']),
+    checked_baggage_kg: z.number().min(0).optional(),
+    cabin_baggage_kg: z.number().min(0).optional(),
+    meal_included: z.boolean().optional(),
+    seat_selection_included: z.boolean().optional(),
+    seat_map_enabled: z.boolean().optional(),
+    seat_map_config: seatMapConfigSchema.optional(),
     description_ar: z.string().optional(),
     description_en: z.string().optional(),
   })
@@ -75,8 +90,9 @@ export const passengerSchema = z.object({
   first_name: z.string().min(2, 'First name is required').regex(englishNameRegex, 'Please enter name in English only'),
   last_name: z.string().min(2, 'Last name is required').regex(englishNameRegex, 'Please enter name in English only'),
   date_of_birth: z.string().min(1, 'Date of birth is required'),
-  id_number: z.string().min(4, 'ID/Passport number is required'),
+  id_number: z.string().min(4, 'ID/Passport number is required').regex(/^[a-zA-Z0-9]+$/, 'Please enter ID number in English only'),
   id_expiry_date: z.string().min(1, 'ID expiry date is required'),
+  seat_number: z.string().regex(/^\d+[A-Z]$/, 'Invalid seat number').optional(),
 })
 
 export const bookingContactSchema = z.object({
@@ -88,6 +104,7 @@ export function getBookingSchema(locale: Locale = 'ar') {
   return z.object({
     trip_id: z.string().uuid(),
     seats_count: z.number().min(1).max(10),
+    selected_seat_numbers: z.array(z.string().regex(/^\d+[A-Z]$/)).optional(),
     contact: bookingContactSchema,
     passengers: z.array(passengerSchema).min(1),
   })
@@ -265,6 +282,12 @@ export function getPackageSchema(locale: Locale = 'ar') {
     hotel_name_en: z.string().optional(),
     hotel_category: z.string().optional(),
     hotel_nights: z.number().optional(),
+    duration_days: z.number().optional(),
+    room_basis: z.string().optional(),
+    breakfast_included: z.boolean().optional(),
+    airport_transfer_included: z.boolean().optional(),
+    tour_guide_included: z.boolean().optional(),
+    sightseeing_tours_included: z.boolean().optional(),
     hotel_city_ar: z.string().optional(),
     hotel_city_en: z.string().optional(),
     car_brand_ar: z.string().optional(),
@@ -273,6 +296,10 @@ export function getPackageSchema(locale: Locale = 'ar') {
     car_model_en: z.string().optional(),
     car_category: z.string().optional(),
     car_rental_days: z.number().optional(),
+    trip_price: z.number().min(0).optional(),
+    car_price: z.number().min(0).optional(),
+    hotel_price: z.number().min(0).optional(),
+    offer_price: z.number().min(0).optional(),
     total_price: z.number().min(1, v(locale, 'price_required')),
     original_price: z.number().optional(),
     currency: z.enum(['SAR', 'USD']),

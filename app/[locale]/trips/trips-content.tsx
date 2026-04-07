@@ -289,7 +289,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
                 departureDate ? 'text-slate-700' : 'text-slate-400'
               )}
             >
-              {departureDate ? format(departureDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{t('trips.departure_date')}</span>}
+              {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{t('trips.departure_date')}</span>}
               <CalendarIcon className="h-4 w-4 opacity-50" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -306,7 +306,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
                 returnDate ? 'text-slate-700' : 'text-slate-400'
               )}
             >
-              {returnDate ? format(returnDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{t('trips.return_date_filter')}</span>}
+              {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{t('trips.return_date_filter')}</span>}
               <CalendarIcon className="h-4 w-4 opacity-50" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

@@ -192,6 +192,18 @@ export async function POST(request: NextRequest) {
       price_per_seat: Number(formData.get('price_per_seat')),
       price_per_seat_one_way: Number(formData.get('price_per_seat_one_way')),
       currency: (formData.get('currency') as string) || 'SAR',
+      checked_baggage_kg: formData.get('checked_baggage_kg')
+        ? Number(formData.get('checked_baggage_kg'))
+        : undefined,
+      cabin_baggage_kg: formData.get('cabin_baggage_kg')
+        ? Number(formData.get('cabin_baggage_kg'))
+        : undefined,
+      meal_included: formData.get('meal_included') === 'true',
+      seat_selection_included: formData.get('seat_selection_included') === 'true',
+      seat_map_enabled: formData.get('seat_map_enabled') === 'true',
+      seat_map_config: formData.get('seat_map_config')
+        ? JSON.parse(formData.get('seat_map_config') as string)
+        : undefined,
       description_ar: (formData.get('description_ar') as string) || undefined,
       description_en: (formData.get('description_en') as string) || undefined,
     }
@@ -252,6 +264,12 @@ export async function POST(request: NextRequest) {
         price_per_seat: parsed.data.price_per_seat,
         price_per_seat_one_way: parsed.data.price_per_seat_one_way,
         currency: parsed.data.currency,
+        checked_baggage_kg: parsed.data.checked_baggage_kg || null,
+        cabin_baggage_kg: parsed.data.cabin_baggage_kg || null,
+        meal_included: parsed.data.meal_included || false,
+        seat_selection_included: parsed.data.seat_selection_included || false,
+        seat_map_enabled: parsed.data.seat_map_enabled || false,
+        seat_map_config: parsed.data.seat_map_config || null,
         description_ar: parsed.data.description_ar || null,
         description_en: parsed.data.description_en || null,
         image_url: imageUrl,

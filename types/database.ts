@@ -9,6 +9,16 @@ export type CabinClass = 'economy' | 'business' | 'first'
 export type ListingType = 'seats' | 'trip'
 export type Currency = 'SAR' | 'USD'
 export type VisaType = 'tourist' | 'umrah' | 'hajj' | 'work' | 'family_visit' | 'business_visit' | 'private_visit'
+export type SeatTier = 'up_front' | 'extra_legroom' | 'standard'
+
+export type TripSeatMapConfig = {
+  rows: number
+  left_columns: string[]
+  right_columns: string[]
+  blocked_seats: string[]
+  up_front_rows: number[]
+  extra_legroom_rows: number[]
+}
 
 export type Passenger = {
   first_name: string
@@ -16,6 +26,7 @@ export type Passenger = {
   date_of_birth: string
   id_number: string
   id_expiry_date: string
+  seat_number?: string
 }
 
 export type TripEditRequestStatus = 'pending' | 'approved' | 'rejected'
@@ -206,9 +217,16 @@ export type Trip = {
   price_per_seat: number
   price_per_seat_one_way: number | null
   currency: Currency
+  checked_baggage_kg: number | null
+  cabin_baggage_kg: number | null
+  meal_included: boolean
+  seat_selection_included: boolean
   description_ar: string | null
   description_en: string | null
   is_direct: boolean
+  seat_map_enabled: boolean
+  seat_map_config: TripSeatMapConfig | null
+  unavailable_seat_numbers?: string[]
   image_url: string | null
   is_last_minute: boolean
   original_price: number | null
@@ -694,6 +712,12 @@ export type Package = {
   hotel_name_en: string | null
   hotel_category: string | null
   hotel_nights: number | null
+  duration_days: number | null
+  room_basis: string | null
+  breakfast_included: boolean
+  airport_transfer_included: boolean
+  tour_guide_included: boolean
+  sightseeing_tours_included: boolean
   hotel_city_ar: string | null
   hotel_city_en: string | null
   car_brand_ar: string | null
@@ -702,6 +726,9 @@ export type Package = {
   car_model_en: string | null
   car_category: string | null
   car_rental_days: number | null
+  trip_price: number | null
+  car_price: number | null
+  hotel_price: number | null
   total_price: number
   original_price: number | null
   discount_percentage: number
@@ -768,4 +795,3 @@ export type MarketeerCustomer = {
   source: 'manual' | 'excel' | 'referral'
   created_at: string
 }
-

@@ -20,7 +20,12 @@ import {
   MapPin,
   Calendar,
   DollarSign,
+  CalendarDays,
+  ChevronDown,
 } from 'lucide-react'
+import { Calendar as CalendarUI } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format, parseISO, isValid } from 'date-fns'
 
 export default function NewPackagePage() {
   const tc = useTranslations('common')
@@ -70,6 +75,12 @@ export default function NewPackagePage() {
   const [hotelNameEn, setHotelNameEn] = useState('')
   const [hotelCategory, setHotelCategory] = useState('')
   const [hotelNights, setHotelNights] = useState<number | ''>('')
+  const [durationDays, setDurationDays] = useState<number | ''>('')
+  const [roomBasis, setRoomBasis] = useState('')
+  const [breakfastIncluded, setBreakfastIncluded] = useState(false)
+  const [airportTransferIncluded, setAirportTransferIncluded] = useState(false)
+  const [tourGuideIncluded, setTourGuideIncluded] = useState(false)
+  const [sightseeingToursIncluded, setSightseeingToursIncluded] = useState(false)
   const [hotelCityAr, setHotelCityAr] = useState('')
   const [hotelCityEn, setHotelCityEn] = useState('')
 
@@ -85,8 +96,10 @@ export default function NewPackagePage() {
   const [carRentalDays, setCarRentalDays] = useState<number | ''>('')
 
   // Pricing
-  const [totalPrice, setTotalPrice] = useState<number | ''>('')
-  const [originalPrice, setOriginalPrice] = useState<number | ''>('')
+  const [tripPrice, setTripPrice] = useState<number | ''>('')
+  const [carPrice, setCarPrice] = useState<number | ''>('')
+  const [hotelPrice, setHotelPrice] = useState<number | ''>('')
+  const [offerPrice, setOfferPrice] = useState<number | ''>('')
   const [currency, setCurrency] = useState('SAR')
   const [maxBookings, setMaxBookings] = useState<number | ''>(10)
 
@@ -118,9 +131,16 @@ export default function NewPackagePage() {
 
   const atLeastOneIncluded = includesFlight || includesHotel || includesCar
 
+  const computedTotal =
+    (includesFlight && tripPrice ? Number(tripPrice) : 0) +
+    (includesCar && carPrice ? Number(carPrice) : 0) +
+    (includesHotel && hotelPrice ? Number(hotelPrice) : 0)
+
+  const savings = offerPrice && computedTotal > Number(offerPrice) ? computedTotal - Number(offerPrice) : 0
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!nameAr || !destinationCityAr || !totalPrice || !atLeastOneIncluded) {
+    if (!nameAr || !destinationCityAr || !atLeastOneIncluded || computedTotal <= 0) {
       toast({ title: isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', variant: 'destructive' })
       return
     }
@@ -165,10 +185,16 @@ export default function NewPackagePage() {
           if (hotelNameAr) formData.append('hotel_name_ar', hotelNameAr)
           if (hotelNameEn) formData.append('hotel_name_en', hotelNameEn)
           if (hotelCategory) formData.append('hotel_category', hotelCategory)
-          if (hotelNights) formData.append('hotel_nights', String(hotelNights))
           if (hotelCityAr) formData.append('hotel_city_ar', hotelCityAr)
           if (hotelCityEn) formData.append('hotel_city_en', hotelCityEn)
         }
+        if (hotelNights) formData.append('hotel_nights', String(hotelNights))
+        if (durationDays) formData.append('duration_days', String(durationDays))
+        if (roomBasis) formData.append('room_basis', roomBasis)
+        formData.append('breakfast_included', String(breakfastIncluded))
+        formData.append('airport_transfer_included', String(airportTransferIncluded))
+        formData.append('tour_guide_included', String(tourGuideIncluded))
+        formData.append('sightseeing_tours_included', String(sightseeingToursIncluded))
       }
 
       if (includesCar) {
@@ -184,8 +210,11 @@ export default function NewPackagePage() {
         }
       }
 
-      formData.append('total_price', String(totalPrice))
-      if (originalPrice) formData.append('original_price', String(originalPrice))
+      if (includesFlight && tripPrice) formData.append('trip_price', String(tripPrice))
+      if (includesCar && carPrice) formData.append('car_price', String(carPrice))
+      if (includesHotel && hotelPrice) formData.append('hotel_price', String(hotelPrice))
+      if (offerPrice) formData.append('offer_price', String(offerPrice))
+      formData.append('total_price', String(computedTotal))
       formData.append('currency', currency)
       if (maxBookings) formData.append('max_bookings', String(maxBookings))
       if (startDate) formData.append('start_date', startDate)
@@ -464,10 +493,6 @@ export default function NewPackagePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد الليالي' : 'Number of Nights'}</label>
-                  <input type="number" min={1} value={hotelNights} onChange={e => setHotelNights(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
-                </div>
-                <div>
                   <label className="text-sm font-medium block mb-1.5">{isAr ? 'المدينة' : 'City'} ({isAr ? 'عربي' : 'Arabic'})</label>
                   <input value={hotelCityAr} onChange={e => setHotelCityAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
@@ -477,6 +502,47 @@ export default function NewPackagePage() {
                 </div>
               </div>
             )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد الليالي' : 'Number of Nights'}</label>
+                <input type="number" min={1} value={hotelNights} onChange={e => setHotelNights(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد الأيام' : 'Number of Days'}</label>
+                <input type="number" min={1} value={durationDays} onChange={e => setDurationDays(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-1.5">{isAr ? 'نوع الإقامة' : 'Room Basis'}</label>
+                <select value={roomBasis} onChange={e => setRoomBasis(e.target.value)} className={selectClass}>
+                  <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
+                  <option value="single">{isAr ? 'فردية' : 'Single Room'}</option>
+                  <option value="double">{isAr ? 'مزدوجة' : 'Double Room'}</option>
+                  <option value="triple">{isAr ? 'ثلاثية' : 'Triple Room'}</option>
+                  <option value="quad">{isAr ? 'رباعية' : 'Quad Room'}</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-2">{isAr ? 'الخدمات المشمولة' : 'Included Services'}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  <input type="checkbox" checked={breakfastIncluded} onChange={e => setBreakfastIncluded(e.target.checked)} />
+                  <span>{isAr ? 'وجبة الإفطار' : 'Breakfast'}</span>
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  <input type="checkbox" checked={airportTransferIncluded} onChange={e => setAirportTransferIncluded(e.target.checked)} />
+                  <span>{isAr ? 'استقبال وتوديع المطار' : 'Airport Transfer'}</span>
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  <input type="checkbox" checked={tourGuideIncluded} onChange={e => setTourGuideIncluded(e.target.checked)} />
+                  <span>{isAr ? 'مرشد سياحي' : 'Tour Guide'}</span>
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                  <input type="checkbox" checked={sightseeingToursIncluded} onChange={e => setSightseeingToursIncluded(e.target.checked)} />
+                  <span>{isAr ? 'جولات سياحية' : 'Sightseeing Tours'}</span>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
@@ -556,17 +622,86 @@ export default function NewPackagePage() {
             <DollarSign className="h-4 w-4 text-primary" />
             {isAr ? 'التسعير' : 'Pricing'}
           </h2>
+
+          {/* Component prices */}
+          <div className="space-y-3">
+            {includesFlight && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر الرحلة' : 'Flight Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={tripPrice}
+                  onChange={e => setTripPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+            {includesHotel && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر الفندق' : 'Hotel Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={hotelPrice}
+                  onChange={e => setHotelPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+            {includesCar && (
+              <div>
+                <label className="text-sm font-medium block mb-1.5">
+                  {isAr ? 'سعر السيارة' : 'Car Price'} *
+                </label>
+                <input
+                  type="number" min={0} step={0.01}
+                  value={carPrice}
+                  onChange={e => setCarPrice(e.target.value ? Number(e.target.value) : '')}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Auto total */}
+          {atLeastOneIncluded && (
+            <div className="rounded-lg bg-slate-50 border px-4 py-3 flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-600">
+                {isAr ? 'الإجمالي' : 'Total'}
+              </span>
+              <span className="text-lg font-black text-slate-900">
+                {computedTotal.toLocaleString(isAr ? 'ar-SA' : 'en-SA')} {currency}
+              </span>
+            </div>
+          )}
+
+          {/* Offer price */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">
+              {isAr ? 'سعر العرض (الباقة)' : 'Package Offer Price'}{' '}
+              <span className="text-muted-foreground text-xs">({tc('optional')})</span>
+            </label>
+            <input
+              type="number" min={0} step={0.01}
+              value={offerPrice}
+              onChange={e => setOfferPrice(e.target.value ? Number(e.target.value) : '')}
+              className={inputClass}
+              placeholder={isAr ? 'أدخل سعراً مخفضاً للباقة...' : 'Enter a discounted package price...'}
+            />
+            {savings > 0 && (
+              <p className="mt-1.5 text-sm font-semibold text-emerald-600">
+                {isAr ? `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة` : `Save ${savings.toLocaleString('en-SA')} ${currency} with the package`}
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'السعر الإجمالي' : 'Total Price'} *</label>
-              <input type="number" min={1} step={0.01} value={totalPrice} onChange={e => setTotalPrice(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
-            </div>
-            <div>
-              <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'السعر الأصلي' : 'Original Price'} <span className="text-muted-foreground">({tc('optional')})</span>
-              </label>
-              <input type="number" min={1} step={0.01} value={originalPrice} onChange={e => setOriginalPrice(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
-            </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{tc('currency')} *</label>
               <select value={currency} onChange={e => setCurrency(e.target.value)} className={selectClass}>
@@ -590,11 +725,50 @@ export default function NewPackagePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ البداية' : 'Start Date'}</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputClass} />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  `${inputClass} flex items-center justify-between`,
+                  startDate ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={startDate && isValid(parseISO(startDate)) ? parseISO(startDate) : undefined}
+                    onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ النهاية' : 'End Date'}</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputClass} />
+              <Popover>
+                <PopoverTrigger className={cn(
+                  `${inputClass} flex items-center justify-between`,
+                  endDate ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarUI
+                    mode="single"
+                    selected={endDate && isValid(parseISO(endDate)) ? parseISO(endDate) : undefined}
+                    onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                    disabled={(date) => startDate && isValid(parseISO(startDate)) ? date < parseISO(startDate) : false}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>

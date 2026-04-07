@@ -129,12 +129,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       car_rental_days: formData.get('car_rental_days')
         ? Number(formData.get('car_rental_days'))
         : existingPkg.car_rental_days,
+      trip_price: formData.get('trip_price') ? Number(formData.get('trip_price')) : undefined,
+      car_price: formData.get('car_price') ? Number(formData.get('car_price')) : undefined,
+      hotel_price: formData.get('hotel_price') ? Number(formData.get('hotel_price')) : undefined,
+      offer_price: formData.get('offer_price') ? Number(formData.get('offer_price')) : undefined,
       total_price: formData.get('total_price')
         ? Number(formData.get('total_price'))
         : existingPkg.total_price,
-      original_price: formData.get('original_price')
-        ? Number(formData.get('original_price'))
-        : existingPkg.original_price,
+      original_price: existingPkg.original_price,
       currency: (formData.get('currency') as string) || existingPkg.currency,
       start_date: (formData.get('start_date') as string) || existingPkg.start_date,
       end_date: (formData.get('end_date') as string) || existingPkg.end_date,
@@ -222,8 +224,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         car_model_en: parsed.data.car_model_en || null,
         car_category: parsed.data.car_category || null,
         car_rental_days: parsed.data.car_rental_days || null,
-        total_price: parsed.data.total_price,
-        original_price: parsed.data.original_price || null,
+        trip_price: parsed.data.trip_price ?? null,
+        car_price: parsed.data.car_price ?? null,
+        hotel_price: parsed.data.hotel_price ?? null,
+        total_price: parsed.data.offer_price ?? parsed.data.total_price,
+        original_price: parsed.data.offer_price ? parsed.data.total_price : null,
         currency: parsed.data.currency,
         start_date: parsed.data.start_date || null,
         end_date: parsed.data.end_date || null,

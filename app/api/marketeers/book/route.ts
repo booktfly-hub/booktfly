@@ -25,7 +25,9 @@ const schema = z.object({
     date_of_birth: z.string(),
     id_number: z.string(),
     id_expiry_date: z.string(),
+    seat_number: z.string().optional(),
   })).optional(),
+  selected_seat_numbers: z.array(z.string()).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
     }
 
-    const { trip_id, seats_count, booking_type, passenger_name, passenger_email, passenger_phone, passenger_id_number, passengers } = parsed.data
+    const { trip_id, seats_count, booking_type, passenger_name, passenger_email, passenger_phone, passenger_id_number, passengers, selected_seat_numbers = [] } = parsed.data
 
     // Fetch trip
     const { data: trip } = await supabaseAdmin
@@ -64,16 +66,14 @@ export async function POST(request: NextRequest) {
     if (!trip) return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
     if (trip.status !== 'active') return NextResponse.json({ error: 'Trip is not available' }, { status: 400 })
 
+    const normalizedSelectedSeats = Array.from(new Set(selected_seat_numbers.map((seat) => seat.toUpperCase())))
+    const requestedSeatsCount = trip.seat_map_enabled ? normalizedSelectedSeats.length : seats_count
+    if (trip.seat_map_enabled && (normalizedSelectedSeats.length === 0 || normalizedSelectedSeats.length !== seats_count)) {
+      return NextResponse.json({ error: 'Selected seats do not match requested seat count' }, { status: 400 })
+    }
+
     const remaining = trip.total_seats - trip.booked_seats
-    if (seats_count > remaining) return NextResponse.json({ error: 'Not enough seats' }, { status: 400 })
-
-    // Book seats
-    const { error: rpcError } = await supabaseAdmin.rpc('book_seats', {
-      p_trip_id: trip_id,
-      p_seats: seats_count,
-    })
-
-    if (rpcError) return NextResponse.json({ error: 'Failed to reserve seats' }, { status: 400 })
+    if (requestedSeatsCount > remaining) return NextResponse.json({ error: 'Not enough seats' }, { status: 400 })
 
     // Commission calculation
     let commissionRate = DEFAULT_COMMISSION_RATE
@@ -91,9 +91,12 @@ export async function POST(request: NextRequest) {
     const effectivePrice = (trip.trip_type === 'round_trip' && booking_type === 'one_way' && trip.price_per_seat_one_way)
       ? trip.price_per_seat_one_way
       : trip.price_per_seat
-    const totalAmount = effectivePrice * seats_count
+    const totalAmount = effectivePrice * requestedSeatsCount
     const commissionAmount = (totalAmount * commissionRate) / 100
     const providerPayout = totalAmount - commissionAmount
+    const enrichedPassengers = normalizedSelectedSeats.length > 0 && passengers
+      ? passengers.map((passenger, index) => ({ ...passenger, seat_number: normalizedSelectedSeats[index] }))
+      : passengers
 
     // Create booking
     const { data: booking, error: bookingError } = await supabaseAdmin
@@ -107,9 +110,9 @@ export async function POST(request: NextRequest) {
         passenger_phone,
         passenger_email,
         passenger_id_number: passenger_id_number || null,
-        passengers: passengers || null,
+        passengers: enrichedPassengers || null,
         booking_type,
-        seats_count,
+        seats_count: requestedSeatsCount,
         price_per_seat: effectivePrice,
         total_amount: totalAmount,
         commission_rate: commissionRate,
@@ -121,8 +124,23 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (bookingError || !booking) {
-      await supabaseAdmin.rpc('release_seats', { p_trip_id: trip_id, p_seats: seats_count })
       return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+    }
+
+    const reservationError = trip.seat_map_enabled
+      ? await supabaseAdmin.rpc('assign_trip_seats_to_booking', {
+          p_booking_id: booking.id,
+          p_trip_id: trip_id,
+          p_seat_numbers: normalizedSelectedSeats,
+        }).then(({ error }) => error)
+      : await supabaseAdmin.rpc('book_seats', {
+          p_trip_id: trip_id,
+          p_seats: requestedSeatsCount,
+        }).then(({ error }) => error)
+
+    if (reservationError) {
+      await supabaseAdmin.from('bookings').delete().eq('id', booking.id)
+      return NextResponse.json({ error: 'Failed to reserve seats' }, { status: 400 })
     }
 
     const ref = shortId(booking.id)
@@ -147,7 +165,7 @@ export async function POST(request: NextRequest) {
         origin: trip.origin_city_en || trip.origin_city_ar,
         destination: trip.destination_city_en || trip.destination_city_ar,
         departureDate,
-        seats: seats_count,
+        seats: requestedSeatsCount,
         amount: totalAmount,
         bankName: bankInfo?.bank_name_en || 'N/A',
         bankIban: bankInfo?.bank_iban || 'N/A',
@@ -172,9 +190,9 @@ export async function POST(request: NextRequest) {
       titleAr: 'تم إنشاء حجز لعميلك',
       titleEn: 'Booking created for your customer',
       bodyAr: `تم إنشاء حجز رقم ${ref} لـ ${passenger_name}. بانتظار الدفع.`,
-      bodyEn: `Booking #${ref} created for ${passenger_name}. Awaiting payment.`,
-      data: { booking_id: booking.id },
-    })
+        bodyEn: `Booking #${ref} created for ${passenger_name}. Awaiting payment.`,
+        data: { booking_id: booking.id },
+      })
 
     // Notify provider
     if (trip.provider?.user_id) {

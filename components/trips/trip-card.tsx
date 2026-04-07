@@ -42,12 +42,12 @@ export function TripCard({ trip, className }: TripCardProps) {
     : null
 
   const departureDate = new Date(trip.departure_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    'en-US',
     { month: 'short', day: 'numeric', year: 'numeric' }
   )
 
   const departureTime = new Date(trip.departure_at).toLocaleTimeString(
-    isAr ? 'ar-SA' : 'en-US',
+    'en-US',
     { hour: '2-digit', minute: '2-digit' }
   )
 

@@ -22,6 +22,15 @@ export function PackageCard({ pkg, locale: localeProp }: PackageCardProps) {
   const destination = isAr ? pkg.destination_city_ar : (pkg.destination_city_en || pkg.destination_city_ar)
   const availableSpots = pkg.max_bookings - pkg.current_bookings
   const hasDiscount = pkg.original_price != null && pkg.original_price > pkg.total_price
+  const savings = hasDiscount ? pkg.original_price! - pkg.total_price : 0
+  const roomBasisLabel = pkg.room_basis
+    ? ({
+        single: isAr ? 'فردية' : 'Single',
+        double: isAr ? 'مزدوجة' : 'Double',
+        triple: isAr ? 'ثلاثية' : 'Triple',
+        quad: isAr ? 'رباعية' : 'Quad',
+      }[pkg.room_basis] || pkg.room_basis)
+    : null
 
   const formatPrice = (amount: number) => {
     const formatted = amount.toLocaleString(isAr ? 'ar-SA' : 'en-SA')
@@ -29,9 +38,10 @@ export function PackageCard({ pkg, locale: localeProp }: PackageCardProps) {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(isAr ? 'ar-SA' : 'en-SA', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
     })
   }
 
@@ -116,6 +126,23 @@ export function PackageCard({ pkg, locale: localeProp }: PackageCardProps) {
               </span>
             </div>
           )}
+
+          {(pkg.duration_days || roomBasisLabel) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {pkg.duration_days && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {pkg.duration_days} {isAr ? 'أيام' : 'Days'}
+                </span>
+              )}
+              {roomBasisLabel && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                  <BedDouble className="h-3.5 w-3.5" />
+                  {roomBasisLabel}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Price Footer */}
@@ -132,6 +159,13 @@ export function PackageCard({ pkg, locale: localeProp }: PackageCardProps) {
               </span>
               <span className="text-xs text-muted-foreground">/ {isAr ? 'للشخص' : 'person'}</span>
             </div>
+            {savings > 0 && (
+              <span className="mt-1 text-xs font-bold text-emerald-600">
+                {isAr
+                  ? `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة`
+                  : `Save ${savings.toLocaleString('en-SA')} SAR with the package`}
+              </span>
+            )}
           </div>
 
           <div className="h-10 w-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:shadow-primary/20 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 shrink-0">

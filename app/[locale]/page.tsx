@@ -2,11 +2,9 @@ import { getTranslations, getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { HeroSection } from '@/components/home/hero-section'
 import { LastMinuteDeals } from '@/components/home/last-minute-deals'
-import { StatsSection } from '@/components/home/stats-section'
 import { FeaturedTrips } from '@/components/home/featured-trips'
 import { HowItWorks } from '@/components/home/how-it-works'
 import { BecomeProviderCTA } from '@/components/home/become-provider-cta'
-import { TrendingDestinations } from '@/components/home/trending-destinations'
 import { ValueProposition } from '@/components/home/value-proposition'
 import { Testimonials } from '@/components/home/testimonials'
 import { FlightRequestSection } from '@/components/home/flight-request-section'
@@ -23,9 +21,6 @@ export default async function HomePage() {
     { data: lastMinuteTrips },
     { data: lastMinuteRooms },
     { data: lastMinuteCars },
-    tripsCount,
-    providersCount,
-    bookingsCount,
   ] = await Promise.all([
     supabase
       .from('trips')
@@ -53,14 +48,13 @@ export default async function HomePage() {
       .eq('status', 'active')
       .eq('is_last_minute', true)
       .limit(6),
-    supabase.from('trips').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('providers').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'confirmed'),
   ])
 
   return (
     <main className="overflow-x-hidden bg-[linear-gradient(180deg,#fffaf5_0%,#ffffff_26%,#f7fbff_58%,#fff8ef_100%)]">
       <HeroSection locale={locale} />
+
+      <FlightRequestSection />
 
       {(lastMinuteTrips?.length || lastMinuteRooms?.length || lastMinuteCars?.length) ? (
         <LastMinuteDeals
@@ -71,20 +65,9 @@ export default async function HomePage() {
         />
       ) : null}
 
-      <div className="relative">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-transparent to-white/70" />
-        <StatsSection 
-          tripsCount={tripsCount.count || 0}
-          providersCount={providersCount.count || 0}
-          bookingsCount={bookingsCount.count || 0}
-        />
-      </div>
-
-      <TrendingDestinations locale={locale} />
-
-      <FeaturedTrips 
-        trips={featuredTrips || []} 
-        locale={locale} 
+      <FeaturedTrips
+        trips={featuredTrips || []}
+        locale={locale}
       />
 
       <div className="relative">
@@ -101,8 +84,6 @@ export default async function HomePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-200 to-transparent" />
         <Testimonials locale={locale} />
       </div>
-
-      <FlightRequestSection />
 
       <BecomeProviderCTA locale={locale} />
     </main>

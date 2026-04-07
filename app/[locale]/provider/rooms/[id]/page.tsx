@@ -416,7 +416,7 @@ export default function EditRoomPage() {
                     )}
                   >
                     {availableFromDate && isValid(availableFromDate)
-                      ? format(availableFromDate, 'PPP', { locale: isAr ? arSA : enUS })
+                      ? format(availableFromDate, 'd MMM yyyy', { locale: enUS })
                       : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
@@ -448,7 +448,7 @@ export default function EditRoomPage() {
                     )}
                   >
                     {availableToDate && isValid(availableToDate)
-                      ? format(availableToDate, 'PPP', { locale: isAr ? arSA : enUS })
+                      ? format(availableToDate, 'd MMM yyyy', { locale: enUS })
                       : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>

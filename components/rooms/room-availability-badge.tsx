@@ -29,8 +29,8 @@ export function RoomAvailabilityBadge({ instantBook, availableFrom, availableTo,
   }
 
   if (availableFrom && availableTo) {
-    const from = new Date(availableFrom).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric' })
-    const to = new Date(availableTo).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric' })
+    const from = new Date(availableFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const to = new Date(availableTo).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
     return (
       <span className={cn(

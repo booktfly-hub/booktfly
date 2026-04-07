@@ -38,6 +38,7 @@ import { bookingContactSchema, getBookingSchema, passengerSchema } from '@/lib/v
 import { Calendar as DateCalendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/components/ui/toaster'
+import { SeatMap } from '@/components/trips/seat-map'
 import type { Trip } from '@/types'
 
 type PassengerFormData = z.infer<typeof passengerSchema>
@@ -72,6 +73,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const [seatsCount, setSeatsCount] = useState(initialSeatsCount)
   const [bookingType] = useState<'round_trip' | 'one_way'>(initialBookingType)
   const [scanningIndex, setScanningIndex] = useState<number | null>(null)
+  const [selectedSeatNumbers, setSelectedSeatNumbers] = useState<string[]>([])
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
@@ -110,16 +112,29 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     name: 'passengers',
   })
 
+  const seatMapEnabled = Boolean(trip?.seat_map_enabled && trip?.seat_map_config)
+  const desiredPassengerCount = seatMapEnabled
+    ? Math.max(selectedSeatNumbers.length, 1)
+    : seatsCount
+
   useEffect(() => {
     const currentCount = fields.length
-    if (seatsCount > currentCount) {
-      append(Array(seatsCount - currentCount).fill(defaultPassenger))
-    } else if (seatsCount < currentCount) {
-      for (let i = currentCount - 1; i >= seatsCount; i--) {
+    if (desiredPassengerCount > currentCount) {
+      append(Array(desiredPassengerCount - currentCount).fill(defaultPassenger))
+    } else if (desiredPassengerCount < currentCount) {
+      for (let i = currentCount - 1; i >= desiredPassengerCount; i--) {
         remove(i)
       }
     }
-  }, [seatsCount])
+  }, [desiredPassengerCount])
+
+  useEffect(() => {
+    if (!seatMapEnabled) return
+    setSeatsCount(Math.max(selectedSeatNumbers.length, 1))
+    selectedSeatNumbers.forEach((seat, index) => {
+      setValue(`passengers.${index}.seat_number`, seat, { shouldDirty: true })
+    })
+  }, [seatMapEnabled, selectedSeatNumbers, setValue])
 
   useEffect(() => {
     async function fetchTrip() {
@@ -179,10 +194,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const remaining = trip.total_seats - trip.booked_seats
   const maxBookable = Math.min(remaining, MAX_SEATS_PER_BOOKING)
   const resolvedBookingType = bookingType
+  const billedSeatsCount = seatMapEnabled ? selectedSeatNumbers.length : seatsCount
   const effectivePrice = resolvedBookingType === 'one_way' && trip.price_per_seat_one_way
     ? trip.price_per_seat_one_way
     : trip.price_per_seat
-  const totalPrice = effectivePrice * seatsCount
+  const totalPrice = effectivePrice * billedSeatsCount
   const fmt = (amount: number) => isAr ? formatPrice(amount, trip.currency) : formatPriceEN(amount, trip.currency)
 
   const originCity = isAr ? trip.origin_city_ar : capitalizeFirst(trip.origin_city_en || trip.origin_city_ar)
@@ -193,10 +209,36 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   )
 
+  const toggleSeat = (seatNumber: string) => {
+    if (!seatMapEnabled) return
+    setSelectedSeatNumbers((current) => {
+      if (current.includes(seatNumber)) {
+        return current.filter((seat) => seat !== seatNumber)
+      }
+      if (current.length >= maxBookable) {
+        return current
+      }
+      return [...current, seatNumber]
+    })
+  }
+
   const onSubmit = async (data: BookingFormData) => {
+    if (seatMapEnabled && selectedSeatNumbers.length === 0) {
+      toast({
+        title: t('common.error'),
+        description: isAr ? 'اختر مقعداً واحداً على الأقل قبل متابعة الحجز' : 'Select at least one seat before continuing',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setSubmitting(true)
     try {
-      const firstPassenger = data.passengers[0]
+      const enrichedPassengers = data.passengers.map((passenger, index) => ({
+        ...passenger,
+        seat_number: selectedSeatNumbers[index],
+      }))
+      const firstPassenger = enrichedPassengers[0]
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -205,9 +247,10 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
           passenger_name: `${firstPassenger.first_name} ${firstPassenger.last_name}`,
           passenger_phone: data.contact.phone,
           passenger_email: data.contact.email,
-          seats_count: seatsCount,
+          seats_count: seatMapEnabled ? selectedSeatNumbers.length : seatsCount,
           contact: data.contact,
-          passengers: data.passengers,
+          passengers: enrichedPassengers,
+          selected_seat_numbers: selectedSeatNumbers,
           booking_type: resolvedBookingType,
         }),
       })
@@ -369,15 +412,57 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
               </div>
             </div>
 
+            {seatMapEnabled && trip.seat_map_config && (
+              <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                <div className="mb-6 flex items-center gap-2 md:gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Plane className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-black text-slate-900">
+                      {isAr ? 'اختيار المقاعد' : 'Seat Selection'}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-500">
+                      {isAr ? 'المقاعد المحجوزة أو غير المتاحة ظاهرة بلون مختلف وتُقفل تلقائياً.' : 'Unavailable seats are disabled automatically based on existing reservations.'}
+                    </p>
+                  </div>
+                </div>
+                <SeatMap
+                  config={trip.seat_map_config}
+                  selectedSeats={selectedSeatNumbers}
+                  unavailableSeats={trip.unavailable_seat_numbers || []}
+                  onSeatClick={toggleSeat}
+                />
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.map((seat) => (
+                    <span key={seat} className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+                      {isAr ? 'المقعد' : 'Seat'} {seat}
+                    </span>
+                  )) : (
+                    <span className="text-sm text-slate-500">
+                      {isAr ? 'اختر مقعداً واحداً أو أكثر للمتابعة.' : 'Select one or more seats to continue.'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {fields.map((field, index) => (
               <div key={field.id} className="rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-200 bg-white p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/40">
                 <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-5">
                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-lg md:text-xl font-black text-primary">{index + 1}</span>
                    </div>
-                   <h3 className="text-xl md:text-2xl font-black text-slate-900">
-                     {t('booking.passenger_number', { number: index + 1 })}
-                   </h3>
+                   <div>
+                     <h3 className="text-xl md:text-2xl font-black text-slate-900">
+                       {t('booking.passenger_number', { number: index + 1 })}
+                     </h3>
+                     {seatMapEnabled && selectedSeatNumbers[index] && (
+                       <p className="text-sm font-semibold text-primary">
+                         {isAr ? `المقعد ${selectedSeatNumbers[index]}` : `Seat ${selectedSeatNumbers[index]}`}
+                       </p>
+                     )}
+                   </div>
                 </div>
                 <div className="mb-4 md:mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-xs md:text-sm font-semibold text-amber-700">
                   <ShieldCheck className="h-4 w-4 shrink-0" />
@@ -432,6 +517,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                         dir="ltr"
                         className={cn(inputClass, errors.passengers?.[index]?.first_name && errorInputClass)}
                         placeholder="First Name"
+                        onInput={(e) => {
+                          const el = e.currentTarget
+                          const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
+                          if (cleaned !== el.value) el.value = cleaned
+                        }}
                       />
                       {errors.passengers?.[index]?.first_name && (
                         <p className="text-xs font-bold text-destructive mt-1">{errors.passengers[index].first_name.message}</p>
@@ -450,6 +540,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                         dir="ltr"
                         className={cn(inputClass, errors.passengers?.[index]?.last_name && errorInputClass)}
                         placeholder="Last Name"
+                        onInput={(e) => {
+                          const el = e.currentTarget
+                          const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
+                          if (cleaned !== el.value) el.value = cleaned
+                        }}
                       />
                       {errors.passengers?.[index]?.last_name && (
                         <p className="text-xs font-bold text-destructive mt-1">{errors.passengers[index].last_name.message}</p>
@@ -510,6 +605,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                         dir="ltr"
                         className={cn(inputClass, 'font-mono font-medium', errors.passengers?.[index]?.id_number && errorInputClass)}
                         placeholder="Passport or ID number"
+                        onInput={(e) => {
+                          const el = e.currentTarget
+                          const cleaned = el.value.replace(/[^a-zA-Z0-9]/g, '')
+                          if (cleaned !== el.value) el.value = cleaned
+                        }}
                       />
                       {errors.passengers?.[index]?.id_number && (
                         <p className="text-xs font-bold text-destructive mt-1">{errors.passengers[index].id_number.message}</p>
@@ -570,27 +670,40 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 {/* Seats selector inside the dark card */}
                 <div className="bg-white/5 rounded-2xl p-5 border border-white/10 backdrop-blur-sm mb-8">
                     <label className="block text-sm font-bold text-slate-300 mb-4 text-center">
-                        {t('booking.seats_count')}
+                        {seatMapEnabled ? (isAr ? 'المقاعد المختارة' : 'Selected Seats') : t('booking.seats_count')}
                     </label>
-                    <div className="flex items-center justify-between bg-black/20 rounded-xl p-2 border border-white/5">
-                        <button
-                            type="button"
-                            onClick={() => setSeatsCount(Math.max(1, seatsCount - 1))}
-                            disabled={seatsCount <= 1}
-                            className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
-                        >
-                            <Minus className="h-5 w-5" />
-                        </button>
-                        <span className="text-3xl font-black w-16 text-center">{seatsCount}</span>
-                        <button
-                            type="button"
-                            onClick={() => setSeatsCount(Math.min(maxBookable, seatsCount + 1))}
-                            disabled={seatsCount >= maxBookable}
-                            className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
-                        >
-                            <Plus className="h-5 w-5" />
-                        </button>
-                    </div>
+                    {seatMapEnabled ? (
+                      <div className="rounded-xl border border-white/5 bg-black/20 p-4 text-center">
+                        <div className="text-3xl font-black">{selectedSeatNumbers.length}</div>
+                        <div className="mt-2 flex flex-wrap justify-center gap-2">
+                          {selectedSeatNumbers.map((seat) => (
+                            <span key={seat} className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-wider text-white">
+                              {seat}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between bg-black/20 rounded-xl p-2 border border-white/5">
+                          <button
+                              type="button"
+                              onClick={() => setSeatsCount(Math.max(1, seatsCount - 1))}
+                              disabled={seatsCount <= 1}
+                              className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
+                          >
+                              <Minus className="h-5 w-5" />
+                          </button>
+                          <span className="text-3xl font-black w-16 text-center">{seatsCount}</span>
+                          <button
+                              type="button"
+                              onClick={() => setSeatsCount(Math.min(maxBookable, seatsCount + 1))}
+                              disabled={seatsCount >= maxBookable}
+                              className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
+                          >
+                              <Plus className="h-5 w-5" />
+                          </button>
+                      </div>
+                    )}
                     <p className="text-xs font-semibold text-accent mt-3 text-center">
                         {remaining} {t('trips.seats_remaining')}
                     </p>
@@ -640,25 +753,31 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 pb-safe z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-1">
-                    <button
-                    type="button"
-                    onClick={() => setSeatsCount(Math.max(1, seatsCount - 1))}
-                    disabled={seatsCount <= 1}
-                    className="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-white disabled:opacity-30"
-                    >
-                        <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="text-sm font-bold text-white w-4 text-center">{seatsCount}</span>
-                    <button
-                    type="button"
-                    onClick={() => setSeatsCount(Math.min(maxBookable, seatsCount + 1))}
-                    disabled={seatsCount >= maxBookable}
-                    className="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-white disabled:opacity-30"
-                    >
-                        <Plus className="h-3 w-3" />
-                    </button>
-                </div>
+                {seatMapEnabled ? (
+                  <span className="mb-1 text-xs font-semibold text-slate-300">
+                    {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.join(', ') : (isAr ? 'اختر مقاعد' : 'Select seats')}
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-2 mb-1">
+                      <button
+                      type="button"
+                      onClick={() => setSeatsCount(Math.max(1, seatsCount - 1))}
+                      disabled={seatsCount <= 1}
+                      className="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-white disabled:opacity-30"
+                      >
+                          <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="text-sm font-bold text-white w-4 text-center">{seatsCount}</span>
+                      <button
+                      type="button"
+                      onClick={() => setSeatsCount(Math.min(maxBookable, seatsCount + 1))}
+                      disabled={seatsCount >= maxBookable}
+                      className="h-6 w-6 rounded bg-white/10 flex items-center justify-center text-white disabled:opacity-30"
+                      >
+                          <Plus className="h-3 w-3" />
+                      </button>
+                  </div>
+                )}
                 <span className="text-xl font-black text-primary leading-none">{fmt(totalPrice)}</span>
             </div>
 

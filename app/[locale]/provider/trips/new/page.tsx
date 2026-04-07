@@ -10,6 +10,8 @@ import { resolveApiErrorMessage } from '@/lib/api-error'
 import { getTripSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
+import { SeatMap } from '@/components/trips/seat-map'
+import { DEFAULT_SEAT_MAP_CONFIG, countSeatMapCapacity, normalizeSeatNumber, parseSeatRowList } from '@/lib/seat-map'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO, startOfDay } from 'date-fns'
@@ -176,6 +178,15 @@ export default function NewTripPage() {
   const [submitting, setSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [checkedBaggageKg, setCheckedBaggageKg] = useState<number | ''>('')
+  const [cabinBaggageKg, setCabinBaggageKg] = useState<number | ''>('')
+  const [mealIncluded, setMealIncluded] = useState(false)
+  const [seatSelectionIncluded, setSeatSelectionIncluded] = useState(false)
+  const [seatMapEnabled, setSeatMapEnabled] = useState(false)
+  const [seatMapRows, setSeatMapRows] = useState(DEFAULT_SEAT_MAP_CONFIG.rows)
+  const [upFrontRowsText, setUpFrontRowsText] = useState(DEFAULT_SEAT_MAP_CONFIG.up_front_rows.join(', '))
+  const [extraLegroomRowsText, setExtraLegroomRowsText] = useState(DEFAULT_SEAT_MAP_CONFIG.extra_legroom_rows.join(', '))
+  const [blockedSeats, setBlockedSeats] = useState<string[]>(DEFAULT_SEAT_MAP_CONFIG.blocked_seats)
 
   const {
     register,
@@ -206,6 +217,15 @@ export default function NewTripPage() {
   const returnDate = parseDateTimeValue(returnAt)
   const departureTime = getTimeValue(departureAt)
   const returnTime = getTimeValue(returnAt)
+  const seatMapConfig = {
+    rows: seatMapRows,
+    left_columns: DEFAULT_SEAT_MAP_CONFIG.left_columns,
+    right_columns: DEFAULT_SEAT_MAP_CONFIG.right_columns,
+    blocked_seats: blockedSeats,
+    up_front_rows: parseSeatRowList(upFrontRowsText).filter((row) => row <= seatMapRows),
+    extra_legroom_rows: parseSeatRowList(extraLegroomRowsText).filter((row) => row <= seatMapRows),
+  }
+  const seatMapCapacity = countSeatMapCapacity(seatMapConfig)
 
   const updateDateTimeField = (field: 'departure_at' | 'return_at', nextDate?: Date, nextTime?: string) => {
     const currentValue = field === 'departure_at' ? departureAt : returnAt
@@ -236,16 +256,39 @@ export default function NewTripPage() {
     }
   }
 
+  function toggleBlockedSeat(seatNumber: string) {
+    const normalized = normalizeSeatNumber(seatNumber)
+    setBlockedSeats((current) =>
+      current.includes(normalized)
+        ? current.filter((seat) => seat !== normalized)
+        : [...current, normalized]
+    )
+  }
+
   async function onSubmit(data: FormData) {
     setSubmitting(true)
     try {
       const formData = new FormData()
+      const computedTotalSeats = seatMapEnabled ? seatMapCapacity : data.total_seats
 
       Object.entries(data).forEach(([key, value]) => {
+        if (key === 'total_seats') {
+          formData.append('total_seats', String(computedTotalSeats))
+          return
+        }
         if (value !== undefined && value !== null && value !== '') {
           formData.append(key, String(value))
         }
       })
+
+      if (checkedBaggageKg !== '') formData.append('checked_baggage_kg', String(checkedBaggageKg))
+      if (cabinBaggageKg !== '') formData.append('cabin_baggage_kg', String(cabinBaggageKg))
+      formData.append('meal_included', String(mealIncluded))
+      formData.append('seat_selection_included', String(seatSelectionIncluded))
+      formData.append('seat_map_enabled', String(seatMapEnabled))
+      if (seatMapEnabled) {
+        formData.append('seat_map_config', JSON.stringify(seatMapConfig))
+      }
 
       if (imageFile) {
         formData.append('image', imageFile)
@@ -485,7 +528,7 @@ export default function NewTripPage() {
                     )}
                   >
                     {departureDate
-                      ? format(departureDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS })
+                      ? format(departureDate, 'd MMM yyyy', { locale: enUS })
                       : <span>{tt('departure_date')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
@@ -530,7 +573,7 @@ export default function NewTripPage() {
                     )}
                   >
                     {returnDate
-                      ? format(returnDate, 'PPP', { locale: locale === 'ar' ? arSA : enUS })
+                      ? format(returnDate, 'd MMM yyyy', { locale: enUS })
                       : <span>{tt('return_date')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
@@ -578,8 +621,15 @@ export default function NewTripPage() {
                 type="number"
                 min={1}
                 {...register('total_seats', { valueAsNumber: true })}
+                disabled={seatMapEnabled}
+                value={seatMapEnabled ? seatMapCapacity : watch('total_seats')}
                 className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
+              {seatMapEnabled && (
+                <p className="text-xs text-slate-500 mt-1">
+                  {locale === 'ar' ? 'يتم حساب العدد تلقائياً من خريطة المقاعد.' : 'Calculated automatically from the seat map.'}
+                </p>
+              )}
               {errors.total_seats && (
                 <p className="text-destructive text-sm mt-1">
                   {errors.total_seats.message}
@@ -633,6 +683,69 @@ export default function NewTripPage() {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">{locale === 'ar' ? 'مزايا الرحلة' : 'Flight Benefits'}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'وزن الأمتعة المشحونة (كجم)' : 'Checked baggage (kg)'}</label>
+              <input type="number" min={0} value={checkedBaggageKg} onChange={(e) => setCheckedBaggageKg(e.target.value ? Number(e.target.value) : '')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'وزن الأمتعة اليدوية (كجم)' : 'Cabin baggage (kg)'}</label>
+              <input type="number" min={0} value={cabinBaggageKg} onChange={(e) => setCabinBaggageKg(e.target.value ? Number(e.target.value) : '')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+              <input type="checkbox" checked={mealIncluded} onChange={(e) => setMealIncluded(e.target.checked)} />
+              <span>{locale === 'ar' ? 'تشمل وجبة' : 'Meal included'}</span>
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+              <input type="checkbox" checked={seatSelectionIncluded} onChange={(e) => setSeatSelectionIncluded(e.target.checked)} />
+              <span>{locale === 'ar' ? 'يشمل اختيار المقعد' : 'Seat selection included'}</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-semibold">{locale === 'ar' ? 'خريطة المقاعد' : 'Seat Map'}</h2>
+              <p className="text-sm text-slate-500">
+                {locale === 'ar' ? 'فعّلها ليختار العميل المقاعد مباشرة ويتم حجزها تلقائياً.' : 'Enable exact seat selection and automatic seat locking.'}
+              </p>
+            </div>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+              <input type="checkbox" checked={seatMapEnabled} onChange={(e) => setSeatMapEnabled(e.target.checked)} />
+              <span>{locale === 'ar' ? 'تفعيل' : 'Enable'}</span>
+            </label>
+          </div>
+
+          {seatMapEnabled && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'عدد الصفوف' : 'Rows'}</label>
+                  <input type="number" min={1} max={80} value={seatMapRows} onChange={(e) => setSeatMapRows(Math.max(1, Math.min(80, Number(e.target.value) || 1)))} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'صفوف المقدمة' : 'Up front rows'}</label>
+                  <input value={upFrontRowsText} onChange={(e) => setUpFrontRowsText(e.target.value)} placeholder="1,2,3,4,5" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'صفوف المساحة الإضافية' : 'Extra legroom rows'}</label>
+                  <input value={extraLegroomRowsText} onChange={(e) => setExtraLegroomRowsText(e.target.value)} placeholder="11,12" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-medium text-slate-600 mb-3">
+                  {locale === 'ar' ? 'انقر على المقعد لحجبه من البيع. المقاعد البيضاء/الرمادية/الداكنة تمثل الفئات المختلفة.' : 'Click a seat to block it from sale. Seat colors represent tiers.'}
+                </p>
+                <SeatMap config={seatMapConfig} blockedSeatsEditable onSeatClick={toggleBlockedSeat} />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Description */}

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const origin = isAr ? trip.origin_city_ar : capitalizeFirst(trip.origin_city_en || trip.origin_city_ar)
   const dest = isAr ? trip.destination_city_ar : capitalizeFirst(trip.destination_city_en || trip.destination_city_ar)
   const price = trip.price_per_seat
-  const date = new Date(trip.departure_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+  const date = new Date(trip.departure_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

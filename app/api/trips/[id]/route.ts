@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { optimizeImage } from '@/lib/optimize-image'
+import { tripSchema } from '@/lib/validations'
 
 type RouteParams = {
   params: Promise<{ id: string }>
@@ -25,7 +26,14 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json({ trip })
+    const { data: seatAssignments } = await supabaseAdmin
+      .from('trip_seat_assignments')
+      .select('seat_number')
+      .eq('trip_id', id)
+
+    const unavailableSeatNumbers = (seatAssignments || []).map((item) => item.seat_number)
+
+    return NextResponse.json({ trip: { ...trip, unavailable_seat_numbers: unavailableSeatNumbers } })
   } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -120,14 +128,105 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const seatsStr = formData.get('total_seats')
-    if (seatsStr) {
-      const seats = Number(seatsStr)
-      if (seats >= existingTrip.booked_seats) updates.total_seats = seats
+    if (seatsStr !== null) {
+      const seatsValue = (seatsStr as string).trim()
+      if (seatsValue) {
+        const seats = Number(seatsValue)
+        if (!Number.isFinite(seats) || seats < existingTrip.booked_seats) {
+          return NextResponse.json(
+            { data: null, error: 'Total seats cannot be less than the number already booked' },
+            { status: 400 }
+          )
+        }
+        updates.total_seats = seats
+      }
     }
 
     const isDirectStr = formData.get('is_direct')
     if (isDirectStr !== null) {
       updates.is_direct = isDirectStr === 'true'
+    }
+
+    const checkedBaggageStr = formData.get('checked_baggage_kg')
+    if (checkedBaggageStr !== null) {
+      const value = (checkedBaggageStr as string).trim()
+      if (!value) {
+        updates.checked_baggage_kg = null
+      } else {
+        const checkedBaggageKg = Number(value)
+        if (!Number.isFinite(checkedBaggageKg) || checkedBaggageKg < 0) {
+          return NextResponse.json(
+            { data: null, error: 'Checked baggage must be a valid non-negative number' },
+            { status: 400 }
+          )
+        }
+        updates.checked_baggage_kg = checkedBaggageKg
+      }
+    }
+
+    const cabinBaggageStr = formData.get('cabin_baggage_kg')
+    if (cabinBaggageStr !== null) {
+      const value = (cabinBaggageStr as string).trim()
+      if (!value) {
+        updates.cabin_baggage_kg = null
+      } else {
+        const cabinBaggageKg = Number(value)
+        if (!Number.isFinite(cabinBaggageKg) || cabinBaggageKg < 0) {
+          return NextResponse.json(
+            { data: null, error: 'Cabin baggage must be a valid non-negative number' },
+            { status: 400 }
+          )
+        }
+        updates.cabin_baggage_kg = cabinBaggageKg
+      }
+    }
+
+    const mealIncludedStr = formData.get('meal_included')
+    if (mealIncludedStr !== null) {
+      updates.meal_included = mealIncludedStr === 'true'
+    }
+
+    const seatSelectionIncludedStr = formData.get('seat_selection_included')
+    if (seatSelectionIncludedStr !== null) {
+      updates.seat_selection_included = seatSelectionIncludedStr === 'true'
+    }
+
+    const seatMapEnabledStr = formData.get('seat_map_enabled')
+    if (seatMapEnabledStr !== null) {
+      const nextSeatMapEnabled = seatMapEnabledStr === 'true'
+      updates.seat_map_enabled = nextSeatMapEnabled
+
+      if (nextSeatMapEnabled) {
+        const seatMapConfigRaw = formData.get('seat_map_config')
+        if (typeof seatMapConfigRaw !== 'string' || !seatMapConfigRaw.trim()) {
+          return NextResponse.json(
+            { data: null, error: 'Seat map config is required when seat map mode is enabled' },
+            { status: 400 }
+          )
+        }
+
+        let parsedSeatMapConfig: unknown
+        try {
+          parsedSeatMapConfig = JSON.parse(seatMapConfigRaw)
+        } catch {
+          return NextResponse.json(
+            { data: null, error: 'Seat map config is invalid' },
+            { status: 400 }
+          )
+        }
+
+        const validatedSeatMapConfig = tripSchema.shape.seat_map_config.safeParse(parsedSeatMapConfig)
+        if (!validatedSeatMapConfig.success || !validatedSeatMapConfig.data) {
+          return NextResponse.json(
+            { data: null, error: 'Seat map config is invalid' },
+            { status: 400 }
+          )
+        }
+
+        updates.seat_map_config = validatedSeatMapConfig.data
+      } else {
+        updates.seat_map_config = null
+      }
     }
 
     // Upload image if provided
@@ -163,7 +262,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     if (hasBookings) {
       // Create edit request for admin approval
-      const { updated_at: _removed, ...changesOnly } = updates
+      const changesOnly = Object.fromEntries(
+        Object.entries(updates).filter(([key]) => key !== 'updated_at')
+      )
       const { data: editRequest, error: editError } = await supabaseAdmin
         .from('trip_edit_requests')
         .insert({
