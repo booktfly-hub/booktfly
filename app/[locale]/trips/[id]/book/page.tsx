@@ -39,6 +39,9 @@ import { Calendar as DateCalendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/components/ui/toaster'
 import { SeatMap } from '@/components/trips/seat-map'
+import { ProgressStepper } from '@/components/bookings/progress-stepper'
+import { TrustBadges } from '@/components/bookings/trust-badges'
+import { PriceBreakdown } from '@/components/bookings/price-breakdown'
 import type { Trip } from '@/types'
 
 type PassengerFormData = z.infer<typeof passengerSchema>
@@ -301,6 +304,9 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         </div>
         {t('common.back')}
       </button>
+
+      {/* Progress Stepper */}
+      <ProgressStepper currentStep={2} className="mb-8" />
 
       <div className="mb-8 md:mb-10">
          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('booking.title')}</h1>
@@ -743,6 +749,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 <p className="text-xs font-medium text-slate-500 text-center leading-relaxed mt-6">
                 {t('booking.terms_agreement')}
                 </p>
+
+                {/* Trust Badges */}
+                <div className="mt-6">
+                  <TrustBadges />
+                </div>
             </div>
           </div>
         </div>

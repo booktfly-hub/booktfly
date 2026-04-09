@@ -116,22 +116,22 @@ export function Footer() {
               </h3>
               <div className="flex flex-col gap-4">
                 <Link
-                  href="#"
+                  href={`/${locale}/about`}
                   className="text-lg font-bold text-slate-400 hover:text-white transition-colors"
                 >
                   {locale === 'ar' ? 'من نحن' : 'About Us'}
                 </Link>
                 <Link
-                  href="#"
+                  href={`/${locale}/help`}
+                  className="text-lg font-bold text-slate-400 hover:text-white transition-colors"
+                >
+                  {locale === 'ar' ? 'مركز المساعدة' : 'Help Center'}
+                </Link>
+                <Link
+                  href={`/${locale}/help`}
                   className="text-lg font-bold text-slate-400 hover:text-white transition-colors"
                 >
                    {t('footer.contact')}
-                </Link>
-                <Link
-                  href="#"
-                  className="text-lg font-bold text-slate-400 hover:text-white transition-colors"
-                >
-                  {locale === 'ar' ? 'الشركاء' : 'Partners'}
                 </Link>
               </div>
             </motion.div>

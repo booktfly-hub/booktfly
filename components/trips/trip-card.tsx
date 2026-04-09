@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
-import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
+import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Building2, Star, BadgeCheck, TrendingUp } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CABIN_CLASSES } from '@/lib/constants'
 import { TripStatusBadge } from './trip-status-badge'
@@ -35,6 +35,10 @@ export function TripCard({ trip, className }: TripCardProps) {
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
+  // Inline social proof logic (avoids client module boundary issue)
+  const isTopRated = trip.provider?.avg_rating && trip.provider.avg_rating >= 4.5 && (trip.provider.review_count || 0) >= 3
+  const isMostBooked = !isTopRated && trip.total_seats && trip.booked_seats && trip.booked_seats / trip.total_seats >= 0.7
+
   const providerName = trip.provider
     ? isAr
       ? trip.provider.company_name_ar
@@ -64,6 +68,21 @@ export function TripCard({ trip, className }: TripCardProps) {
         )}
       >
         <div className="flex flex-col h-full p-6">
+          {/* Social Proof Badge (inline) */}
+          {(isTopRated || isMostBooked) && (
+            <div className="mb-3">
+              <span className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+                isTopRated ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+              )}>
+                {isTopRated ? <Star className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+                {isTopRated
+                  ? (isAr ? 'الأعلى تقييماً' : 'Top Rated')
+                  : (isAr ? 'الأكثر حجزاً' : 'Most Booked')}
+              </span>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -71,10 +90,23 @@ export function TripCard({ trip, className }: TripCardProps) {
                 <Plane className="h-5 w-5 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-900 leading-none">{trip.airline}</span>
-                <span className="text-[10px] md:text-xs font-medium text-slate-500 mt-1">
-                  {isAr ? cabinClass.ar : cabinClass.en} {trip.flight_number && `• ${trip.flight_number}`}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-slate-900 leading-none">{trip.airline}</span>
+                  {trip.provider?.is_verified && (
+                    <BadgeCheck className="h-4 w-4 fill-blue-600 text-white" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] md:text-xs font-medium text-slate-500">
+                    {isAr ? cabinClass.ar : cabinClass.en} {trip.flight_number && `• ${trip.flight_number}`}
+                  </span>
+                  {(trip.provider?.avg_rating ?? 0) > 0 && (
+                    <span className="flex items-center gap-0.5 text-[10px] text-amber-600">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      {trip.provider!.avg_rating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">

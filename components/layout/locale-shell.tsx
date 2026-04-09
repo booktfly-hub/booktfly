@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { Toaster, toast } from '@/components/ui/toaster'
 import { UserProvider } from '@/contexts/user-context'
 
@@ -49,17 +50,18 @@ export function LocaleShell({ children }: Props) {
   return (
     <UserProvider>
       {!hidePublicChrome && <Navbar />}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {hidePublicChrome ? (
           children
         ) : (
           <div className="flex min-h-[100svh] flex-col">
-            <div className="flex-1">{children}</div>
+            <div className="flex-1 pb-16 md:pb-0">{children}</div>
           </div>
         )}
       </main>
       {!hidePublicChrome && <Footer />}
-      <AccessDeniedToast />
+      {!hidePublicChrome && <MobileBottomNav />}
+      <Suspense><AccessDeniedToast /></Suspense>
       <Toaster />
     </UserProvider>
   )

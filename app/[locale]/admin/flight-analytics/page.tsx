@@ -16,7 +16,6 @@ import {
   Filter,
   Calendar,
   CalendarDays,
-  ChevronDown,
   Users,
   DollarSign,
   Armchair,

@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Light theme only — dark mode disabled */
 
 @theme {
   --color-primary: var(--brand-primary);
@@ -43,6 +43,40 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer base {
+  /* Accessibility: visible focus indicators */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Skip navigation link */
+  .skip-nav {
+    @apply absolute -translate-y-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium z-[100] rounded-b-md transition-transform;
+  }
+  .skip-nav:focus {
+    @apply translate-y-0;
+  }
+
+  /* Safe area padding for mobile bottom nav */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Scrollbar hide utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Bottom nav spacing on mobile */
+  .has-bottom-nav {
+    padding-bottom: 4rem;
   }
 }
 

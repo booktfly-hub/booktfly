@@ -340,6 +340,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
                 onChange={(e) => updateFilter('sort', e.target.value)}
                 className="appearance-none w-40 md:w-48 h-10 px-4 pe-10 rounded-xl bg-slate-50 border-none text-slate-700 font-semibold text-xs md:text-sm focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
               >
+                <option value="best">{isAr ? 'الأفضل' : 'Best'}</option>
                 <option value="newest">{t('trips.sort_newest')}</option>
                 <option value="price_asc">{t('trips.sort_price_asc')}</option>
                 <option value="price_desc">{t('trips.sort_price_desc')}</option>
@@ -422,6 +423,15 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Results Count */}
+      {!loading && trips.length > 0 && (
+        <div className="mb-4" role="status" aria-live="polite">
+          <span className="text-sm font-medium text-muted-foreground">
+            {trips.length} {isAr ? 'رحلة وُجدت' : 'flights found'}
+          </span>
         </div>
       )}
 

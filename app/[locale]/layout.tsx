@@ -61,6 +61,9 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`min-h-screen flex flex-col font-sans antialiased ${cairo.variable}`}>
         <NextIntlClientProvider messages={messages}>
+          <a href="#main-content" className="skip-nav">
+            {locale === 'ar' ? 'تخطي إلى المحتوى الرئيسي' : 'Skip to main content'}
+          </a>
           <LocaleShell>{children}</LocaleShell>
         </NextIntlClientProvider>
       </body>

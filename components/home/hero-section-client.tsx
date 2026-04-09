@@ -9,6 +9,7 @@ import { enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
+import { PassengerPicker, type PassengerCounts } from '@/components/shared/passenger-picker'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -48,7 +49,8 @@ export function HeroSectionClient({
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
   const [tripType, setTripType] = useState('round_trip')
-  const [passengers, setPassengers] = useState(1)
+  const [passengerCounts, setPassengerCounts] = useState<PassengerCounts>({ adults: 1, children: 0, infants: 0, childAges: [] })
+  const passengers = passengerCounts.adults + passengerCounts.children + passengerCounts.infants
   const [departureDate, setDepartureDate] = useState<Date>()
   const [returnDate, setReturnDate] = useState<Date>()
   const [hotelCity, setHotelCity] = useState('')
@@ -66,7 +68,7 @@ export function HeroSectionClient({
       if (raw) {
         const prefs = JSON.parse(raw)
         if (prefs.tripType) setTripType(prefs.tripType)
-        if (prefs.passengers) setPassengers(prefs.passengers)
+        if (prefs.passengerCounts) setPassengerCounts(prefs.passengerCounts)
         if (prefs.hotelPassengers) setHotelPassengers(String(prefs.hotelPassengers))
       }
     } catch {}
@@ -122,6 +124,10 @@ export function HeroSectionClient({
       if (departureDate) params.set('date_from', format(departureDate, 'yyyy-MM-dd'))
       if (returnDate && tripType === 'round_trip') params.set('date_to', format(returnDate, 'yyyy-MM-dd'))
       if (passengers > 1) params.set('passengers', String(passengers))
+      if (passengerCounts.adults > 1) params.set('adults', String(passengerCounts.adults))
+      if (passengerCounts.children > 0) params.set('children', String(passengerCounts.children))
+      if (passengerCounts.infants > 0) params.set('infants', String(passengerCounts.infants))
+      if (passengerCounts.childAges.length > 0) params.set('child_ages', passengerCounts.childAges.join(','))
       const qs = params.toString()
       return `/${locale}/trips${qs ? `?${qs}` : ''}`
     }
@@ -652,23 +658,15 @@ export function HeroSectionClient({
           </Popover>
         </div>
 
-        {/* Row 3: Passengers */}
-        <div className="relative">
-          <Users className="pointer-events-none absolute start-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-          <input
-            type="number"
-            min={1}
-            max={20}
-            value={passengers}
-            onChange={e => {
-              const v = Math.max(1, Number(e.target.value))
-              setPassengers(v)
-              savePrefs({ passengers: v })
-            }}
-            placeholder={isAr ? 'عدد المسافرين' : 'Number of passengers'}
-            className="w-full h-14 ps-14 pe-5 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all shadow-sm"
-          />
-        </div>
+        {/* Row 3: Passengers (Skyscanner-style) */}
+        <PassengerPicker
+          value={passengerCounts}
+          onChange={(v) => {
+            setPassengerCounts(v)
+            savePrefs({ passengerCounts: v })
+          }}
+          locale={locale}
+        />
 
         {/* Search button */}
         <div className="pt-2">

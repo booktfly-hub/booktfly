@@ -30,6 +30,11 @@ import { TripDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { getCountryCode } from '@/lib/countries'
 import { buttonVariants } from '@/components/ui/button'
 import { SeatMap } from '@/components/trips/seat-map'
+import { PriceBreakdown } from '@/components/bookings/price-breakdown'
+import { ReviewList } from '@/components/reviews/review-list'
+import { Breadcrumbs } from '@/components/shared/breadcrumbs'
+import { PriceAlertButton } from '@/components/trips/price-alert-button'
+import { VerifiedBadge } from '@/components/shared/verified-badge'
 import type { Trip, Room } from '@/types'
 import { RoomCard } from '@/components/rooms/room-card'
 import { BedDouble } from 'lucide-react'
@@ -145,16 +150,36 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   return (
     <>
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 md:pt-32 lg:pt-36 lg:pb-12 animate-fade-in-up">
-      {/* Back button */}
-      <button
-        onClick={() => router.push(`/${locale}/trips`)}
-        className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 mb-6 md:mb-8 transition-colors"
-      >
-        <div className="p-1.5 md:p-2 rounded-full bg-slate-100 group-hover:bg-slate-200 transition-colors">
-            <Back className="h-3 w-3 md:h-4 md:w-4 rtl:rotate-180" />
-        </div>
-        {t('common.back')}
-      </button>
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: t('common.trips'), href: `/${locale}/trips` },
+          { label: `${originCity} → ${destCity}` },
+        ]}
+        className="mb-4"
+      />
+
+      {/* Back button + Price Alert */}
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <button
+          onClick={() => router.push(`/${locale}/trips`)}
+          className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <div className="p-1.5 md:p-2 rounded-full bg-slate-100 group-hover:bg-slate-200 transition-colors">
+              <Back className="h-3 w-3 md:h-4 md:w-4 rtl:rotate-180" />
+          </div>
+          {t('common.back')}
+        </button>
+        <PriceAlertButton
+          originCode={trip.origin_code || ''}
+          destinationCode={trip.destination_code || ''}
+          originNameAr={trip.origin_city_ar}
+          originNameEn={trip.origin_city_en || undefined}
+          destinationNameAr={trip.destination_city_ar}
+          destinationNameEn={trip.destination_city_en || undefined}
+          currentPrice={trip.price_per_seat}
+        />
+      </div>
 
       {/* Not available banner */}
       {isNotAvailable && (
@@ -490,12 +515,30 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
               <p className="text-center text-xs font-medium leading-relaxed text-slate-500">
                 {t('booking.terms_agreement')}
               </p>
+
+              {/* Price Breakdown */}
+              <PriceBreakdown
+                pricePerSeat={selectedPrice}
+                seatsCount={seatsCount}
+                currency={trip.currency}
+                className="mt-4"
+              />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      {trip.provider_id && (
+        <div className="mt-12 max-w-4xl">
+          <h3 className="text-lg font-bold mb-4">
+            {isAr ? 'التقييمات' : 'Reviews'}
+          </h3>
+          <ReviewList providerId={trip.provider_id} tripId={trip.id} />
+        </div>
+      )}
     </div>
-    
+
     {/* Mobile Sticky Bottom Bar (Moved outside animating wrapper) */}
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
         <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">
