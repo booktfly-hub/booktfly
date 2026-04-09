@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/footer'
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { Toaster, toast } from '@/components/ui/toaster'
 import { UserProvider } from '@/contexts/user-context'
+import { SavedItemsProvider } from '@/contexts/saved-items-context'
 
 type Props = {
   children: React.ReactNode
@@ -41,21 +42,25 @@ function AccessDeniedToast() {
   return null
 }
 
+const DETAIL_PAGE_PATTERNS = [/\/trips\/[^/]+/, /\/rooms\/[^/]+/, /\/cars\/[^/]+/, /\/packages\/[^/]+/]
+
 export function LocaleShell({ children }: Props) {
   const pathname = usePathname()
   const segments = pathname.split('/')
   const segment = segments[2]
   const hidePublicChrome = segment ? HIDDEN_CHROME_SEGMENTS.has(segment) : false
+  const isDetailPage = DETAIL_PAGE_PATTERNS.some(p => p.test(pathname))
 
   return (
     <UserProvider>
+      <SavedItemsProvider>
       {!hidePublicChrome && <Navbar />}
-      <main id="main-content" className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1 scroll-mt-28 focus:outline-none">
         {hidePublicChrome ? (
           children
         ) : (
           <div className="flex min-h-[100svh] flex-col">
-            <div className="flex-1 pb-16 md:pb-0">{children}</div>
+            <div className={isDetailPage ? 'flex-1' : 'flex-1 pb-16 md:pb-0'}>{children}</div>
           </div>
         )}
       </main>
@@ -63,6 +68,7 @@ export function LocaleShell({ children }: Props) {
       {!hidePublicChrome && <MobileBottomNav />}
       <Suspense><AccessDeniedToast /></Suspense>
       <Toaster />
+      </SavedItemsProvider>
     </UserProvider>
   )
 }

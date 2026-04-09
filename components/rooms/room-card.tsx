@@ -8,6 +8,7 @@ import { RoomStatusBadge } from './room-status-badge'
 import { RoomAmenities } from './room-amenities'
 import { RoomAvailabilityBadge } from './room-availability-badge'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
+import { FavoriteButton } from '@/components/shared/favorite-button'
 import type { Room } from '@/types'
 
 type RoomCardProps = {
@@ -66,6 +67,9 @@ export function RoomCard({ room, className }: RoomCardProps) {
             <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/90 backdrop-blur-sm text-slate-700 border border-white/50 shadow-sm">
               {categoryText}
             </span>
+          </div>
+          <div className="absolute bottom-3 end-3 z-10">
+            <FavoriteButton itemType="room" itemId={room.id} />
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
-import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Building2, Star, BadgeCheck, TrendingUp } from 'lucide-react'
+import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Star, BadgeCheck, TrendingUp } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CABIN_CLASSES } from '@/lib/constants'
 import { TripStatusBadge } from './trip-status-badge'
@@ -10,6 +10,7 @@ import { getCountryCode } from '@/lib/countries'
 import { isLastMinute } from '@/lib/last-minute'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { CountdownTimer } from '@/components/ui/countdown-timer'
+import { FavoriteButton } from '@/components/shared/favorite-button'
 import type { Trip } from '@/types'
 
 type TripCardProps = {
@@ -32,18 +33,11 @@ export function TripCard({ trip, className }: TripCardProps) {
   const originalFormatted = hasDiscount
     ? (isAr ? formatPrice(trip.original_price!, trip.currency) : formatPriceEN(trip.original_price!, trip.currency))
     : null
-
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
   // Inline social proof logic (avoids client module boundary issue)
   const isTopRated = trip.provider?.avg_rating && trip.provider.avg_rating >= 4.5 && (trip.provider.review_count || 0) >= 3
   const isMostBooked = !isTopRated && trip.total_seats && trip.booked_seats && trip.booked_seats / trip.total_seats >= 0.7
-
-  const providerName = trip.provider
-    ? isAr
-      ? trip.provider.company_name_ar
-      : (trip.provider.company_name_en || trip.provider.company_name_ar)
-    : null
 
   const departureDate = new Date(trip.departure_at).toLocaleDateString(
     'en-US',
@@ -59,6 +53,8 @@ export function TripCard({ trip, className }: TripCardProps) {
   const destCountry = getCountryCode(trip.destination_code, trip.destination_city_en || trip.destination_city_ar)
 
   return (
+    <div className="relative h-full">
+      <FavoriteButton itemType="trip" itemId={trip.id} className="absolute top-4 end-4 z-10" />
     <Link href={`/${locale}/trips/${trip.id}`} className="block group h-full focus:outline-none">
       <div
         className={cn(
@@ -135,7 +131,7 @@ export function TripCard({ trip, className }: TripCardProps) {
             <div className="flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity">
               <div className="flex items-center w-full gap-1.5">
                 <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
-                <Arrow className="h-4 w-4 text-primary shrink-0" />
+                <Arrow className="h-4 w-4 shrink-0 text-primary" />
                 <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
               </div>
             </div>
@@ -207,5 +203,6 @@ export function TripCard({ trip, className }: TripCardProps) {
         </div>
       </div>
     </Link>
+    </div>
   )
 }

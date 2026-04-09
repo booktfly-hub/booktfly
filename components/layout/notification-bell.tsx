@@ -1,13 +1,14 @@
 'use client'
 
 import { Bell, CheckCheck, Inbox } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useUser } from '@/hooks/use-user'
 import { formatDistanceToNow } from 'date-fns'
 import { ar, enUS } from 'date-fns/locale'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -17,17 +18,39 @@ type Props = {
 export function NotificationBell({ userId }: Props) {
   const t = useTranslations('notifications')
   const locale = useLocale()
+  const pathname = usePathname()
   const { supabase } = useUser()
   const [open, setOpen] = useState(false)
+  const menuId = useId()
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useNotifications(userId, supabase)
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!open) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open])
 
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="relative p-2 rounded-lg hover:bg-muted transition-colors"
         aria-label={t('title')}
+        aria-expanded={open}
+        aria-controls={menuId}
       >
         <Bell className="h-5 w-5 text-muted-foreground" />
         {unreadCount > 0 && (
@@ -40,7 +63,11 @@ export function NotificationBell({ userId }: Props) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute end-0 mt-2 w-80 rounded-xl bg-card border shadow-xl z-20 flex flex-col overflow-hidden">
+          <div
+            id={menuId}
+            className="absolute end-0 mt-2 w-80 rounded-xl bg-card border shadow-xl z-20 flex flex-col overflow-hidden"
+            aria-label={t('title')}
+          >
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <div className="flex items-center gap-2">
                 <Bell className="h-4 w-4 text-primary" />
@@ -53,6 +80,7 @@ export function NotificationBell({ userId }: Props) {
               </div>
               {unreadCount > 0 && (
                 <button
+                  type="button"
                   onClick={() => markAllAsRead()}
                   className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
                 >

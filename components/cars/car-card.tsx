@@ -7,6 +7,7 @@ import { Car as CarIcon, MapPin, Users, Fuel, ArrowRight, ArrowLeft, Gauge, Plan
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
+import { FavoriteButton } from '@/components/shared/favorite-button'
 import type { Car } from '@/types'
 
 type CarCardProps = {
@@ -63,6 +64,9 @@ export function CarCard({ car, className }: CarCardProps) {
             <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/90 backdrop-blur-sm text-slate-700 border border-white/50 shadow-sm">
               {categoryText}
             </span>
+          </div>
+          <div className="absolute bottom-3 end-3 z-10">
+            <FavoriteButton itemType="car" itemId={car.id} />
           </div>
         </div>
 

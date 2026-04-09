@@ -1028,6 +1028,7 @@
   "booking_flow": {
     "step_select": "اختيار",
     "step_details": "التفاصيل",
+    "step_seats": "المقاعد",
     "step_payment": "الدفع",
     "step_confirmed": "تأكيد",
     "price_breakdown": "تفاصيل السعر",

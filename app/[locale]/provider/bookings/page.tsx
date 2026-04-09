@@ -93,7 +93,18 @@ export default async function ProviderBookingsPage({ searchParams }: Props) {
                         ? `${booking.trip.origin_city_ar} → ${booking.trip.destination_city_ar}`
                         : '-'}
                     </td>
-                    <td className="p-3">{booking.seats_count}</td>
+                    <td className="p-3">
+                      <span>{booking.seats_count}</span>
+                      {booking.passengers && booking.passengers.length > 0 && booking.passengers.some(p => p.seat_number) && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {booking.passengers.filter(p => p.seat_number).map((p, i) => (
+                            <span key={i} className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                              {p.seat_number}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
                     <td className="p-3 font-medium">
                       {formatPrice(booking.total_amount, booking.trip?.currency)}
                     </td>

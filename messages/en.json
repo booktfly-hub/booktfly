@@ -1028,6 +1028,7 @@
   "booking_flow": {
     "step_select": "Select",
     "step_details": "Details",
+    "step_seats": "Seats",
     "step_payment": "Payment",
     "step_confirmed": "Confirmed",
     "price_breakdown": "Price Breakdown",

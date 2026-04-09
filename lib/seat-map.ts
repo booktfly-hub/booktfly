@@ -39,8 +39,8 @@ export function getSeatTier(config: TripSeatMapConfig, row: number): SeatTier {
 }
 
 export function buildSeatMap(config: TripSeatMapConfig): DerivedSeat[] {
-  const blockedSeats = new Set(config.blocked_seats.map(normalizeSeatNumber))
-  const columns = [...config.left_columns, ...config.right_columns]
+  const blockedSeats = new Set((config.blocked_seats ?? []).map(normalizeSeatNumber))
+  const columns = [...(config.left_columns ?? []), ...(config.right_columns ?? [])]
   const seats: DerivedSeat[] = []
 
   for (let row = 1; row <= config.rows; row += 1) {

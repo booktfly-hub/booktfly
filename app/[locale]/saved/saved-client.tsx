@@ -2,35 +2,44 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Plane, Building, CarFront, Heart, HeartOff } from 'lucide-react'
+import { Plane, Building, CarFront, HeartOff } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
+import { TripCard } from '@/components/trips/trip-card'
+import { RoomCard } from '@/components/rooms/room-card'
+import { CarCard } from '@/components/cars/car-card'
 import { cn } from '@/lib/utils'
-import type { SavedItem } from '@/types'
-
-interface SavedPageClientProps {
-  locale: string
-}
+import type { Trip, Room, Car } from '@/types'
 
 type Tab = 'trip' | 'room' | 'car'
 
-export function SavedPageClient({ locale }: SavedPageClientProps) {
+interface SavedData {
+  trips: Trip[]
+  rooms: Room[]
+  cars: Car[]
+}
+
+export function SavedPageClient() {
   const t = useTranslations('saved')
   const [tab, setTab] = useState<Tab>('trip')
-  const [items, setItems] = useState<SavedItem[]>([])
+  const [data, setData] = useState<SavedData>({ trips: [], rooms: [], cars: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch(`/api/saved-items?item_type=${tab}`)
+        const res = await fetch(`/api/saved-items?include_data=true&item_type=${tab}`)
         if (res.ok) {
-          const data = await res.json()
-          setItems(data.items)
+          const json = await res.json()
+          setData(prev => ({
+            ...prev,
+            trips: tab === 'trip' ? (json.trips || []) : prev.trips,
+            rooms: tab === 'room' ? (json.rooms || []) : prev.rooms,
+            cars: tab === 'car' ? (json.cars || []) : prev.cars,
+          }))
         }
-      } catch {} finally {
-        setLoading(false)
-      }
+      } catch {}
+      finally { setLoading(false) }
     }
     load()
   }, [tab])
@@ -41,18 +50,16 @@ export function SavedPageClient({ locale }: SavedPageClientProps) {
     { key: 'car', label: t('saved_cars'), icon: CarFront },
   ]
 
-  async function removeSaved(itemId: string) {
-    await fetch(`/api/saved-items?item_type=${tab}&item_id=${itemId}`, { method: 'DELETE' })
-    setItems(items.filter((i) => i.item_id !== itemId))
-    localStorage.removeItem(`saved_${tab}_${itemId}`)
-  }
+  const currentItems =
+    tab === 'trip' ? data.trips :
+    tab === 'room' ? data.rooms :
+    data.cars
 
   return (
-    <div className="container max-w-4xl py-8 px-4 mx-auto">
+    <div className="container max-w-5xl py-8 px-4 mx-auto">
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-border pb-3">
+      <div className="flex gap-2 mb-8 border-b border-border pb-3">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.key}
@@ -70,41 +77,24 @@ export function SavedPageClient({ locale }: SavedPageClientProps) {
         ))}
       </div>
 
-      {/* Content */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-muted" />
+            <div key={i} className="h-72 animate-pulse rounded-[2rem] bg-muted" />
           ))}
         </div>
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon={HeartOff}
-          message={t('no_saved')}
-        />
+      ) : currentItems.length === 0 ? (
+        <EmptyState icon={HeartOff} message={t('no_saved')} />
       ) : (
-        <div className="space-y-3">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
-            >
-              <div className="text-sm">
-                <p className="font-medium">
-                  {tab === 'trip' ? 'Trip' : tab === 'room' ? 'Room' : 'Car'}: {item.item_id.slice(0, 8)}...
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(item.created_at).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US')}
-                </p>
-              </div>
-              <button
-                onClick={() => removeSaved(item.item_id)}
-                className="text-red-500 hover:text-red-600 p-1.5"
-                aria-label={t('unsave')}
-              >
-                <Heart className="h-5 w-5 fill-current" />
-              </button>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tab === 'trip' && data.trips.map(trip => (
+            <TripCard key={trip.id} trip={trip} />
+          ))}
+          {tab === 'room' && data.rooms.map(room => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+          {tab === 'car' && data.cars.map(car => (
+            <CarCard key={car.id} car={car} />
           ))}
         </div>
       )}

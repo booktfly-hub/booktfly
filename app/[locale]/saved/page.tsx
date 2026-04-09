@@ -7,7 +7,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t('title') }
 }
 
-export default async function SavedPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params
-  return <SavedPageClient locale={locale} />
+export default async function SavedPage() {
+  return <SavedPageClient />
 }

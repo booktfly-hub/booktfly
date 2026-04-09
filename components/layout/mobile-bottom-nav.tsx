@@ -11,11 +11,15 @@ export function MobileBottomNav() {
   const locale = useLocale()
   const t = useTranslations('mobile_nav')
 
-  // Don't show on admin/provider/marketeer pages
+  // Don't show on admin/provider/marketeer pages or pages with their own sticky bottom bar
   if (
     pathname.includes('/admin') ||
     pathname.includes('/provider') ||
-    pathname.includes('/marketeer')
+    pathname.includes('/marketeer') ||
+    pathname.match(/\/trips\/[^/]+/) ||
+    pathname.match(/\/rooms\/[^/]+/) ||
+    pathname.match(/\/cars\/[^/]+/) ||
+    pathname.match(/\/packages\/[^/]+/)
   ) {
     return null
   }

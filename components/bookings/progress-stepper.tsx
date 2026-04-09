@@ -5,26 +5,34 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProgressStepperProps {
-  currentStep: number // 1-4
+  currentStep: number
+  hasSeatStep?: boolean
   className?: string
 }
 
-export function ProgressStepper({ currentStep, className }: ProgressStepperProps) {
+export function ProgressStepper({ currentStep, hasSeatStep = false, className }: ProgressStepperProps) {
   const t = useTranslations('booking_flow')
 
-  const steps = [
-    { label: t('step_select'), step: 1 },
-    { label: t('step_details'), step: 2 },
-    { label: t('step_payment'), step: 3 },
-    { label: t('step_confirmed'), step: 4 },
-  ]
+  const steps = hasSeatStep
+    ? [
+        { label: t('step_select'), step: 1 },
+        { label: t('step_details'), step: 2 },
+        { label: t('step_seats'), step: 3 },
+        { label: t('step_payment'), step: 4 },
+        { label: t('step_confirmed'), step: 5 },
+      ]
+    : [
+        { label: t('step_select'), step: 1 },
+        { label: t('step_details'), step: 2 },
+        { label: t('step_payment'), step: 3 },
+        { label: t('step_confirmed'), step: 4 },
+      ]
 
   return (
     <div className={cn('w-full', className)}>
       <div className="flex items-center justify-between">
         {steps.map((s, index) => (
           <div key={s.step} className="flex items-center flex-1 last:flex-none">
-            {/* Step circle */}
             <div className="flex flex-col items-center">
               <div
                 className={cn(
@@ -52,7 +60,6 @@ export function ProgressStepper({ currentStep, className }: ProgressStepperProps
               </span>
             </div>
 
-            {/* Connector line */}
             {index < steps.length - 1 && (
               <div
                 className={cn(
