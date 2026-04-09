@@ -132,6 +132,8 @@ export type NotificationType =
   | 'package_booking_cancelled'
   | 'package_booking_refunded'
   | 'package_removed'
+  | 'price_alert_triggered'
+  | 'new_review'
 
 export type Profile = {
   id: string
@@ -192,6 +194,9 @@ export type Provider = {
   has_civil_aviation: boolean
   has_iata_permit: boolean
   iban: string | null
+  avg_rating: number
+  review_count: number
+  is_verified: boolean
   created_at: string
   updated_at: string
 }
@@ -794,4 +799,83 @@ export type MarketeerCustomer = {
   phone: string | null
   source: 'manual' | 'excel' | 'referral'
   created_at: string
+}
+
+export type ReviewItemType = 'trip' | 'room' | 'car' | 'package'
+
+export type Review = {
+  id: string
+  booking_id: string
+  reviewer_id: string
+  provider_id: string
+  trip_id: string | null
+  room_id: string | null
+  car_id: string | null
+  item_type: ReviewItemType
+  rating: number
+  comment: string | null
+  created_at: string
+  updated_at: string
+  reviewer?: Profile
+  provider?: Provider
+  trip?: Trip
+}
+
+export type PriceAlert = {
+  id: string
+  user_id: string
+  origin_code: string
+  origin_name_ar: string | null
+  origin_name_en: string | null
+  destination_code: string
+  destination_name_ar: string | null
+  destination_name_en: string | null
+  target_price: number | null
+  cabin_class: string
+  is_active: boolean
+  last_notified_at: string | null
+  created_at: string
+}
+
+export type SavedItemType = 'trip' | 'room' | 'car' | 'package'
+
+export type SavedItem = {
+  id: string
+  user_id: string
+  item_type: SavedItemType
+  item_id: string
+  created_at: string
+}
+
+export type RecentSearch = {
+  id: string
+  user_id: string
+  search_type: 'flight' | 'hotel' | 'car'
+  origin_code: string | null
+  destination_code: string | null
+  origin_name_ar: string | null
+  origin_name_en: string | null
+  destination_name_ar: string | null
+  destination_name_en: string | null
+  departure_date: string | null
+  return_date: string | null
+  trip_type: string | null
+  passengers: number
+  cabin_class: string | null
+  created_at: string
+}
+
+export type FaqCategory = 'booking' | 'payment' | 'cancellation' | 'provider' | 'account' | 'general'
+
+export type FaqItem = {
+  id: string
+  category: FaqCategory
+  question_ar: string
+  question_en: string | null
+  answer_ar: string
+  answer_en: string | null
+  sort_order: number
+  is_published: boolean
+  created_at: string
+  updated_at: string
 }

@@ -2,27 +2,48 @@
 
 import { useLocale } from 'next-intl'
 import { Globe } from 'lucide-react'
-import { usePathname, useRouter } from '@/i18n/navigation'
+import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
-export function LanguageSwitcher() {
+type Props = {
+  compact?: boolean
+  className?: string
+}
+
+export function LanguageSwitcher({ compact = false, className }: Props) {
   const locale = useLocale()
   const router = useRouter()
-  const pathname = usePathname()
 
   const switchLocale = () => {
     const newLocale = locale === 'ar' ? 'en' : 'ar'
-    router.replace(pathname, { locale: newLocale })
+    const { pathname, search, hash } = window.location
+    const localizedPath = pathname.replace(/^\/(ar|en)(?=\/|$)/, `/${newLocale}`)
+
+    router.replace(`${localizedPath}${search}${hash}`)
   }
 
   return (
     <button
       type="button"
       onClick={switchLocale}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+      className={cn(
+        'flex items-center rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        compact ? 'gap-0' : 'gap-1.5',
+        className
+      )}
       title={locale === 'ar' ? 'English' : 'العربية'}
+      aria-label={locale === 'ar' ? 'Switch language to English' : 'التبديل إلى العربية'}
     >
       <Globe className="h-4 w-4" />
-      <span>{locale === 'ar' ? 'EN' : 'عربي'}</span>
+      <span
+        className={cn(
+          'overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-300',
+          compact ? 'ms-0 max-w-0 opacity-0' : 'max-w-16 opacity-100'
+        )}
+        aria-hidden={compact}
+      >
+        {locale === 'ar' ? 'EN' : 'عربي'}
+      </span>
     </button>
   )
 }

@@ -27,14 +27,8 @@ export default function NotificationsPage() {
 
   const supabase = createClient()
 
-  const getNotificationLink = (data: Record<string, string> | null): string | null => {
-    if (!data) return null
-    if (data.booking_id) return `/${locale}/my-bookings/${data.booking_id}`
-    if (data.room_booking_id) return `/${locale}/my-bookings/rooms/${data.room_booking_id}`
-    if (data.car_booking_id) return `/${locale}/my-bookings/cars/${data.car_booking_id}`
-    if (data.trip_id) return `/${locale}/trips/${data.trip_id}`
-    if (data.application_id) return `/${locale}/become-provider/status`
-    return null
+  const getNotificationLink = (n: Notification): string => {
+    return `/${locale}/notifications/${n.id}`
   }
 
   const fetchNotifications = useCallback(async (offset = 0, currentFilter = filter) => {
@@ -171,7 +165,7 @@ export default function NotificationsPage() {
       ) : (
         <div className="bg-card border rounded-2xl overflow-hidden divide-y">
           {notifications.map((n) => {
-            const link = getNotificationLink(n.data)
+            const link = getNotificationLink(n)
             const title = locale === 'ar' ? n.title_ar : n.title_en
             const body = locale === 'ar' ? n.body_ar : n.body_en
             const timeAgo = formatDistanceToNow(new Date(n.created_at), {
@@ -179,10 +173,12 @@ export default function NotificationsPage() {
               locale: locale === 'ar' ? ar : enUS,
             })
 
-            const content = (
-              <div
+            return (
+              <Link
+                key={n.id}
+                href={link}
                 className={cn(
-                  'p-4 hover:bg-muted/50 transition-colors cursor-pointer',
+                  'block p-4 hover:bg-muted/50 transition-colors',
                   !n.read && 'bg-primary/[0.03]'
                 )}
                 onClick={() => markAsRead(n.id)}
@@ -197,15 +193,7 @@ export default function NotificationsPage() {
                     <p className="text-xs text-muted-foreground mt-1.5">{timeAgo}</p>
                   </div>
                 </div>
-              </div>
-            )
-
-            return link ? (
-              <Link key={n.id} href={link} className="block">
-                {content}
               </Link>
-            ) : (
-              <div key={n.id}>{content}</div>
             )
           })}
         </div>

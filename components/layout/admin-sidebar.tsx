@@ -34,6 +34,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import { useUser } from '@/hooks/use-user'
 
 type NavItem = {
@@ -291,7 +292,7 @@ export function AdminSidebar() {
   const t = useTranslations('admin')
   const locale = useLocale()
   const pathname = usePathname()
-  const { signOut } = useUser()
+  const { signOut, user } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
   const badges = useBadgeCounts()
 
@@ -333,6 +334,14 @@ export function AdminSidebar() {
       </div>
 
       <div className="p-4 border-t border-slate-100 space-y-3">
+        {user && (
+          <div className="flex items-center justify-between px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200">
+            <span className="text-sm font-bold text-slate-600">
+              {locale === 'ar' ? 'الإشعارات' : 'Notifications'}
+            </span>
+            <NotificationBell userId={user.id} />
+          </div>
+        )}
         <Link
           href={`/${locale}`}
           onClick={closeMobile}

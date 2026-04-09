@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useId } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon } from 'lucide-react'
@@ -20,6 +20,8 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const mobileMenuId = useId()
+  const userMenuId = useId()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +30,25 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    setMobileOpen(false)
+    setUserMenuOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!mobileOpen && !userMenuOpen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        setUserMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mobileOpen, userMenuOpen])
 
   const handleSignOut = async () => {
     setUserMenuOpen(false)
@@ -52,6 +73,8 @@ export function Navbar() {
 
   const isNavItemActive = (href: string) =>
     href !== '#' && (pathname === href || pathname.startsWith(`${href}/`))
+
+  const desktopCompact = scrolled
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center mt-2 md:mt-4 px-4 sm:px-6 pointer-events-none transition-all duration-500">
@@ -78,13 +101,16 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className={cn('hidden md:flex items-center transition-all duration-300', desktopCompact ? 'gap-1' : 'gap-2')}>
             {navItems.map(({ href, label, icon: Icon, highlight }) => (
               <Link
                 key={label}
                 href={href}
+                aria-label={label}
+                title={label}
                 className={cn(
-                  "inline-flex items-center gap-2 border-none px-4 py-2 text-sm font-bold transition-all rounded-xl",
+                  'inline-flex items-center justify-center border-none text-sm font-bold transition-all rounded-xl',
+                  desktopCompact ? 'gap-0 min-w-11 px-3 py-2.5' : 'gap-2 px-4 py-2',
                   isNavItemActive(href)
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95"
                     : highlight
@@ -102,9 +128,17 @@ export function Navbar() {
                       : highlight
                         ? "text-amber-600"
                         : "text-primary/70"
-                  )}
+                      )}
                 />
-                <span>{label}</span>
+                <span
+                  className={cn(
+                    'hidden overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-300 md:inline-block',
+                    desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-32 opacity-100'
+                  )}
+                  aria-hidden={desktopCompact}
+                >
+                  {label}
+                </span>
               </Link>
             ))}
           </div>
@@ -112,7 +146,7 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex flex-nowrap items-center gap-1.5 sm:gap-6 min-w-0 shrink-0">
             <div className="hidden sm:flex items-center">
-               <LanguageSwitcher />
+               <LanguageSwitcher compact={desktopCompact} />
             </div>
 
             {loading ? (
@@ -133,13 +167,26 @@ export function Navbar() {
                     {/* User dropdown */}
                     <div className="relative">
                       <button
+                        type="button"
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 rounded-2xl bg-white border border-slate-200 p-1.5 pe-4 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className={cn(
+                          'flex items-center rounded-2xl bg-white border border-slate-200 p-1.5 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]',
+                          desktopCompact ? 'gap-1 pe-1.5' : 'gap-2 pe-4'
+                        )}
+                        aria-expanded={userMenuOpen}
+                        aria-controls={userMenuId}
+                        aria-label={profile?.full_name || user.email || t('common.account')}
                       >
                         <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary/20">
                           {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </div>
-                        <span className="hidden lg:inline text-sm font-bold max-w-[120px] truncate text-primary">
+                        <span
+                          className={cn(
+                            'hidden overflow-hidden whitespace-nowrap text-sm font-bold text-primary transition-[max-width,opacity,margin] duration-300 lg:inline-block',
+                            desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-[120px] opacity-100'
+                          )}
+                          aria-hidden={desktopCompact}
+                        >
                           {profile?.full_name || user.email}
                         </span>
                         <ChevronDown className={cn("h-4 w-4 text-primary/50 transition-transform duration-300", userMenuOpen && "rotate-180")} />
@@ -151,7 +198,10 @@ export function Navbar() {
                             className="fixed inset-0 z-10"
                             onClick={() => setUserMenuOpen(false)}
                           />
-                          <div className="absolute end-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl z-20 overflow-hidden p-2 origin-top-right animate-in fade-in zoom-in-95 duration-150"
+                          <div
+                            id={userMenuId}
+                            className="absolute end-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl z-20 overflow-hidden p-2 origin-top-right animate-in fade-in zoom-in-95 duration-150"
+                            aria-label={t('common.account')}
                           >
                               <div className="px-4 py-3 bg-muted/30 rounded-xl mb-2">
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t('common.account')}</p>
@@ -192,6 +242,7 @@ export function Navbar() {
                               </div>
                               <div className="h-px bg-border/50 my-2" />
                               <button
+                                type="button"
                                 onClick={handleSignOut}
                                 className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                               >
@@ -208,7 +259,7 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/login`}
                       className={cn(
-                        "z-10inline-flex shrink-0 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors whitespace-nowrap",
+                        'inline-flex shrink-0 rounded-xl text-slate-700 transition-colors whitespace-nowrap hover:bg-slate-100',
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -217,7 +268,7 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/signup`}
                       className={cn(
-                        "z-100 shrink-0 rounded-lg bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 hover:brightness-95 hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap",
+                        'shrink-0 rounded-lg bg-[var(--color-primary)] text-white transition-all shadow-md shadow-[color:var(--color-primary)]/20 whitespace-nowrap hover:-translate-y-0.5 hover:brightness-95 hover:shadow-lg',
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -230,8 +281,12 @@ export function Navbar() {
 
             {/* Mobile hamburger */}
             <button
+              type="button"
               className="md:hidden shrink-0 self-center p-2 rounded-xl hover:bg-muted transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileOpen}
+              aria-controls={mobileMenuId}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -239,12 +294,11 @@ export function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        <div
-          className={cn(
-            "md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem] transition-[max-height,opacity] duration-300 ease-in-out",
-            mobileOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-          )}
-        >
+        {mobileOpen && (
+          <div
+            id={mobileMenuId}
+            className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden rounded-b-[2rem]"
+          >
               <div className="p-4 space-y-1">
                 {navItems.map(({ href, label, icon: Icon, highlight }) => {
                   const isActive = isNavItemActive(href)
@@ -314,6 +368,7 @@ export function Navbar() {
                   <>
                     <div className="h-px bg-border/50 my-2" />
                     <button
+                      type="button"
                       onClick={() => { handleSignOut(); setMobileOpen(false) }}
                       className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                     >
@@ -323,7 +378,8 @@ export function Navbar() {
                   </>
                 )}
               </div>
-        </div>
+          </div>
+        )}
       </nav>
     </div>
   )

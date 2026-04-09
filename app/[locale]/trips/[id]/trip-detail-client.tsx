@@ -9,13 +9,10 @@ import {
   Plane,
   Calendar,
   ArrowRight,
-  ArrowLeft,
-  ArrowDown,
   MapPin,
   Clock,
   Users,
   CreditCard,
-  Shield,
   Minus,
   Plus,
   AlertTriangle,
@@ -29,10 +26,12 @@ import { TripStatusBadge } from '@/components/trips/trip-status-badge'
 import { TripDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { getCountryCode } from '@/lib/countries'
 import { buttonVariants } from '@/components/ui/button'
-import { SeatMap } from '@/components/trips/seat-map'
-import type { Trip, Room } from '@/types'
-import { RoomCard } from '@/components/rooms/room-card'
-import { BedDouble } from 'lucide-react'
+import { PriceBreakdown } from '@/components/bookings/price-breakdown'
+import { ReviewList } from '@/components/reviews/review-list'
+import { Breadcrumbs } from '@/components/shared/breadcrumbs'
+import { PriceAlertButton } from '@/components/trips/price-alert-button'
+import { TripDirectionIndicator } from '@/components/trips/trip-direction-indicator'
+import type { Trip } from '@/types'
 
 export default function TripDetailClient({ params }: { params: Promise<{ id: string, locale: string }> }) {
   const t = useTranslations()
@@ -46,9 +45,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const [loading, setLoading] = useState(true)
   const [seatsCount, setSeatsCount] = useState(1)
   const [bookingType, setBookingType] = useState<'round_trip' | 'one_way'>('round_trip')
-  const [recommendedRooms, setRecommendedRooms] = useState<Room[]>([])
 
-  const Arrow = isAr ? ArrowLeft : ArrowRight
   const Back = isAr ? ChevronRight : ChevronLeft
 
   useEffect(() => {
@@ -58,13 +55,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
         const data = await res.json()
         if (data.trip) {
           setTrip(data.trip)
-          const city = data.trip.destination_city_en || data.trip.destination_city_ar
-          if (city) {
-            fetch(`/api/rooms/recommendations?city=${encodeURIComponent(city)}`)
-              .then(r => r.json())
-              .then(d => { if (d.rooms) setRecommendedRooms(d.rooms) })
-              .catch(() => {})
-          }
+          setBookingType(data.trip.trip_type === 'one_way' ? 'one_way' : 'round_trip')
         }
       } catch {
         // Error handled
@@ -145,16 +136,36 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   return (
     <>
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 md:pt-32 lg:pt-36 lg:pb-12 animate-fade-in-up">
-      {/* Back button */}
-      <button
-        onClick={() => router.push(`/${locale}/trips`)}
-        className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 mb-6 md:mb-8 transition-colors"
-      >
-        <div className="p-1.5 md:p-2 rounded-full bg-slate-100 group-hover:bg-slate-200 transition-colors">
-            <Back className="h-3 w-3 md:h-4 md:w-4 rtl:rotate-180" />
-        </div>
-        {t('common.back')}
-      </button>
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        items={[
+          { label: t('common.trips'), href: `/${locale}/trips` },
+          { label: `${originCity} → ${destCity}` },
+        ]}
+        className="mb-4"
+      />
+
+      {/* Back button + Price Alert */}
+      <div className="flex items-center justify-between mb-6 md:mb-8">
+        <button
+          onClick={() => router.push(`/${locale}/trips`)}
+          className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <div className="p-1.5 md:p-2 rounded-full bg-slate-100 group-hover:bg-slate-200 transition-colors">
+              <Back className="h-3 w-3 md:h-4 md:w-4 rtl:rotate-180" />
+          </div>
+          {t('common.back')}
+        </button>
+        <PriceAlertButton
+          originCode={trip.origin_code || ''}
+          destinationCode={trip.destination_code || ''}
+          originNameAr={trip.origin_city_ar}
+          originNameEn={trip.origin_city_en || undefined}
+          destinationNameAr={trip.destination_city_ar}
+          destinationNameEn={trip.destination_city_en || undefined}
+          currentPrice={trip.price_per_seat}
+        />
+      </div>
 
       {/* Not available banner */}
       {isNotAvailable && (
@@ -182,7 +193,12 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                         <Sparkles className="h-3.5 w-3.5 text-accent" />
                         {cabinLabel}
                       </span>
-                      <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                        <TripDirectionIndicator
+                          tripType={trip.trip_type}
+                          isAr={isAr}
+                          className="h-3.5 w-3.5"
+                        />
                         {tripTypeLabel}
                       </span>
                     </div>
@@ -222,12 +238,21 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                           <div className="flex items-center gap-2">
                             <div className="h-px w-10 bg-slate-200 md:w-12" />
                             <div className="flex h-11 w-11 items-center justify-center rounded-full border border-sky-100 bg-sky-50 text-primary shadow-sm">
-                              <ArrowDown className="h-4 w-4 md:hidden" />
-                              <Arrow className="h-4 w-4 hidden md:block" />
+                              <TripDirectionIndicator
+                                tripType={trip.trip_type}
+                                isAr={isAr}
+                                orientation="vertical"
+                                className="h-4 w-4 md:hidden"
+                              />
+                              <TripDirectionIndicator
+                                tripType={trip.trip_type}
+                                isAr={isAr}
+                                className="hidden h-4 w-4 md:block"
+                              />
                             </div>
                             <div className="h-px w-10 bg-slate-200 md:w-12" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">{bookingTypeLabel}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">{tripTypeLabel}</span>
                         </div>
 
                         <div className="min-w-0 text-start md:text-end">
@@ -301,7 +326,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
             </div>
           )}
 
-          {(tripBenefits.length > 0 || (trip.seat_map_enabled && trip.seat_map_config)) && (
+          {tripBenefits.length > 0 && (
             <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -309,69 +334,19 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-950 md:text-xl">{isAr ? 'مزايا الرحلة' : 'Trip Benefits'}</h3>
-                  <p className="text-sm font-medium text-slate-500">{isAr ? 'تفاصيل إضافية عن الخدمة والمقاعد' : 'Extra service and seat details'}</p>
+                  <p className="text-sm font-medium text-slate-500">{isAr ? 'تفاصيل إضافية عن الخدمة' : 'Extra service details'}</p>
                 </div>
               </div>
-
-              {tripBenefits.length > 0 && (
-                <div className="mb-6 flex flex-wrap gap-2">
-                  {tripBenefits.map((benefit) => (
-                    <span key={benefit} className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
-                      {benefit}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {trip.seat_map_enabled && trip.seat_map_config && (
-                <div>
-                  <p className="mb-3 text-sm font-medium text-slate-500">
-                    {isAr ? 'يمكنك اختيار المقعد أثناء الحجز. المقاعد غير المتاحة معطلة تلقائياً.' : 'Travelers can choose exact seats during booking. Unavailable seats are disabled automatically.'}
-                  </p>
-                  <SeatMap
-                    config={trip.seat_map_config}
-                    unavailableSeats={trip.unavailable_seat_numbers || []}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Recommended Rooms */}
-          {recommendedRooms.length > 0 && (
-            <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <BedDouble className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-950 md:text-xl">{t('rooms.recommended_rooms')}</h3>
-                    <p className="text-sm font-medium text-slate-500">
-                      {t('rooms.recommended_rooms_desc', { city: isAr ? trip.destination_city_ar : (trip.destination_city_en || trip.destination_city_ar) })}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={`/${locale}/rooms?city=${encodeURIComponent(trip.destination_city_en || trip.destination_city_ar)}`}
-                  className="hidden sm:inline-flex text-sm font-bold text-primary hover:underline"
-                >
-                  {t('rooms.view_all_rooms')}
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {recommendedRooms.slice(0, 4).map((room) => (
-                  <RoomCard key={room.id} room={room} />
+              <div className="flex flex-wrap gap-2">
+                {tripBenefits.map((benefit) => (
+                  <span key={benefit} className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+                    {benefit}
+                  </span>
                 ))}
               </div>
-              <Link
-                href={`/${locale}/rooms?city=${encodeURIComponent(trip.destination_city_en || trip.destination_city_ar)}`}
-                className="sm:hidden mt-4 block text-center text-sm font-bold text-primary hover:underline"
-              >
-                {t('rooms.view_all_rooms')}
-              </Link>
             </div>
           )}
+
         </div>
 
         {/* Sidebar: Booking section (Desktop) */}
@@ -490,12 +465,30 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
               <p className="text-center text-xs font-medium leading-relaxed text-slate-500">
                 {t('booking.terms_agreement')}
               </p>
+
+              {/* Price Breakdown */}
+              <PriceBreakdown
+                pricePerSeat={selectedPrice}
+                seatsCount={seatsCount}
+                currency={trip.currency}
+                className="mt-4"
+              />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      {trip.provider_id && (
+        <div className="mt-12 max-w-4xl">
+          <h3 className="text-lg font-bold mb-4">
+            {isAr ? 'التقييمات' : 'Reviews'}
+          </h3>
+          <ReviewList providerId={trip.provider_id} tripId={trip.id} />
+        </div>
+      )}
     </div>
-    
+
     {/* Mobile Sticky Bottom Bar (Moved outside animating wrapper) */}
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
         <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">

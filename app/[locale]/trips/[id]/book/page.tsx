@@ -39,6 +39,10 @@ import { Calendar as DateCalendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from '@/components/ui/toaster'
 import { SeatMap } from '@/components/trips/seat-map'
+import { normalizeSeatNumber } from '@/lib/seat-map'
+import { ProgressStepper } from '@/components/bookings/progress-stepper'
+import { TrustBadges } from '@/components/bookings/trust-badges'
+import { PriceBreakdown } from '@/components/bookings/price-breakdown'
 import type { Trip } from '@/types'
 
 type PassengerFormData = z.infer<typeof passengerSchema>
@@ -46,6 +50,25 @@ type BookingContactFormData = z.infer<typeof bookingContactSchema>
 type BookingFormData = {
   contact: BookingContactFormData
   passengers: PassengerFormData[]
+}
+
+type BookingDraft = {
+  contact: BookingContactFormData
+  passengers: PassengerFormData[]
+  seats_count: number
+  selected_seat_numbers: string[]
+}
+
+const LIVE_SEAT_REFRESH_MS = 15_000
+
+function createDefaultPassenger(): PassengerFormData {
+  return {
+    first_name: '',
+    last_name: '',
+    date_of_birth: '',
+    id_number: '',
+    id_expiry_date: '',
+  }
 }
 
 export default function BookTripPage({ params }: { params: Promise<{ id: string, locale: string }> }) {
@@ -72,27 +95,25 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const initialBookingType = searchParams.get('bookingType') === 'one_way' ? 'one_way' : 'round_trip'
   const [seatsCount, setSeatsCount] = useState(initialSeatsCount)
   const [bookingType] = useState<'round_trip' | 'one_way'>(initialBookingType)
+  const [bookingStep, setBookingStep] = useState<'details' | 'seats'>('details')
   const [scanningIndex, setScanningIndex] = useState<number | null>(null)
   const [selectedSeatNumbers, setSelectedSeatNumbers] = useState<string[]>([])
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const selectedSeatsRef = useRef<string[]>([])
+  const draftRestoredRef = useRef(false)
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
   const Back = isAr ? ChevronRight : ChevronLeft
-
-  const defaultPassenger: PassengerFormData = {
-    first_name: '',
-    last_name: '',
-    date_of_birth: '',
-    id_number: '',
-    id_expiry_date: '',
-  }
+  const draftStorageKey = `trip-booking-draft:${tripId}`
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    reset,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<BookingFormData>({
     resolver: zodResolver(
@@ -103,7 +124,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         phone: '',
         email: '',
       },
-      passengers: Array(initialSeatsCount).fill(defaultPassenger),
+      passengers: Array.from({ length: initialSeatsCount }, () => createDefaultPassenger()),
     },
   })
 
@@ -116,11 +137,13 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const desiredPassengerCount = seatMapEnabled
     ? Math.max(selectedSeatNumbers.length, 1)
     : seatsCount
+  const watchedContact = watch('contact')
+  const watchedPassengers = watch('passengers')
 
   useEffect(() => {
     const currentCount = fields.length
     if (desiredPassengerCount > currentCount) {
-      append(Array(desiredPassengerCount - currentCount).fill(defaultPassenger))
+      append(Array.from({ length: desiredPassengerCount - currentCount }, () => createDefaultPassenger()), { shouldFocus: false })
     } else if (desiredPassengerCount < currentCount) {
       for (let i = currentCount - 1; i >= desiredPassengerCount; i--) {
         remove(i)
@@ -137,21 +160,159 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   }, [seatMapEnabled, selectedSeatNumbers, setValue])
 
   useEffect(() => {
+    selectedSeatsRef.current = selectedSeatNumbers
+  }, [selectedSeatNumbers])
+
+  useEffect(() => {
+    let active = true
+
     async function fetchTrip() {
       try {
         const res = await fetch(`/api/trips/${tripId}`)
         const data = await res.json()
-        if (data.trip) {
-          setTrip(data.trip)
+        if (!active || !data.trip) return
+
+        const nextTrip = data.trip as Trip
+        const unavailableSeats = new Set((nextTrip.unavailable_seat_numbers || []).map(normalizeSeatNumber))
+        const conflictedSeats = selectedSeatsRef.current.filter((seat) => unavailableSeats.has(normalizeSeatNumber(seat)))
+
+        setTrip(nextTrip)
+
+        if (conflictedSeats.length > 0) {
+          setSelectedSeatNumbers((current) => current.filter((seat) => !unavailableSeats.has(normalizeSeatNumber(seat))))
+          toast({
+            title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
+            description: isAr
+              ? `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`
+              : `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`,
+            variant: 'destructive',
+          })
         }
       } catch {
         // Error handled
       } finally {
-        setLoading(false)
+        if (active) {
+          setLoading(false)
+        }
       }
     }
-    fetchTrip()
-  }, [tripId])
+
+    void fetchTrip()
+
+    return () => {
+      active = false
+    }
+  }, [tripId, isAr])
+
+  useEffect(() => {
+    if (!trip?.seat_map_enabled) return
+
+    const intervalId = window.setInterval(async () => {
+      try {
+        const res = await fetch(`/api/trips/${tripId}`)
+        const data = await res.json()
+        if (!data.trip) return
+
+        const nextTrip = data.trip as Trip
+        const unavailableSeats = new Set((nextTrip.unavailable_seat_numbers || []).map(normalizeSeatNumber))
+        const conflictedSeats = selectedSeatsRef.current.filter((seat) => unavailableSeats.has(normalizeSeatNumber(seat)))
+
+        setTrip(nextTrip)
+
+        if (conflictedSeats.length > 0) {
+          setSelectedSeatNumbers((current) => current.filter((seat) => !unavailableSeats.has(normalizeSeatNumber(seat))))
+          toast({
+            title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
+            description: isAr
+              ? `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`
+              : `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`,
+            variant: 'destructive',
+          })
+        }
+      } catch {
+        // Silent background refresh
+      }
+    }, LIVE_SEAT_REFRESH_MS)
+
+    return () => window.clearInterval(intervalId)
+  }, [trip?.seat_map_enabled, tripId, isAr])
+
+  useEffect(() => {
+    if (!trip || draftRestoredRef.current) return
+
+    draftRestoredRef.current = true
+
+    try {
+      const rawDraft = window.sessionStorage.getItem(draftStorageKey)
+      if (!rawDraft) return
+
+      const draft = JSON.parse(rawDraft) as Partial<BookingDraft>
+      const unavailableSeats = new Set((trip.unavailable_seat_numbers || []).map(normalizeSeatNumber))
+      const maxRestorableSeats = Math.min(trip.total_seats - trip.booked_seats, MAX_SEATS_PER_BOOKING)
+      const restoredSelectedSeats = Array.from(
+        new Set((draft.selected_seat_numbers || []).map(normalizeSeatNumber))
+      ).filter((seat) => !unavailableSeats.has(seat)).slice(0, maxRestorableSeats)
+      const removedSeatsCount = (draft.selected_seat_numbers || []).length - restoredSelectedSeats.length
+      const nextSeatsCount = seatMapEnabled
+        ? Math.max(restoredSelectedSeats.length, 1)
+        : Math.min(Math.max(Number(draft.seats_count || initialSeatsCount), 1), maxRestorableSeats)
+      const nextPassengerCount = nextSeatsCount
+      const passengers = Array.from({ length: nextPassengerCount }, (_, index) => ({
+        ...createDefaultPassenger(),
+        ...(draft.passengers?.[index] || {}),
+        seat_number: seatMapEnabled ? restoredSelectedSeats[index] : draft.passengers?.[index]?.seat_number,
+      }))
+
+      setSelectedSeatNumbers(restoredSelectedSeats)
+      setSeatsCount(nextSeatsCount)
+      reset({
+        contact: {
+          phone: draft.contact?.phone || '',
+          email: draft.contact?.email || '',
+        },
+        passengers,
+      })
+
+      if (removedSeatsCount > 0) {
+        toast({
+          title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
+          description: isAr
+            ? 'بعض المقاعد المحفوظة سابقاً لم تعد متاحة وتمت إزالتها من المسودة.'
+            : 'Some previously saved seats are no longer available and were removed from your draft.',
+          variant: 'destructive',
+        })
+      }
+    } catch {
+      window.sessionStorage.removeItem(draftStorageKey)
+    }
+  }, [draftStorageKey, initialSeatsCount, isAr, reset, seatMapEnabled, trip])
+
+  useEffect(() => {
+    if (!trip) return
+
+    const activePassengerCount = seatMapEnabled
+      ? Math.max(selectedSeatNumbers.length, 1)
+      : seatsCount
+    const passengersToPersist = (watchedPassengers || [])
+      .slice(0, activePassengerCount)
+      .map((passenger, index) => ({
+        ...createDefaultPassenger(),
+        ...passenger,
+        seat_number: seatMapEnabled ? selectedSeatNumbers[index] : passenger?.seat_number,
+      }))
+
+    const draft: BookingDraft = {
+      contact: {
+        phone: watchedContact?.phone || '',
+        email: watchedContact?.email || '',
+      },
+      passengers: passengersToPersist,
+      seats_count: seatsCount,
+      selected_seat_numbers: selectedSeatNumbers,
+    }
+
+    window.sessionStorage.setItem(draftStorageKey, JSON.stringify(draft))
+  }, [draftStorageKey, seatMapEnabled, seatsCount, selectedSeatNumbers, trip, watchedContact, watchedPassengers])
 
   const handlePassportScan = useCallback(async (index: number, files: FileList | null) => {
     if (!files?.length) return
@@ -208,18 +369,30 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     isAr ? 'ar-SA' : 'en-US',
     { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   )
+  const unavailableSeatNumbers = trip.unavailable_seat_numbers || []
+  const unavailableSeatSet = new Set(unavailableSeatNumbers.map(normalizeSeatNumber))
 
   const toggleSeat = (seatNumber: string) => {
     if (!seatMapEnabled) return
+    const normalizedSeatNumber = normalizeSeatNumber(seatNumber)
+    if (unavailableSeatSet.has(normalizedSeatNumber)) return
+
     setSelectedSeatNumbers((current) => {
-      if (current.includes(seatNumber)) {
-        return current.filter((seat) => seat !== seatNumber)
+      if (current.includes(normalizedSeatNumber)) {
+        return current.filter((seat) => seat !== normalizedSeatNumber)
       }
       if (current.length >= maxBookable) {
         return current
       }
-      return [...current, seatNumber]
+      return [...current, normalizedSeatNumber]
     })
+  }
+
+  const handleDetailsNext = async () => {
+    const valid = await trigger(['contact', 'passengers'])
+    if (!valid) return
+    setBookingStep('seats')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const onSubmit = async (data: BookingFormData) => {
@@ -266,6 +439,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         return
       }
 
+      window.sessionStorage.removeItem(draftStorageKey)
       router.push(`/${locale}/checkout/${result.bookingId}`)
     } catch {
       toast({
@@ -302,9 +476,24 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         {t('common.back')}
       </button>
 
+      {/* Progress Stepper */}
+      <ProgressStepper
+        currentStep={seatMapEnabled ? (bookingStep === 'details' ? 2 : 3) : 2}
+        hasSeatStep={seatMapEnabled}
+        className="mb-8"
+      />
+
       <div className="mb-8 md:mb-10">
-         <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('booking.title')}</h1>
-         <p className="text-sm md:text-lg text-slate-500 font-medium">{isAr ? 'أدخل بيانات المسافرين لإتمام الحجز' : 'Enter passenger details to complete your booking'}</p>
+         <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">
+           {seatMapEnabled && bookingStep === 'seats'
+             ? (isAr ? 'اختيار المقاعد' : 'Select Your Seats')
+             : t('booking.title')}
+         </h1>
+         <p className="text-sm md:text-lg text-slate-500 font-medium">
+           {seatMapEnabled && bookingStep === 'seats'
+             ? (isAr ? 'اختر مقعدك على متن الرحلة' : 'Choose your preferred seat on the flight')
+             : (isAr ? 'أدخل بيانات المسافرين لإتمام الحجز' : 'Enter passenger details to complete your booking')}
+         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
@@ -358,6 +547,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
 
           {/* Booking form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8" id="booking-form">
+            {(!seatMapEnabled || bookingStep === 'details') && (<>
             <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="mb-6 flex items-center gap-2 md:gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -411,41 +601,6 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 </div>
               </div>
             </div>
-
-            {seatMapEnabled && trip.seat_map_config && (
-              <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
-                <div className="mb-6 flex items-center gap-2 md:gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Plane className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg md:text-xl font-black text-slate-900">
-                      {isAr ? 'اختيار المقاعد' : 'Seat Selection'}
-                    </h3>
-                    <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'المقاعد المحجوزة أو غير المتاحة ظاهرة بلون مختلف وتُقفل تلقائياً.' : 'Unavailable seats are disabled automatically based on existing reservations.'}
-                    </p>
-                  </div>
-                </div>
-                <SeatMap
-                  config={trip.seat_map_config}
-                  selectedSeats={selectedSeatNumbers}
-                  unavailableSeats={trip.unavailable_seat_numbers || []}
-                  onSeatClick={toggleSeat}
-                />
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.map((seat) => (
-                    <span key={seat} className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
-                      {isAr ? 'المقعد' : 'Seat'} {seat}
-                    </span>
-                  )) : (
-                    <span className="text-sm text-slate-500">
-                      {isAr ? 'اختر مقعداً واحداً أو أكثر للمتابعة.' : 'Select one or more seats to continue.'}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
 
             {fields.map((field, index) => (
               <div key={field.id} className="rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-200 bg-white p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/40">
@@ -655,6 +810,52 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 </div>
               </div>
             ))}
+            </>)}
+
+            {seatMapEnabled && bookingStep === 'seats' && trip.seat_map_config && (
+              <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => { setBookingStep('details'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
+              >
+                <Back className="h-4 w-4 rtl:rotate-180" />
+                {isAr ? 'تعديل بيانات المسافرين' : 'Edit passenger details'}
+              </button>
+              <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+                <SeatMap
+                  config={trip.seat_map_config}
+                  selectedSeats={selectedSeatNumbers}
+                  unavailableSeats={unavailableSeatNumbers}
+                  onSeatClick={toggleSeat}
+                />
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.map((seat) => (
+                    <span key={seat} className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+                      {isAr ? 'المقعد' : 'Seat'} {seat}
+                    </span>
+                  )) : (
+                    <span className="text-sm text-slate-500">
+                      {isAr ? 'اختر مقعداً واحداً أو أكثر للمتابعة.' : 'Select one or more seats to continue.'}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  form="booking-form"
+                  disabled={submitting || selectedSeatNumbers.length === 0}
+                  className="mt-6 w-full h-14 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center gap-3 shadow-lg shadow-primary/15 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                >
+                  {submitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5" />
+                  )}
+                  {submitting ? t('common.loading') : (isAr ? 'تأكيد المقاعد والمتابعة للدفع' : 'Confirm Seats & Proceed to Payment')}
+                </button>
+              </div>
+              </div>
+            )}
           </form>
         </div>
 
@@ -724,25 +925,41 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     </div>
                 </div>
 
-                {/* Submit button */}
-                <button
-                type="submit"
-                form="booking-form"
-                disabled={submitting}
-                className="group mt-10 w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0"
-                >
-                {submitting ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                {/* Submit / Next button */}
+                {seatMapEnabled && bookingStep === 'details' ? (
+                  <button
+                    type="button"
+                    onClick={handleDetailsNext}
+                    className="group mt-10 w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1"
+                  >
+                    <ArrowRight className="h-6 w-6 rtl:rotate-180" />
+                    {isAr ? 'متابعة لاختيار المقاعد' : 'Continue to Seat Selection'}
+                  </button>
                 ) : (
-                    <CheckCircle className="h-6 w-6" />
+                  <button
+                    type="submit"
+                    form="booking-form"
+                    disabled={submitting}
+                    className="group mt-10 w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    ) : (
+                      <CheckCircle className="h-6 w-6" />
+                    )}
+                    {submitting ? t('common.loading') : t('booking.proceed_to_payment')}
+                    <ArrowRight className="h-5 w-5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform opacity-50" />
+                  </button>
                 )}
-                {submitting ? t('common.loading') : t('booking.proceed_to_payment')}
-                <ArrowRight className="h-5 w-5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform opacity-50" />
-                </button>
 
                 <p className="text-xs font-medium text-slate-500 text-center leading-relaxed mt-6">
                 {t('booking.terms_agreement')}
                 </p>
+
+                {/* Trust Badges */}
+                <div className="mt-6">
+                  <TrustBadges />
+                </div>
             </div>
           </div>
         </div>
@@ -781,19 +998,34 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 <span className="text-xl font-black text-primary leading-none">{fmt(totalPrice)}</span>
             </div>
 
-            <button
-            type="submit"
-            form="booking-form"
-            disabled={submitting}
-            className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-70"
-            >
-                {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+            {seatMapEnabled && bookingStep === 'details' ? (
+              <button
+                type="button"
+                onClick={handleDetailsNext}
+                className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              >
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                {isAr ? 'متابعة' : 'Continue'}
+              </button>
+            ) : seatMapEnabled && bookingStep === 'seats' ? (
+              <span className="flex-1 h-12 rounded-xl bg-slate-700 text-slate-400 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 text-center px-2">
+                {isAr ? 'اختر مقعدك أعلاه للمتابعة' : 'Select your seat above to continue'}
+              </span>
             ) : (
-                <CheckCircle className="h-4 w-4" />
+              <button
+                type="submit"
+                form="booking-form"
+                disabled={submitting}
+                className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-70"
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                {submitting ? t('common.loading') : t('booking.proceed_to_payment')}
+              </button>
             )}
-            {submitting ? t('common.loading') : t('booking.proceed_to_payment')}
-            </button>
         </div>
     </div>
     </>

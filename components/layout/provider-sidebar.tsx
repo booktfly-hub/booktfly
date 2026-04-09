@@ -23,6 +23,7 @@ import {
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import { useUser } from '@/hooks/use-user'
 
 type NavItem = {
@@ -163,7 +164,7 @@ export function ProviderSidebar() {
   const t = useTranslations('provider')
   const locale = useLocale()
   const pathname = usePathname()
-  const { signOut } = useUser()
+  const { signOut, user } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const isActive = (href: string) => {
@@ -199,6 +200,14 @@ export function ProviderSidebar() {
       </div>
 
       <div className="space-y-3 border-t border-slate-100 p-4">
+        {user && (
+          <div className="flex items-center justify-between px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200">
+            <span className="text-sm font-bold text-slate-600">
+              {locale === 'ar' ? 'الإشعارات' : 'Notifications'}
+            </span>
+            <NotificationBell userId={user.id} />
+          </div>
+        )}
         <Link
           href={`/${locale}`}
           onClick={closeMobile}
