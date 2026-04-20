@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState, use } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -476,7 +476,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const inputClass = 'w-full h-12 md:h-14 px-4 md:px-5 rounded-xl md:rounded-2xl bg-slate-50 border-none text-slate-900 text-base md:text-lg font-semibold focus:ring-2 focus:ring-primary focus:outline-none transition-colors hover:bg-slate-100'
   const errorInputClass = 'ring-2 ring-destructive bg-destructive/5'
   const labelClass = 'flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest'
-  const localeDate = isAr ? arSA : enUS
+  const localeDate = enUS
   const parseDateValue = (value: string) => {
     if (!value) return undefined
     const parsed = parseISO(value)

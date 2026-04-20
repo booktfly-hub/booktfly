@@ -274,8 +274,14 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                     </label>
                     <input
                       {...register('guest_name')}
+                      dir="ltr"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
-                      placeholder={isAr ? 'اسم الضيف الكامل' : 'Full guest name'}
+                      placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
+                      onInput={(e) => {
+                        const el = e.currentTarget
+                        const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
+                        if (cleaned !== el.value) el.value = cleaned
+                      }}
                     />
                     {errors.guest_name && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_name.message}</p>

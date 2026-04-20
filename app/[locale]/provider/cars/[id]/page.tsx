@@ -16,7 +16,7 @@ import { NameChangePolicyCard } from '@/components/shared/name-change-policy-car
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import type { Car } from '@/types'
 import {
   Loader2,
@@ -640,7 +640,7 @@ export default function EditCarPage() {
                 <input type="hidden" {...register('available_from')} />
                 <Popover>
                   <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50', availableFromDate && isValid(availableFromDate) ? 'text-slate-900' : 'text-slate-500')}>
-                    {availableFromDate && isValid(availableFromDate) ? format(availableFromDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                    {availableFromDate && isValid(availableFromDate) ? format(availableFromDate, 'PPP', { locale: enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -653,7 +653,7 @@ export default function EditCarPage() {
                 <input type="hidden" {...register('available_to')} />
                 <Popover>
                   <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50', availableToDate && isValid(availableToDate) ? 'text-slate-900' : 'text-slate-500')}>
-                    {availableToDate && isValid(availableToDate) ? format(availableToDate, 'PPP', { locale: isAr ? arSA : enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                    {availableToDate && isValid(availableToDate) ? format(availableToDate, 'PPP', { locale: enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">

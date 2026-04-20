@@ -7,7 +7,7 @@ import {
   ArrowUpDown, Fuel, Gauge, CalendarIcon, Plane, Building, ArrowRightLeft,
 } from 'lucide-react'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { CarCard } from '@/components/cars/car-card'
@@ -201,7 +201,7 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
             <PopoverTrigger className={cn('flex h-12 md:h-14 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold transition-colors hover:bg-slate-100', filters.pickup_date ? 'text-slate-700' : 'text-slate-500')}>
               <span className="flex items-center gap-2 truncate">
                 <CalendarIcon className="h-4 w-4 text-slate-400 shrink-0" />
-                {filters.pickup_date && isValid(parseISO(filters.pickup_date)) ? format(parseISO(filters.pickup_date), 'dd MMM yyyy', { locale: isAr ? arSA : enUS }) : (isAr ? 'تاريخ الاستلام' : 'Pickup Date')}
+                {filters.pickup_date && isValid(parseISO(filters.pickup_date)) ? format(parseISO(filters.pickup_date), 'dd MMM yyyy', { locale: enUS }) : (isAr ? 'تاريخ الاستلام' : 'Pickup Date')}
               </span>
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </PopoverTrigger>
@@ -214,7 +214,7 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
             <PopoverTrigger className={cn('flex h-12 md:h-14 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold transition-colors hover:bg-slate-100', filters.return_date ? 'text-slate-700' : 'text-slate-500')}>
               <span className="flex items-center gap-2 truncate">
                 <CalendarIcon className="h-4 w-4 text-slate-400 shrink-0" />
-                {filters.return_date && isValid(parseISO(filters.return_date)) ? format(parseISO(filters.return_date), 'dd MMM yyyy', { locale: isAr ? arSA : enUS }) : (isAr ? 'تاريخ الإرجاع' : 'Return Date')}
+                {filters.return_date && isValid(parseISO(filters.return_date)) ? format(parseISO(filters.return_date), 'dd MMM yyyy', { locale: enUS }) : (isAr ? 'تاريخ الإرجاع' : 'Return Date')}
               </span>
               <ChevronDown className="h-4 w-4 text-slate-400" />
             </PopoverTrigger>

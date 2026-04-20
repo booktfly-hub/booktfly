@@ -269,9 +269,10 @@ export default function MarkeeteerBookPage() {
                   <input
                     required
                     type="text"
+                    dir="ltr"
                     value={form.passenger_name}
-                    onChange={(e) => setForm(f => ({ ...f, passenger_name: e.target.value }))}
-                    placeholder="John Doe"
+                    onChange={(e) => setForm(f => ({ ...f, passenger_name: e.target.value.replace(/[^a-zA-Z\s\-'.]/g, '') }))}
+                    placeholder="John Doe (English)"
                     className="w-full ps-10 pe-4 py-3 rounded-xl border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>

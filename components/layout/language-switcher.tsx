@@ -27,9 +27,9 @@ export function LanguageSwitcher({ compact = false, className }: Props) {
       type="button"
       onClick={switchLocale}
       className={cn(
-        'flex items-center rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+        'flex items-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
         compact ? 'gap-0' : 'gap-1.5',
-        className
+        className || 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
       title={locale === 'ar' ? 'English' : 'العربية'}
       aria-label={locale === 'ar' ? 'Switch language to English' : 'التبديل إلى العربية'}
