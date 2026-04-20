@@ -29,6 +29,9 @@ import { capitalizeFirst, cn, formatPrice, formatPriceEN, shortId } from '@/lib/
 import { TRIP_TYPES, CABIN_CLASSES, PROVIDER_TYPES } from '@/lib/constants'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { BookingDetailPageSkeleton } from '@/components/shared/loading-skeleton'
+import { ChangeNameModal } from '@/components/bookings/change-name-modal'
+import { SignatureDisplay } from '@/components/admin/signature-display'
+import { UserCog } from 'lucide-react'
 import type { Booking } from '@/types'
 
 export default function BookingDetailPage() {
@@ -42,6 +45,7 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
+  const [changeNameIndex, setChangeNameIndex] = useState<number | null>(null)
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
   const Back = isAr ? ChevronRight : ChevronLeft
@@ -269,10 +273,20 @@ export default function BookingDetailPage() {
             <div className="space-y-4">
               {booking.passengers.map((p, i) => (
                 <div key={i} className={cn("grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3", i > 0 && "pt-4 border-t")}>
-                  <div className="sm:col-span-2 md:col-span-3">
+                  <div className="sm:col-span-2 md:col-span-3 flex items-center justify-between">
                     <span className="text-xs font-bold text-primary uppercase tracking-widest">
                       {t('booking.passenger_number', { number: i + 1 })}
                     </span>
+                    {booking.trip?.name_change_allowed && booking.status !== 'cancelled' && booking.status !== 'refunded' && (
+                      <button
+                        type="button"
+                        onClick={() => setChangeNameIndex(i)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        <UserCog className="h-3.5 w-3.5" />
+                        {t('name_change.request')}
+                      </button>
+                    )}
                   </div>
                   <div>
                     <span className="text-xs text-muted-foreground">{isAr ? 'الاسم الأول' : 'First Name'}</span>
@@ -299,6 +313,20 @@ export default function BookingDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Signed Contract */}
+        <div className="rounded-xl border bg-card p-6">
+          <h3 className="font-semibold text-foreground mb-3">{t('contract.step_title_client')}</h3>
+          <SignatureDisplay
+            signatureUrl={booking.buyer_signature_url}
+            signedAt={booking.contract_signed_at}
+            version={booking.contract_version}
+            role="client"
+            printTargetType="booking"
+            printTargetId={booking.id}
+            archiveUrl={booking.contract_archive_url}
+          />
+        </div>
 
         {/* Payment details */}
         <div className="rounded-xl border bg-card p-6">
@@ -465,6 +493,24 @@ export default function BookingDetailPage() {
           </Link>
         )}
       </div>
+
+      {changeNameIndex !== null && booking?.passengers?.[changeNameIndex] && (
+        <ChangeNameModal
+          open={true}
+          onClose={() => setChangeNameIndex(null)}
+          bookingId={booking.id}
+          passengerIndex={changeNameIndex}
+          currentFirstName={booking.passengers[changeNameIndex].first_name}
+          currentLastName={booking.passengers[changeNameIndex].last_name}
+          fee={Number(booking.trip?.name_change_fee ?? 0)}
+          refundable={Boolean(booking.trip?.name_change_is_refundable)}
+          currency={booking.trip?.currency || 'SAR'}
+          onSuccess={() => {
+            // Refetch booking to get the updated passengers + count
+            fetch(`/api/bookings/${booking.id}`).then(r => r.json()).then(d => { if (d.booking) setBooking(d.booking) })
+          }}
+        />
+      )}
     </div>
   )
 }

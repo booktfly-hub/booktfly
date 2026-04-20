@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Download,
 } from 'lucide-react'
+import { SignatureDisplay } from '@/components/admin/signature-display'
 
 export default function AdminApplicationDetail() {
   const { id } = useParams<{ id: string }>()
@@ -184,6 +185,22 @@ export default function AdminApplicationDetail() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Signed Contract */}
+        <div>
+          <h3 className="font-semibold mb-3">
+            {t('contract.step_title_service_provider')}
+          </h3>
+          <SignatureDisplay
+            signatureUrl={app.signature_url}
+            signedAt={app.contract_signed_at}
+            version={app.contract_version}
+            role="service_provider"
+            printTargetType="provider_application"
+            printTargetId={app.id}
+            archiveUrl={app.contract_archive_url}
+          />
         </div>
 
         {/* Previous rejection */}

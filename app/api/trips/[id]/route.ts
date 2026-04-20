@@ -191,6 +191,48 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updates.seat_selection_included = seatSelectionIncludedStr === 'true'
     }
 
+    // Name-change policy
+    const nameChangeAllowedStr = formData.get('name_change_allowed')
+    if (nameChangeAllowedStr !== null) {
+      updates.name_change_allowed = nameChangeAllowedStr === 'true'
+    }
+    const nameChangeFeeStr = formData.get('name_change_fee')
+    if (nameChangeFeeStr !== null) {
+      const fee = Number(nameChangeFeeStr)
+      if (Number.isFinite(fee) && fee >= 0) updates.name_change_fee = fee
+    }
+    const nameChangeRefundableStr = formData.get('name_change_is_refundable')
+    if (nameChangeRefundableStr !== null) {
+      updates.name_change_is_refundable = nameChangeRefundableStr === 'true'
+    }
+
+    // Age-based + special discount
+    for (const key of ['child_discount_percentage', 'infant_discount_percentage', 'special_discount_percentage'] as const) {
+      const val = formData.get(key)
+      if (val !== null) {
+        const pct = Number(val)
+        if (Number.isFinite(pct) && pct >= 0 && pct <= 100) updates[key] = pct
+      }
+    }
+    for (const key of ['special_discount_label_ar', 'special_discount_label_en'] as const) {
+      const val = formData.get(key)
+      if (val !== null) updates[key] = (val as string) || null
+    }
+
+    // Admin-only commission override
+    const commissionOverrideStr = formData.get('commission_rate_override')
+    if (commissionOverrideStr !== null) {
+      const value = (commissionOverrideStr as string).trim()
+      if (!value) {
+        updates.commission_rate_override = null
+      } else {
+        const pct = Number(value)
+        if (Number.isFinite(pct) && pct >= 0 && pct <= 50) {
+          updates.commission_rate_override = pct
+        }
+      }
+    }
+
     const seatMapEnabledStr = formData.get('seat_map_enabled')
     if (seatMapEnabledStr !== null) {
       const nextSeatMapEnabled = seatMapEnabledStr === 'true'

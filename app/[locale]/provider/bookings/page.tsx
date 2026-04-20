@@ -6,6 +6,7 @@ import type { Booking, BookingStatus } from '@/types'
 import { BookOpen } from 'lucide-react'
 import BookingsStatusFilter from '@/components/provider/bookings-status-filter'
 import { RejectBookingButton } from '@/components/provider/reject-booking-button'
+import { ContractPill } from '@/components/bookings/contract-pill'
 
 const validStatuses: BookingStatus[] = [
   'confirmed',
@@ -75,6 +76,9 @@ export default async function ProviderBookingsPage({ searchParams }: Props) {
                     {t('platform_commission')}
                   </th>
                   <th className="text-start p-3 font-medium">{tc('status')}</th>
+                  <th className="text-start p-3 font-medium">
+                    {locale === 'ar' ? 'العقد' : 'Contract'}
+                  </th>
                   <th className="text-start p-3 font-medium">{tc('date')}</th>
                   <th className="text-start p-3 font-medium">{tc('actions')}</th>
                 </tr>
@@ -120,6 +124,9 @@ export default async function ProviderBookingsPage({ searchParams }: Props) {
                       >
                         {ts(booking.status)}
                       </span>
+                    </td>
+                    <td className="p-3">
+                      <ContractPill signedAt={booking.contract_signed_at} targetType="booking" bookingId={booking.id} />
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">
                       {new Date(booking.created_at).toLocaleDateString(

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { format, isValid, parseISO } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RoomCard } from '@/components/rooms/room-card'
+import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { ROOM_CATEGORIES } from '@/lib/constants'
@@ -29,6 +30,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CategoryHero } from '@/components/shared/category-hero'
 
 type Filters = {
   city: string
@@ -68,6 +70,10 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
   const isAr = locale === 'ar'
 
   const [rooms, setRooms] = useState<Room[]>(initialRooms)
+  const roomRibbons = useMemo(
+    () => computeRibbons(rooms.map((r) => ({ id: r.id, price: r.price_per_night, duration_minutes: null }))),
+    [rooms],
+  )
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -197,19 +203,16 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
   ].filter(Boolean) as string[]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 md:pt-32 md:pb-16 lg:pt-36 lg:pb-20 animate-fade-in-up">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-3 md:mb-4">
-          {t('rooms.browse_title')}
-        </h1>
-        <p className="text-base md:text-lg text-slate-500 font-medium px-4">
-          {t('rooms.search_placeholder')}
-        </p>
-      </div>
-
-      {/* Main Search Bar */}
-      <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
+    <>
+      <CategoryHero
+        eyebrow={t('category_heroes.rooms.eyebrow')}
+        title={t('category_heroes.rooms.title')}
+        description={t('category_heroes.rooms.description')}
+        image="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+        {/* Main Search Bar */}
+        <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
         {/* Row 1: City Search & Category */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <div className="sm:col-span-1">
@@ -443,7 +446,7 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {rooms.map((room, idx) => (
               <div key={room.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}>
-                <RoomCard room={room} />
+                <RoomCard room={room} ribbon={roomRibbons.get(room.id)} />
               </div>
             ))}
           </div>
@@ -458,5 +461,6 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         </>
       )}
     </div>
+    </>
   )
 }

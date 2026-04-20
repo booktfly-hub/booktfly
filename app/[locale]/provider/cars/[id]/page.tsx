@@ -12,6 +12,7 @@ import { getCarSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
 import { CAR_CATEGORIES, CAR_FEATURES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
+import { NameChangePolicyCard } from '@/components/shared/name-change-policy-card'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO } from 'date-fns'
@@ -75,6 +76,9 @@ export default function EditCarPage() {
       fuel_type: 'petrol',
       pickup_type: 'branch',
       return_type: 'same_location',
+      name_change_allowed: false,
+      name_change_fee: 0,
+      name_change_is_refundable: true,
     },
   })
 
@@ -149,6 +153,9 @@ export default function EditCarPage() {
           pickup_hour_to: data.pickup_hour_to || '',
           return_hour_from: data.return_hour_from || '',
           return_hour_to: data.return_hour_to || '',
+          name_change_allowed: data.name_change_allowed ?? false,
+          name_change_fee: data.name_change_fee ?? 0,
+          name_change_is_refundable: data.name_change_is_refundable ?? true,
         })
       } catch {
         toast({ title: tc('error'), variant: 'destructive' })
@@ -701,6 +708,16 @@ export default function EditCarPage() {
             ))}
           </div>
         )}
+
+        <NameChangePolicyCard
+          allowed={!!watch('name_change_allowed')}
+          onAllowedChange={(v) => setValue('name_change_allowed', v, { shouldDirty: true })}
+          fee={watch('name_change_fee') ?? 0}
+          onFeeChange={(v) => setValue('name_change_fee', v === '' ? 0 : v, { shouldDirty: true })}
+          refundable={watch('name_change_is_refundable') ?? true}
+          onRefundableChange={(v) => setValue('name_change_is_refundable', v, { shouldDirty: true })}
+          title={isAr ? 'سياسة تغيير اسم السائق' : 'Driver name change policy'}
+        />
 
         <button
           type="submit"

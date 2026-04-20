@@ -121,6 +121,9 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'group_system',
     items: [
       { key: 'settings', icon: Settings, href: '/admin/settings' },
+      { key: 'templates', icon: FileText, href: '/admin/templates' },
+      { key: 'visitors', icon: TrendingUp, href: '/admin/analytics/visitors' },
+      { key: 'contract_events', icon: FileText, href: '/admin/contract-events' },
     ],
   },
 ]

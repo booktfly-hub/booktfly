@@ -8,14 +8,17 @@ import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { FavoriteButton } from '@/components/shared/favorite-button'
+import { BnplBadge } from '@/components/ui/bnpl-badge'
+import { RibbonBadge, type RibbonKind } from '@/components/ui/ribbon-badge'
 import type { Car } from '@/types'
 
 type CarCardProps = {
   car: Car
   className?: string
+  ribbon?: RibbonKind
 }
 
-export function CarCard({ car, className }: CarCardProps) {
+export function CarCard({ car, className, ribbon }: CarCardProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -43,8 +46,8 @@ export function CarCard({ car, className }: CarCardProps) {
     <Link href={`/${locale}/cars/${car.id}`} className="block group h-full focus:outline-none">
       <div
         className={cn(
-          'relative h-full flex flex-col rounded-[2rem] border border-slate-200 bg-white overflow-hidden transition-all duration-300',
-          'hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1',
+          'relative h-full flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-[border-color,box-shadow,transform] duration-200',
+          'hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
           className
         )}
       >
@@ -58,10 +61,11 @@ export function CarCard({ car, className }: CarCardProps) {
             </div>
           )}
           <div className="absolute top-3 start-3 flex items-center gap-2">
+            {ribbon && <RibbonBadge kind={ribbon} />}
             {car.is_last_minute && <LastMinuteBadge discount={car.discount_percentage} />}
           </div>
           <div className="absolute top-3 end-3">
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/90 backdrop-blur-sm text-slate-700 border border-white/50 shadow-sm">
+            <span className="inline-flex items-center rounded-md border border-border bg-surface/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-foreground shadow-sm backdrop-blur-sm">
               {categoryText}
             </span>
           </div>
@@ -73,33 +77,33 @@ export function CarCard({ car, className }: CarCardProps) {
         <div className="flex flex-col h-full p-6">
           {/* Brand & Model */}
           <div className="mb-4">
-            <h3 className="text-lg font-black text-slate-900 leading-tight truncate">
+            <h3 className="truncate text-lg font-black leading-tight text-foreground">
               {brand} {model}
             </h3>
             <div className="flex items-center gap-3 mt-1.5">
               <div className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-sm font-semibold text-slate-500">{city}</span>
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-semibold text-muted-foreground">{city}</span>
               </div>
-              <span className="text-xs font-bold text-slate-400">{car.year}</span>
+              <span className="text-xs font-bold text-muted-foreground">{car.year}</span>
             </div>
             {pickupLocation && (
-              <p className="text-xs text-slate-400 truncate mt-0.5 ps-5">{pickupLocation}</p>
+              <p className="mt-0.5 truncate ps-5 text-xs text-muted-foreground">{pickupLocation}</p>
             )}
           </div>
 
           {/* Meta Pills */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-slate-600">
-              <Users className="h-3.5 w-3.5 text-slate-400" />
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-muted-foreground">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-xs font-semibold">{car.seats_count} {t('cars.seats')}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-slate-600">
-              <Gauge className="h-3.5 w-3.5 text-slate-400" />
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-muted-foreground">
+              <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-xs font-semibold">{transmissionText}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-slate-600">
-              <Fuel className="h-3.5 w-3.5 text-slate-400" />
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-muted-foreground">
+              <Fuel className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-xs font-semibold">{fuelText}</span>
             </div>
             {car.pickup_type && (
@@ -112,16 +116,17 @@ export function CarCard({ car, className }: CarCardProps) {
 
           <div className="mt-auto">
             {/* Footer Price & CTA */}
-            <div className="flex items-end justify-between pt-5 border-t border-slate-100">
+            <div className="flex items-end justify-between border-t border-border pt-5">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('cars.price_per_day')}</span>
+                <span className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('cars.price_per_day')}</span>
                 {hasDiscount && (
-                  <span className="text-sm font-bold text-slate-400 line-through leading-none mb-0.5">{originalFormatted}</span>
+                  <span className="mb-0.5 text-sm font-bold leading-none text-muted-foreground line-through">{originalFormatted}</span>
                 )}
-                <span className={cn('text-2xl font-black leading-none', hasDiscount ? 'text-orange-600' : 'text-slate-900')}>{formattedPrice}</span>
+                <span className={cn('text-2xl font-black leading-none', hasDiscount ? 'text-accent' : 'text-foreground')}>{formattedPrice}</span>
+                <BnplBadge price={car.price_per_day} currency={car.currency} className="mt-1.5" />
               </div>
 
-              <div className="h-10 w-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md group-hover:shadow-primary/20 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 shrink-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground shadow-sm transition-[background-color,color,transform] duration-200 group-hover:bg-primary group-hover:text-primary-foreground ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
                 <Arrow className="h-4 w-4 rtl:rotate-180" />
               </div>
             </div>

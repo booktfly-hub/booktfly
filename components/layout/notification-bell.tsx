@@ -13,9 +13,11 @@ import { cn } from '@/lib/utils'
 
 type Props = {
   userId: string
+  className?: string
+  iconClassName?: string
 }
 
-export function NotificationBell({ userId }: Props) {
+export function NotificationBell({ userId, className, iconClassName }: Props) {
   const t = useTranslations('notifications')
   const locale = useLocale()
   const pathname = usePathname()
@@ -47,12 +49,12 @@ export function NotificationBell({ userId }: Props) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+        className={cn("relative rounded-lg p-2 transition-colors hover:bg-muted", className)}
         aria-label={t('title')}
         aria-expanded={open}
         aria-controls={menuId}
       >
-        <Bell className="h-5 w-5 text-muted-foreground" />
+        <Bell className={cn("h-5 w-5 text-muted-foreground", iconClassName)} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -end-0.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">
             {unreadCount > 9 ? '9+' : unreadCount}

@@ -9,6 +9,7 @@ import { toast } from '@/components/ui/toaster'
 import { BOOKING_STATUS_COLORS, ROOM_CATEGORIES } from '@/lib/constants'
 import { ArrowRight, RotateCcw, XCircle, Check, X, Clock } from 'lucide-react'
 import { shortId } from '@/lib/utils'
+import { SignatureDisplay } from '@/components/admin/signature-display'
 
 export default function AdminRoomBookingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -100,6 +101,20 @@ export default function AdminRoomBookingDetail() {
               <p className="font-medium">{locale === 'ar' ? booking.provider?.company_name_ar : (booking.provider?.company_name_en || booking.provider?.company_name_ar)}</p>
             </div>
           </div>
+        </div>
+
+        {/* Signed Contract */}
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-semibold mb-3">{t('contract.step_title_client')}</h3>
+          <SignatureDisplay
+            signatureUrl={booking.buyer_signature_url}
+            signedAt={booking.contract_signed_at}
+            version={booking.contract_version}
+            role="client"
+            printTargetType="room_booking"
+            printTargetId={booking.id}
+            archiveUrl={booking.contract_archive_url}
+          />
         </div>
 
         {/* Guest info */}

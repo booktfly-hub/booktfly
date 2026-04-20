@@ -30,6 +30,9 @@ import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { BookingDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { capitalizeFirst, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import type { PackageBooking } from '@/types'
+import { ChangeNameModal } from '@/components/bookings/change-name-modal'
+import { SignatureDisplay } from '@/components/admin/signature-display'
+import { UserCog } from 'lucide-react'
 
 export default function PackageBookingDetailPage() {
   const t = useTranslations()
@@ -40,6 +43,7 @@ export default function PackageBookingDetailPage() {
   const bookingId = params.id as string
 
   const [booking, setBooking] = useState<PackageBooking | null>(null)
+  const [nameModalOpen, setNameModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
 
@@ -315,12 +319,24 @@ export default function PackageBookingDetailPage() {
             {isAr ? 'بيانات الضيف' : 'Guest Information'}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground shrink-0" />
-              <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
-                <p className="text-sm font-medium">{booking.guest_name}</p>
+            <div className="flex items-center justify-between gap-3 sm:col-span-2">
+              <div className="flex items-center gap-3">
+                <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <span className="text-xs text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
+                  <p className="text-sm font-medium">{booking.guest_name}</p>
+                </div>
               </div>
+              {booking.package?.name_change_allowed && booking.status !== 'cancelled' && booking.status !== 'refunded' && (
+                <button
+                  type="button"
+                  onClick={() => setNameModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  {t('name_change.request')}
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <Users className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -528,7 +544,39 @@ export default function PackageBookingDetailPage() {
             </div>
           </Link>
         )}
+
+        {/* Signed Contract */}
+        <div className="rounded-xl border bg-card p-6">
+          <h3 className="font-semibold text-foreground mb-3">{t('contract.step_title_client')}</h3>
+          <SignatureDisplay
+            signatureUrl={booking.buyer_signature_url}
+            signedAt={booking.contract_signed_at}
+            version={booking.contract_version}
+            role="client"
+            printTargetType="package_booking"
+            printTargetId={booking.id}
+            archiveUrl={booking.contract_archive_url}
+          />
+        </div>
       </div>
+
+      {nameModalOpen && booking.guest_name && (
+        <ChangeNameModal
+          open={true}
+          onClose={() => setNameModalOpen(false)}
+          bookingId={booking.id}
+          passengerIndex={0}
+          targetType="package_booking"
+          currentFirstName={booking.guest_name.split(' ')[0] || ''}
+          currentLastName={booking.guest_name.split(' ').slice(1).join(' ') || ''}
+          fee={Number(booking.package?.name_change_fee ?? 0)}
+          refundable={Boolean(booking.package?.name_change_is_refundable)}
+          currency={booking.package?.currency || 'SAR'}
+          onSuccess={() => {
+            fetch(`/api/package-bookings/${booking.id}`).then(r => r.json()).then(d => { if (d.booking) setBooking(d.booking) })
+          }}
+        />
+      )}
     </div>
   )
 }

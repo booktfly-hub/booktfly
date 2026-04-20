@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatCountdown, getUrgencyLevel } from '@/lib/last-minute'
@@ -13,7 +13,6 @@ type CountdownTimerProps = {
 }
 
 export function CountdownTimer({ targetDate, className, compact = false }: CountdownTimerProps) {
-  const t = useTranslations('lastMinute')
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [countdown, setCountdown] = useState(formatCountdown(targetDate))
@@ -32,8 +31,8 @@ export function CountdownTimer({ targetDate, className, compact = false }: Count
 
   const urgencyColors = {
     high: 'bg-destructive/10 text-destructive border-destructive/20',
-    medium: 'bg-orange-50 text-orange-600 border-orange-200',
-    low: 'bg-amber-50 text-amber-600 border-amber-200',
+    medium: 'bg-accent/10 text-accent border-accent/20',
+    low: 'bg-warning/10 text-warning border-warning/20',
   }
 
   if (compact) {

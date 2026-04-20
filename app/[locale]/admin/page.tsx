@@ -25,6 +25,7 @@ import {
   CreditCard,
   UserCheck,
   Radio,
+  FileSignature,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -97,6 +98,7 @@ type DashboardData = {
   pendingApplications: number
   activeProviders: number
   pendingPayments: number
+  unsignedContracts: number
   prevTotalUsers: number
   prevNewUsersToday: number
   prevActiveTrips: number
@@ -126,6 +128,7 @@ const initialData: DashboardData = {
   pendingApplications: 0,
   activeProviders: 0,
   pendingPayments: 0,
+  unsignedContracts: 0,
   prevTotalUsers: 0,
   prevNewUsersToday: 0,
   prevActiveTrips: 0,
@@ -284,6 +287,10 @@ export default function AdminDashboard() {
       alertsRes,
       topTripsRes,
       recentBookingsRes,
+      unsignedFlightRes,
+      unsignedRoomRes,
+      unsignedCarRes,
+      unsignedPackageRes,
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', todayStart),
@@ -308,7 +315,17 @@ export default function AdminDashboard() {
       supabase.from('admin_alerts').select('*').eq('dismissed', false).order('created_at', { ascending: false }),
       supabase.from('trips').select('id, airline, origin_code, destination_code, origin_city_ar, destination_city_ar, origin_city_en, destination_city_en, total_seats, booked_seats').eq('status', 'active').order('booked_seats', { ascending: false }).limit(5),
       supabase.from('bookings').select('id, passenger_name, total_amount, status, created_at, trip:trips(airline, origin_code, destination_code)').order('created_at', { ascending: false }).limit(5),
+      supabase.from('bookings').select('*', { count: 'exact', head: true }).is('contract_signed_at', null).eq('status', 'payment_processing'),
+      supabase.from('room_bookings').select('*', { count: 'exact', head: true }).is('contract_signed_at', null).eq('status', 'payment_processing'),
+      supabase.from('car_bookings').select('*', { count: 'exact', head: true }).is('contract_signed_at', null).eq('status', 'payment_processing'),
+      supabase.from('package_bookings').select('*', { count: 'exact', head: true }).is('contract_signed_at', null).eq('status', 'payment_processing'),
     ])
+
+    const unsignedContracts =
+      (unsignedFlightRes.count || 0) +
+      (unsignedRoomRes.count || 0) +
+      (unsignedCarRes.count || 0) +
+      (unsignedPackageRes.count || 0)
 
     const uniqueBuyers = new Set((customersRes.data || []).map(b => b.buyer_id)).size
     const revenueThisMonth = (revenueRes.data || []).reduce((sum, b) => sum + Number(b.commission_amount), 0)
@@ -367,6 +384,7 @@ export default function AdminDashboard() {
       pendingApplications: pendingAppsRes.count || 0,
       activeProviders: activeProvidersRes.count || 0,
       pendingPayments: pendingPaymentsRes.count || 0,
+      unsignedContracts,
       prevTotalUsers,
       prevNewUsersToday: prevNewUsersRes.count || 0,
       prevActiveTrips: prevActiveTripsRes.count || 0,
@@ -501,6 +519,16 @@ export default function AdminDashboard() {
       color: 'text-red-500',
       bg: 'bg-red-500/10',
       change: calcChange(data.pendingPayments, data.prevPendingPayments),
+      href: `/${locale}/admin/bookings`,
+    },
+    {
+      key: 'unsignedContracts',
+      label: locale === 'ar' ? 'عقود غير موقّعة' : 'Unsigned contracts',
+      value: data.unsignedContracts,
+      icon: FileSignature,
+      color: 'text-amber-600',
+      bg: 'bg-amber-500/10',
+      change: 0,
       href: `/${locale}/admin/bookings`,
     },
   ]

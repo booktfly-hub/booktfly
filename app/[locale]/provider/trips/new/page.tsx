@@ -11,6 +11,9 @@ import { getTripSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
 import { SeatMap } from '@/components/trips/seat-map'
+import { TripPricingPolicyCard } from '@/components/trips/trip-pricing-policy-card'
+import { FareTiersEditor } from '@/components/provider/fare-tiers-editor'
+import type { FareTier } from '@/types/database'
 import { DEFAULT_SEAT_MAP_CONFIG, countSeatMapCapacity, normalizeSeatNumber, parseSeatRowList } from '@/lib/seat-map'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -187,6 +190,18 @@ export default function NewTripPage() {
   const [upFrontRowsText, setUpFrontRowsText] = useState(DEFAULT_SEAT_MAP_CONFIG.up_front_rows.join(', '))
   const [extraLegroomRowsText, setExtraLegroomRowsText] = useState(DEFAULT_SEAT_MAP_CONFIG.extra_legroom_rows.join(', '))
   const [blockedSeats, setBlockedSeats] = useState<string[]>(DEFAULT_SEAT_MAP_CONFIG.blocked_seats)
+  // Name-change + discounts + commission override
+  const [nameChangeAllowed, setNameChangeAllowed] = useState(false)
+  const [nameChangeFee, setNameChangeFee] = useState<number | ''>('')
+  const [nameChangeRefundable, setNameChangeRefundable] = useState(true)
+  const [childDiscountPct, setChildDiscountPct] = useState<number | ''>('')
+  const [infantDiscountPct, setInfantDiscountPct] = useState<number | ''>('')
+  const [specialDiscountPct, setSpecialDiscountPct] = useState<number | ''>('')
+  const [specialDiscountLabelAr, setSpecialDiscountLabelAr] = useState('')
+  const [specialDiscountLabelEn, setSpecialDiscountLabelEn] = useState('')
+  const [commissionOverride, setCommissionOverride] = useState<number | ''>('')
+  const [fareTiers, setFareTiers] = useState<FareTier[]>([])
+  const [durationMinutes, setDurationMinutes] = useState<number | ''>('')
 
   const {
     register,
@@ -286,6 +301,19 @@ export default function NewTripPage() {
       formData.append('meal_included', String(mealIncluded))
       formData.append('seat_selection_included', String(seatSelectionIncluded))
       formData.append('seat_map_enabled', String(seatMapEnabled))
+
+      // Name-change + discounts
+      formData.append('name_change_allowed', String(nameChangeAllowed))
+      if (nameChangeFee !== '') formData.append('name_change_fee', String(nameChangeFee))
+      formData.append('name_change_is_refundable', String(nameChangeRefundable))
+      if (childDiscountPct !== '') formData.append('child_discount_percentage', String(childDiscountPct))
+      if (infantDiscountPct !== '') formData.append('infant_discount_percentage', String(infantDiscountPct))
+      if (specialDiscountPct !== '') formData.append('special_discount_percentage', String(specialDiscountPct))
+      if (specialDiscountLabelAr) formData.append('special_discount_label_ar', specialDiscountLabelAr)
+      if (specialDiscountLabelEn) formData.append('special_discount_label_en', specialDiscountLabelEn)
+      if (commissionOverride !== '') formData.append('commission_rate_override', String(commissionOverride))
+      if (durationMinutes !== '') formData.append('duration_minutes', String(durationMinutes))
+      if (fareTiers.length > 0) formData.append('fare_tiers', JSON.stringify(fareTiers))
       if (seatMapEnabled) {
         formData.append('seat_map_config', JSON.stringify(seatMapConfig))
       }
@@ -688,6 +716,26 @@ export default function NewTripPage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">{locale === 'ar' ? 'مزايا الرحلة' : 'Flight Benefits'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium block mb-1.5">
+                {locale === 'ar' ? 'مدة الرحلة (بالدقائق)' : 'Flight duration (minutes)'}
+              </label>
+              <input
+                type="number"
+                min={15}
+                max={2880}
+                step={5}
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value ? Number(e.target.value) : '')}
+                placeholder={locale === 'ar' ? 'مثال: 180 (3 ساعات)' : 'e.g. 180 (3 hours)'}
+                className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {locale === 'ar'
+                  ? 'تُستخدم لترتيب الأسرع ولعرض شارة "الأسرع" على البطاقة.'
+                  : 'Used for the "Fastest" sort tab and ribbon badge.'}
+              </p>
+            </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">{locale === 'ar' ? 'وزن الأمتعة المشحونة (كجم)' : 'Checked baggage (kg)'}</label>
               <input type="number" min={0} value={checkedBaggageKg} onChange={(e) => setCheckedBaggageKg(e.target.value ? Number(e.target.value) : '')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
@@ -816,6 +864,33 @@ export default function NewTripPage() {
               />
             </label>
           )}
+        </div>
+
+        {/* Name-change + discounts + commission override */}
+        <TripPricingPolicyCard
+          nameChangeAllowed={nameChangeAllowed}
+          onNameChangeAllowedChange={setNameChangeAllowed}
+          nameChangeFee={nameChangeFee}
+          onNameChangeFeeChange={setNameChangeFee}
+          nameChangeRefundable={nameChangeRefundable}
+          onNameChangeRefundableChange={setNameChangeRefundable}
+          childDiscountPct={childDiscountPct}
+          onChildDiscountChange={setChildDiscountPct}
+          infantDiscountPct={infantDiscountPct}
+          onInfantDiscountChange={setInfantDiscountPct}
+          specialDiscountPct={specialDiscountPct}
+          onSpecialDiscountChange={setSpecialDiscountPct}
+          specialDiscountLabelAr={specialDiscountLabelAr}
+          onSpecialDiscountLabelArChange={setSpecialDiscountLabelAr}
+          specialDiscountLabelEn={specialDiscountLabelEn}
+          onSpecialDiscountLabelEnChange={setSpecialDiscountLabelEn}
+          commissionOverride={commissionOverride}
+          onCommissionOverrideChange={setCommissionOverride}
+        />
+
+        {/* Fare tiers editor (P0-6) */}
+        <div className="rounded-xl border border-border bg-card p-5">
+          <FareTiersEditor value={fareTiers} onChange={setFareTiers} currency="SAR" />
         </div>
 
         {/* Submit */}

@@ -143,6 +143,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       max_bookings: formData.get('max_bookings')
         ? Number(formData.get('max_bookings'))
         : existingPkg.max_bookings,
+      name_change_allowed: formData.get('name_change_allowed') !== null
+        ? formData.get('name_change_allowed') === 'true'
+        : existingPkg.name_change_allowed,
+      name_change_fee: formData.get('name_change_fee') !== null
+        ? Number(formData.get('name_change_fee'))
+        : existingPkg.name_change_fee,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== null
+        ? formData.get('name_change_is_refundable') === 'true'
+        : existingPkg.name_change_is_refundable,
     }
 
     const parsed = packageSchema.safeParse(rawData)
@@ -233,6 +242,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         start_date: parsed.data.start_date || null,
         end_date: parsed.data.end_date || null,
         max_bookings: parsed.data.max_bookings || null,
+        name_change_allowed: parsed.data.name_change_allowed ?? false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
         images: allImages,
         updated_at: new Date().toISOString(),
       })

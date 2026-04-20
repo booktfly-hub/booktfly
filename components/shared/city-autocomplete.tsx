@@ -136,7 +136,7 @@ export function CityAutocomplete({
   return (
     <div ref={wrapperRef} className="relative w-full sm:flex-1 group/input">
       <div className="absolute inset-y-0 start-0 pl-5 md:pl-6 flex items-center pointer-events-none">
-        <MapPin className="h-4 w-4 md:h-5 md:w-5 text-slate-400 group-focus-within/input:text-primary transition-colors" />
+        <MapPin className="h-4 w-4 text-primary transition-colors md:h-5 md:w-5" />
       </div>
       <input
         type="text"
@@ -157,7 +157,7 @@ export function CityAutocomplete({
           onClick={handleLocate}
           disabled={locating}
           title={myLocationLabel ?? (isAr ? 'موقعي الحالي' : 'My location')}
-          className="absolute inset-y-0 end-0 pe-3 md:pe-4 flex items-center text-slate-400 hover:text-primary transition-colors disabled:opacity-50"
+          className="absolute inset-y-0 end-0 flex items-center pe-3 text-primary transition-colors disabled:opacity-50 md:pe-4"
         >
           {locating ? (
             <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
@@ -181,7 +181,7 @@ export function CityAutocomplete({
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-start hover:bg-slate-50 transition-colors"
             >
-              <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+              <MapPin className="h-4 w-4 shrink-0 text-primary" />
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-semibold text-slate-900">
                   {isAr ? city.ar : city.en}

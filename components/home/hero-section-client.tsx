@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -13,7 +14,6 @@ import { PassengerPicker, type PassengerCounts } from '@/components/shared/passe
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { ROOM_CATEGORIES } from '@/lib/constants'
 
 interface HeroSectionClientProps {
@@ -33,6 +33,7 @@ interface HeroSectionClientProps {
 
 export function HeroSectionClient({
   locale,
+  heroTitle,
   heroSubtitle,
   searchButton,
   departureFromLabel,
@@ -90,6 +91,30 @@ export function HeroSectionClient({
   const [carReturnSame, setCarReturnSame] = useState(true)
   const [carReturnCity, setCarReturnCity] = useState('')
 
+  const heroBackgrounds: Record<typeof searchMode, string> = {
+    flights: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85',
+    hotels: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85',
+    cars: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2400&q=85',
+  }
+
+  const heroDestinations = [
+    {
+      city: isAr ? 'القاهرة' : 'Cairo',
+      detail: isAr ? 'رحلات وفنادق وسيارات' : 'Flights, hotels, and cars',
+      image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=420&q=80',
+    },
+    {
+      city: isAr ? 'دبي' : 'Dubai',
+      detail: isAr ? 'خيارات مرنة للحجز' : 'Flexible booking options',
+      image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=420&q=80',
+    },
+    {
+      city: isAr ? 'إسطنبول' : 'Istanbul',
+      detail: isAr ? 'عروض قريبة ومباشرة' : 'Nearby and direct deals',
+      image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=420&q=80',
+    },
+  ]
+
   const getActionUrl = () => {
     if (searchMode === 'hotels') {
       const params = new URLSearchParams()
@@ -133,7 +158,7 @@ export function HeroSectionClient({
     }
   }
 
-  const inputClass = "w-full h-14 px-5 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all shadow-sm"
+  const inputClass = "w-full h-14 px-5 rounded-lg bg-surface border border-input text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:ring-4 focus:ring-ring/15 focus:border-ring outline-none hover:bg-white transition-colors shadow-sm"
 
   const resetHotelFilters = () => {
     setHotelCity('')
@@ -148,18 +173,6 @@ export function HeroSectionClient({
     setHotelSort('newest')
   }
 
-  const hasActiveHotelFilters = [
-    hotelCity,
-    hotelCategory,
-    hotelCheckIn ? '1' : '',
-    hotelDays,
-    hotelRoomsCount,
-    hotelPassengers,
-    hotelPriceMin,
-    hotelPriceMax,
-    hotelCapacityMin,
-  ].some(Boolean)
-
   const renderHotelSearchForm = () => (
     <>
       {/* Row 1: City | Category */}
@@ -169,14 +182,14 @@ export function HeroSectionClient({
           value={hotelCity}
           onChange={(e) => setHotelCity(e.target.value)}
           placeholder={t('rooms.filter_city')}
-          className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+          className="h-12 rounded-lg border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
         />
 
         <Popover>
           <PopoverTrigger
             className={cn(
-              'flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-none transition-colors hover:bg-slate-100 md:h-14',
-              hotelCategory ? 'text-slate-700' : 'text-slate-500'
+              'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface px-4 text-sm font-semibold shadow-none transition-colors hover:bg-muted md:h-14',
+              hotelCategory ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
             <span className="truncate">
@@ -186,13 +199,13 @@ export function HeroSectionClient({
                   : ROOM_CATEGORIES[hotelCategory as keyof typeof ROOM_CATEGORIES]?.en
                 : t('rooms.filter_category')}
             </span>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-primary" />
           </PopoverTrigger>
           <PopoverContent className="w-64 p-2" align="start">
             <div className="grid gap-1">
               <Button
                 variant={!hotelCategory ? 'secondary' : 'ghost'}
-                className="h-10 justify-start rounded-xl"
+                className="h-10 justify-start rounded-lg"
                 onClick={() => setHotelCategory('')}
               >
                 {t('rooms.filter_category')}
@@ -201,7 +214,7 @@ export function HeroSectionClient({
                 <Button
                   key={key}
                   variant={hotelCategory === key ? 'secondary' : 'ghost'}
-                  className="h-10 justify-start rounded-xl"
+                  className="h-10 justify-start rounded-lg"
                   onClick={() => setHotelCategory(key)}
                 >
                   {isAr ? val.ar : val.en}
@@ -217,17 +230,17 @@ export function HeroSectionClient({
         <Popover>
           <PopoverTrigger
             className={cn(
-              'flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold shadow-none transition-colors hover:bg-slate-100 md:h-14',
-              hotelCheckIn ? 'text-slate-700' : 'text-slate-500'
+              'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface px-4 text-sm font-semibold shadow-none transition-colors hover:bg-muted md:h-14',
+              hotelCheckIn ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
             <span className="flex min-w-0 items-center gap-2 truncate">
-              <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
+              <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
               {hotelCheckIn
                 ? format(hotelCheckIn, 'd MMM yyyy', { locale: enUS })
                 : t('rooms.filter_date')}
             </span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-primary" />
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
@@ -241,14 +254,14 @@ export function HeroSectionClient({
         </Popover>
 
         <div className="relative">
-          <Moon className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Moon className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
           <Input
             type="number"
             min="1"
             value={hotelDays}
             onChange={(e) => setHotelDays(e.target.value)}
             placeholder={t('rooms.filter_days')}
-            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+            className="h-12 rounded-lg border-input bg-surface pe-3 ps-9 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
           />
         </div>
       </div>
@@ -256,26 +269,26 @@ export function HeroSectionClient({
       {/* Row 3: Rooms | Guests */}
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="relative">
-          <DoorOpen className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <DoorOpen className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
           <Input
             type="number"
             min="1"
             value={hotelRoomsCount}
             onChange={(e) => setHotelRoomsCount(e.target.value)}
             placeholder={t('rooms.filter_rooms_count')}
-            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+            className="h-12 rounded-lg border-input bg-surface pe-3 ps-9 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
           />
         </div>
 
         <div className="relative">
-          <Users className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Users className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
           <Input
             type="number"
             min="1"
             value={hotelPassengers}
             onChange={(e) => { setHotelPassengers(e.target.value); savePrefs({ hotelPassengers: Number(e.target.value) }) }}
             placeholder={t('rooms.filter_passengers')}
-            className="h-12 rounded-2xl border-slate-200 bg-slate-50 pe-3 ps-9 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+            className="h-12 rounded-lg border-input bg-surface pe-3 ps-9 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
           />
         </div>
       </div>
@@ -283,36 +296,36 @@ export function HeroSectionClient({
       {/* Row 4: Sort | Filter */}
       <div className="grid grid-cols-2 gap-3 mb-3">
         <Popover>
-          <PopoverTrigger className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none transition-colors hover:bg-slate-100 md:h-14">
+          <PopoverTrigger className="flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none transition-colors hover:bg-muted md:h-14">
             <span className="flex items-center gap-2 truncate">
-              <ArrowUpDown className="h-4 w-4 text-slate-400" />
+              <ArrowUpDown className="h-4 w-4 text-primary" />
               {hotelSort === 'price_asc'
                 ? t('rooms.sort_price_asc')
                 : hotelSort === 'price_desc'
                   ? t('rooms.sort_price_desc')
                   : t('rooms.sort_newest')}
             </span>
-            <ChevronDown className="h-4 w-4 text-slate-400" />
+            <ChevronDown className="h-4 w-4 text-primary" />
           </PopoverTrigger>
           <PopoverContent className="w-56 p-2" align="start">
             <div className="grid gap-1">
               <Button
                 variant={hotelSort === 'newest' ? 'secondary' : 'ghost'}
-                className="h-10 justify-start rounded-xl"
+                className="h-10 justify-start rounded-lg"
                 onClick={() => setHotelSort('newest')}
               >
                 {t('rooms.sort_newest')}
               </Button>
               <Button
                 variant={hotelSort === 'price_asc' ? 'secondary' : 'ghost'}
-                className="h-10 justify-start rounded-xl"
+                className="h-10 justify-start rounded-lg"
                 onClick={() => setHotelSort('price_asc')}
               >
                 {t('rooms.sort_price_asc')}
               </Button>
               <Button
                 variant={hotelSort === 'price_desc' ? 'secondary' : 'ghost'}
-                className="h-10 justify-start rounded-xl"
+                className="h-10 justify-start rounded-lg"
                 onClick={() => setHotelSort('price_desc')}
               >
                 {t('rooms.sort_price_desc')}
@@ -326,8 +339,8 @@ export function HeroSectionClient({
           variant={showHotelFilters ? 'secondary' : 'outline'}
           onClick={() => setShowHotelFilters(!showHotelFilters)}
           className={cn(
-            'h-12 w-full rounded-2xl text-sm font-bold md:h-14',
-            showHotelFilters && 'bg-accent text-white hover:bg-accent/90'
+            'h-12 w-full rounded-lg text-sm font-bold md:h-14',
+            showHotelFilters && 'bg-accent text-accent-foreground hover:bg-accent/90'
           )}
         >
           <SlidersHorizontal className="h-4 w-4" />
@@ -345,7 +358,7 @@ export function HeroSectionClient({
               value={hotelPriceMin}
               onChange={(e) => setHotelPriceMin(e.target.value)}
               placeholder={`${t('rooms.filter_price')} (${t('common.from')})`}
-              className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+              className="h-12 rounded-lg border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
             />
           </div>
           <div className="relative">
@@ -355,7 +368,7 @@ export function HeroSectionClient({
               value={hotelPriceMax}
               onChange={(e) => setHotelPriceMax(e.target.value)}
               placeholder={`${t('rooms.filter_price')} (${t('common.to')})`}
-              className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+              className="h-12 rounded-lg border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
             />
           </div>
         </div>
@@ -371,14 +384,14 @@ export function HeroSectionClient({
               value={hotelCapacityMin}
               onChange={(e) => setHotelCapacityMin(e.target.value)}
               placeholder={t('rooms.filter_capacity')}
-              className="h-12 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100 md:h-14"
+              className="h-12 rounded-lg border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
             />
           </div>
           <Button
             type="button"
             variant="destructive"
             onClick={resetHotelFilters}
-            className="h-12 w-full rounded-2xl text-sm font-semibold md:h-14"
+            className="h-12 w-full rounded-lg text-sm font-semibold md:h-14"
           >
             <X className="h-4 w-4" />
             {t('common.cancel')}
@@ -390,7 +403,7 @@ export function HeroSectionClient({
       <div className="pt-1">
         <Button
           type="submit"
-          className="h-12 w-full rounded-2xl px-6 font-bold shadow-sm shadow-primary/20 md:h-14"
+          className="h-12 w-full rounded-lg px-6 font-bold shadow-sm shadow-primary/20 md:h-14"
         >
           <Search className="h-5 w-5" />
           <span>{t('common.search')}</span>
@@ -412,21 +425,21 @@ export function HeroSectionClient({
           <div className="flex gap-2 flex-1">
             <Popover>
               <PopoverTrigger className={cn(
-                'flex h-14 shrink-0 items-center gap-2 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 text-sm font-semibold transition-all hover:bg-white shadow-sm',
-                carPickupType ? 'text-slate-700' : 'text-slate-500'
+                'flex h-14 shrink-0 items-center gap-2 rounded-lg border border-input bg-surface px-4 text-sm font-semibold shadow-sm transition-colors hover:bg-muted',
+                carPickupType ? 'text-foreground' : 'text-muted-foreground'
               )}>
-                {carPickupType === 'airport' ? <Plane className="h-4 w-4 text-primary" /> : carPickupType === 'branch' ? <Building className="h-4 w-4 text-primary" /> : <CarIcon className="h-4 w-4 text-slate-400" />}
+                {carPickupType === 'airport' ? <Plane className="h-4 w-4 text-primary" /> : carPickupType === 'branch' ? <Building className="h-4 w-4 text-primary" /> : <CarIcon className="h-4 w-4 text-primary" />}
                 <span className="hidden sm:inline">{carPickupType === 'airport' ? (isAr ? 'مطار' : 'Airport') : carPickupType === 'branch' ? (isAr ? 'فرع' : 'Branch') : (isAr ? 'الكل' : 'All')}</span>
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-primary" />
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2 rounded-2xl" align="start">
+              <PopoverContent className="w-48 rounded-lg p-2" align="start">
                 <div className="grid gap-1">
                   {[
                     { val: '', icon: <CarIcon className="h-4 w-4" />, label: isAr ? 'الكل' : 'All' },
                     { val: 'airport', icon: <Plane className="h-4 w-4" />, label: isAr ? 'مطار' : 'Airport' },
                     { val: 'branch', icon: <Building className="h-4 w-4" />, label: isAr ? 'فرع' : 'Branch' },
                   ].map((opt) => (
-                    <button key={opt.val} type="button" onClick={() => setCarPickupType(opt.val)} className={cn('flex items-center gap-2 h-10 px-3 rounded-xl text-sm font-semibold transition-colors w-full text-start', carPickupType === opt.val ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50')}>
+                    <button key={opt.val} type="button" onClick={() => setCarPickupType(opt.val)} className={cn('flex h-10 w-full items-center gap-2 rounded-lg px-3 text-start text-sm font-semibold transition-colors', carPickupType === opt.val ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
                       {opt.icon} {opt.label}
                     </button>
                   ))}
@@ -438,7 +451,7 @@ export function HeroSectionClient({
               value={origin}
               onChange={setOrigin}
               placeholder={isAr ? 'مدينة الاستلام' : 'Pickup City'}
-              className="h-14 w-full text-base rounded-[1.25rem] bg-slate-50 hover:bg-white border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm"
+              className="h-14 w-full rounded-lg border-input bg-surface text-base shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
               showLocateButton
               myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
             />
@@ -452,9 +465,9 @@ export function HeroSectionClient({
               setCarReturnCity('')
             }}
             className={cn(
-              'hidden sm:flex items-center justify-center h-12 w-12 rounded-full active:scale-95 transition-all shrink-0 cursor-pointer shadow-sm z-10 border',
+              'z-10 hidden h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-lg border shadow-sm transition-colors active:scale-95 sm:flex',
               carReturnSame
-                ? 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-primary hover:text-white hover:border-primary'
+                ? 'border-border bg-muted text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
                 : 'bg-primary/10 text-primary border-primary'
             )}
             title={isAr ? 'التسليم في مكان مختلف' : 'Return to different location'}
@@ -470,9 +483,9 @@ export function HeroSectionClient({
                 setCarReturnCity('')
               }}
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all active:scale-95 border',
+                'flex h-10 w-10 items-center justify-center rounded-lg border shadow-md transition-colors active:scale-95',
                 carReturnSame
-                  ? 'bg-white border-slate-200 text-slate-500 hover:text-primary'
+                  ? 'border-border bg-surface text-muted-foreground hover:text-primary'
                   : 'bg-primary/10 border-primary text-primary'
               )}
               aria-label={isAr ? 'التسليم في مكان مختلف' : 'Return to different location'}
@@ -484,7 +497,7 @@ export function HeroSectionClient({
           {/* Return City */}
           <div className="flex-1">
             {carReturnSame ? (
-              <div className={cn(inputClass, 'flex items-center text-slate-400 opacity-60 cursor-not-allowed')}>
+              <div className={cn(inputClass, 'flex cursor-not-allowed items-center text-muted-foreground opacity-70')}>
                 {isAr ? 'نفس موقع الاستلام' : 'Same as pickup'}
               </div>
             ) : (
@@ -493,7 +506,7 @@ export function HeroSectionClient({
                 value={carReturnCity}
                 onChange={setCarReturnCity}
                 placeholder={isAr ? 'مدينة التسليم' : 'Drop-off City'}
-                className="h-14 w-full text-base rounded-[1.25rem] bg-slate-50 hover:bg-white border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm"
+                className="h-14 w-full rounded-lg border-input bg-surface text-base shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
                 myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
               />
             )}
@@ -504,21 +517,21 @@ export function HeroSectionClient({
       {/* Row 2: Dates */}
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
         <Popover>
-          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !departureDate ? 'text-slate-400' : 'text-slate-700')}>
+          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !departureDate ? 'text-muted-foreground' : 'text-foreground')}>
             {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{isAr ? 'تاريخ الاستلام' : 'Pickup Date'}</span>}
-            <CalendarIcon className="h-4 w-4 text-slate-400" />
+            <CalendarIcon className="h-4 w-4 text-primary" />
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
+          <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
             <Calendar mode="single" selected={departureDate} onSelect={setDepartureDate} disabled={(date) => date < new Date()} initialFocus />
           </PopoverContent>
         </Popover>
 
         <Popover>
-          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !returnDate ? 'text-slate-400' : 'text-slate-700')}>
+          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !returnDate ? 'text-muted-foreground' : 'text-foreground')}>
             {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{isAr ? 'تاريخ الإرجاع' : 'Return Date'}</span>}
-            <CalendarIcon className="h-4 w-4 text-slate-400" />
+            <CalendarIcon className="h-4 w-4 text-primary" />
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
+          <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
             <Calendar mode="single" selected={returnDate} onSelect={setReturnDate} disabled={(date) => { const min = departureDate || new Date(); return date <= min }} initialFocus />
           </PopoverContent>
         </Popover>
@@ -526,7 +539,7 @@ export function HeroSectionClient({
 
       {/* Search button */}
       <div className="pt-2">
-        <button type="submit" className="w-full flex items-center justify-center gap-3 h-16 rounded-[1.25rem] bg-gradient-to-r from-primary to-blue-800 text-white font-bold text-lg hover:brightness-110 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 shadow-lg shadow-primary/25">
+        <button type="submit" className="flex h-16 w-full items-center justify-center gap-3 rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:translate-y-px">
           <Search className="h-5 w-5" />
           <span>{searchButton}</span>
         </button>
@@ -553,7 +566,7 @@ export function HeroSectionClient({
             value={origin}
             onChange={setOrigin}
             placeholder={departureFromLabel}
-            className="h-16 w-full text-lg rounded-[1.25rem] bg-slate-50 hover:bg-white border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm inset-y-0"
+            className="h-16 w-full rounded-lg border-input bg-surface text-lg shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
             showLocateButton
             myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
           />
@@ -564,7 +577,7 @@ export function HeroSectionClient({
               setOrigin(destination)
               setDestination(origin)
             }}
-            className="hidden sm:flex items-center justify-center h-12 w-12 rounded-full bg-slate-100 hover:bg-primary hover:text-white text-slate-500 active:scale-95 transition-all shrink-0 cursor-pointer shadow-sm z-10 border border-slate-200 hover:border-primary"
+            className="z-10 hidden h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground active:scale-95 sm:flex"
           >
             <ArrowLeftRight className="h-5 w-5" />
           </button>
@@ -576,7 +589,7 @@ export function HeroSectionClient({
                 setOrigin(destination)
                 setDestination(origin)
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 shadow-md transition-all active:scale-95 hover:text-primary"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-muted-foreground shadow-md transition-colors hover:text-primary active:scale-95"
               aria-label={isAr ? 'تبديل الوجهتين' : 'Swap origin and destination'}
             >
               <ArrowLeftRight className="h-4 w-4 rotate-90" />
@@ -588,7 +601,7 @@ export function HeroSectionClient({
             value={destination}
             onChange={setDestination}
             placeholder={arrivalToLabel}
-            className="h-16 w-full text-lg rounded-[1.25rem] bg-slate-50 hover:bg-white border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm"
+            className="h-16 w-full rounded-lg border-input bg-surface text-lg shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
             myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
           />
         </div>
@@ -605,12 +618,12 @@ export function HeroSectionClient({
                   savePrefs({ tripType: value })
                   if (value === 'one_way') setReturnDate(undefined)
                 }}
-                className="appearance-none w-full h-14 px-5 pe-10 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all cursor-pointer shadow-sm"
+                className="h-14 w-full cursor-pointer appearance-none rounded-lg border border-input bg-surface px-5 pe-10 text-sm font-semibold text-foreground shadow-sm outline-none transition-colors hover:bg-muted focus:border-ring focus:ring-4 focus:ring-ring/15"
               >
                 <option value="round_trip">{roundTripLabel}</option>
                 <option value="one_way">{oneWayLabel}</option>
               </select>
-              <ChevronDown className="absolute end-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <ChevronDown className="pointer-events-none absolute end-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
             </div>
           )}
 
@@ -618,14 +631,14 @@ export function HeroSectionClient({
           <Popover>
             <PopoverTrigger
               className={cn(
-                "w-full h-14 px-5 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all flex items-center justify-between shadow-sm",
-                !departureDate ? "text-slate-400" : "text-slate-700"
+                "flex h-14 w-full items-center justify-between rounded-lg border border-input bg-surface px-5 text-sm font-semibold shadow-sm outline-none transition-colors hover:bg-muted focus:border-ring focus:ring-4 focus:ring-ring/15",
+                !departureDate ? "text-muted-foreground" : "text-foreground"
               )}
             >
               {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{departureDateLabel}</span>}
-              <CalendarIcon className="h-4 w-4 text-slate-400" />
+              <CalendarIcon className="h-4 w-4 text-primary" />
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
+            <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
               <Calendar
                 mode="single"
                 selected={departureDate}
@@ -640,14 +653,14 @@ export function HeroSectionClient({
             <PopoverTrigger
               disabled={searchMode === 'flights' && tripType === 'one_way'}
               className={cn(
-                "w-full h-14 px-5 rounded-[1.25rem] bg-slate-50 border border-slate-200 text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none hover:bg-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:bg-slate-100/50 disabled:cursor-not-allowed",
-                !returnDate ? "text-slate-400" : "text-slate-700"
+                "flex h-14 w-full items-center justify-between rounded-lg border border-input bg-surface px-5 text-sm font-semibold shadow-sm outline-none transition-colors hover:bg-muted focus:border-ring focus:ring-4 focus:ring-ring/15 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60",
+                !returnDate ? "text-muted-foreground" : "text-foreground"
               )}
             >
               {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{returnDateLabel}</span>}
-              <CalendarIcon className="h-4 w-4 text-slate-400" />
+              <CalendarIcon className="h-4 w-4 text-primary" />
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-2xl overflow-hidden shadow-xl border-slate-100" align="start">
+            <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
               <Calendar
                 mode="single"
                 selected={returnDate}
@@ -672,7 +685,7 @@ export function HeroSectionClient({
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 h-16 rounded-[1.25rem] bg-gradient-to-r from-primary to-blue-800 text-white font-bold text-lg hover:brightness-110 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 shadow-lg shadow-primary/25"
+            className="flex h-16 w-full items-center justify-center gap-3 rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:translate-y-px"
           >
             <Search className="h-5 w-5" />
             <span>{searchButton}</span>
@@ -683,21 +696,41 @@ export function HeroSectionClient({
   }
 
   return (
-    <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-slate-50 pt-28 pb-20">
-      {/* Enhanced Professional Background */}
+    <section className="relative flex min-h-[100svh] flex-col items-center overflow-hidden bg-background pb-20 pt-24 sm:pt-28">
+      {/* Image-led hero backdrop inspired by travel marketplaces; the search form below is unchanged. */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-blue-100/60 to-sky-50/60 blur-[100px]" />
-        <div className="absolute top-[20%] right-[-5%] w-[40%] h-[40%] rounded-full bg-gradient-to-bl from-orange-50/60 to-amber-50/60 blur-[80px]" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-slate-200/50 to-transparent blur-[120px]" />
+        <div className="absolute inset-x-0 top-0 h-[52svh] min-h-[420px] overflow-hidden">
+          {Object.entries(heroBackgrounds).map(([mode, src]) => (
+            <Image
+              key={mode}
+              src={src}
+              alt=""
+              fill
+              priority={mode === 'flights'}
+              sizes="100vw"
+              className={cn(
+                'object-cover transition-opacity duration-500',
+                searchMode === mode ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+          ))}
+          <div className="absolute inset-0 bg-slate-950/45" />
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent to-background" />
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 lg:px-8 mt-10 sm:mt-0">
+      <div className="relative z-10 mx-auto mt-10 flex w-full max-w-7xl flex-col items-center px-4 sm:mt-0 sm:px-6 lg:px-8">
         
-        <div className="mx-auto mb-10 max-w-4xl text-center">
-          <h1 className="mx-auto mt-6 max-w-2xl animate-fade-in-up text-4xl sm:text-5xl md:text-6xl lg:text-[5.5rem] font-black leading-[1.15] tracking-tight text-slate-900" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+        <div className="mx-auto mb-8 max-w-4xl text-center text-white sm:mb-10">
+          <p className="animate-fade-in-up text-xs font-black uppercase tracking-[0.28em] text-white/80" style={{ animationDelay: '180ms', animationFillMode: 'both' }}>
+            {heroTitle}
+          </p>
+          <h1 className="mx-auto mt-5 max-w-3xl animate-fade-in-up text-4xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl lg:text-7xl" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
             {heroSubtitle}
           </h1>
+          <p className="mx-auto mt-5 max-w-2xl animate-fade-in-up text-sm font-semibold leading-6 text-white/85 sm:text-base" style={{ animationDelay: '360ms', animationFillMode: 'both' }}>
+            {isAr ? 'قارن الخيارات، اختر وقتك، واحجز رحلتك التالية في مكان واحد.' : 'Compare options, choose your timing, and book the next part of your trip in one place.'}
+          </p>
         </div>
 
         {/* Search Component Container */}
@@ -705,34 +738,33 @@ export function HeroSectionClient({
           
           {/* Tabs */}
           <div className="flex justify-center mb-6">
-            <div className="inline-flex bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200/80 backdrop-blur-xl">
+            <div className="inline-flex rounded-lg border border-border bg-surface p-1.5 shadow-sm">
               <button 
                 type="button" 
                 onClick={() => setSearchMode('flights')} 
-                className={cn("flex items-center gap-2 px-5 sm:px-8 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all", searchMode === 'flights' ? "bg-primary text-white shadow-md" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50")}
+                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'flights' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <Plane className="w-4 h-4 sm:w-5 sm:h-5" /> {isAr ? 'طيران' : 'Flights'}
+                <Plane className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'flights' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'طيران' : 'Flights'}
               </button>
               <button 
                 type="button" 
                 onClick={() => setSearchMode('hotels')} 
-                className={cn("flex items-center gap-2 px-5 sm:px-8 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all", searchMode === 'hotels' ? "bg-primary text-white shadow-md" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50")}
+                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'hotels' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <Building className="w-4 h-4 sm:w-5 sm:h-5" /> {isAr ? 'فنادق' : 'Hotels'}
+                <Building className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'hotels' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'فنادق' : 'Hotels'}
               </button>
               <button 
                 type="button" 
                 onClick={() => setSearchMode('cars')} 
-                className={cn("flex items-center gap-2 px-5 sm:px-8 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all", searchMode === 'cars' ? "bg-primary text-white shadow-md" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50")}
+                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'cars' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <CarFront className="w-4 h-4 sm:w-5 sm:h-5" /> {isAr ? 'سيارات' : 'Cars'}
+                <CarFront className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'cars' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'سيارات' : 'Cars'}
               </button>
             </div>
           </div>
 
           {/* Search Box Card */}
-          <div className="absolute -inset-4 rounded-[2.5rem] bg-slate-200/40 blur-2xl opacity-50 -z-10"></div>
-          <div className="relative rounded-[2rem] border border-slate-200 bg-white/80 backdrop-blur-2xl p-4 sm:p-6 lg:p-8 shadow-2xl shadow-slate-200/50">
+          <div className="relative bg-transparent p-0 sm:p-2 lg:p-4">
             <form
               action={getActionUrl()}
               className="space-y-4"
@@ -748,33 +780,52 @@ export function HeroSectionClient({
           </div>
         </div>
 
+        <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-3" style={{ animationDelay: '460ms', animationFillMode: 'both' }}>
+          {heroDestinations.map((item) => (
+            <div key={item.city} className="relative min-h-28 overflow-hidden rounded-lg border border-white/20 bg-slate-950 shadow-lg">
+              <Image
+                src={item.image}
+                alt=""
+                fill
+                sizes="(max-width: 640px) 100vw, 280px"
+                className="object-cover opacity-80 transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-slate-950/35" />
+              <div className="relative flex h-full min-h-28 flex-col justify-end p-4 text-white">
+                <span className="text-lg font-black leading-none">{item.city}</span>
+                <span className="mt-1 text-xs font-semibold text-white/80">{item.detail}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Trust Indicators */}
-        <div className="mt-14 flex flex-wrap justify-center gap-6 sm:gap-12 text-sm font-semibold text-slate-600 animate-fade-in-up" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
+        <div className="mt-10 flex flex-wrap justify-center gap-6 text-sm font-semibold text-muted-foreground animate-fade-in-up sm:gap-12" style={{ animationDelay: '520ms', animationFillMode: 'both' }}>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 shadow-sm border border-emerald-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-success/20 bg-success/10 text-success shadow-sm">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-slate-800">{isAr ? 'حجز آمن 100%' : '100% Secure'}</span>
-              <span className="text-xs font-normal text-slate-500">{isAr ? 'موثوق ومعتمد' : 'Trusted & Verified'}</span>
+              <span className="text-foreground">{isAr ? 'حجز آمن 100%' : '100% Secure'}</span>
+              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'موثوق ومعتمد' : 'Trusted & Verified'}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 shadow-sm border border-blue-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary shadow-sm">
               <CreditCard className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-slate-800">{isAr ? 'دفع مرن' : 'Flexible Payments'}</span>
-              <span className="text-xs font-normal text-slate-500">{isAr ? 'خيارات دفع متعددة' : 'Multiple options'}</span>
+              <span className="text-foreground">{isAr ? 'دفع مرن' : 'Flexible Payments'}</span>
+              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'خيارات دفع متعددة' : 'Multiple options'}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 shadow-sm border border-amber-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-warning/20 bg-warning/10 text-warning shadow-sm">
               <Clock className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-slate-800">{isAr ? 'دعم متواصل' : '24/7 Support'}</span>
-              <span className="text-xs font-normal text-slate-500">{isAr ? 'نحن هنا لخدمتك' : 'Always here to help'}</span>
+              <span className="text-foreground">{isAr ? 'دعم متواصل' : '24/7 Support'}</span>
+              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'نحن هنا لخدمتك' : 'Always here to help'}</span>
             </div>
           </div>
         </div>

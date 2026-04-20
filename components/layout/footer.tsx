@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Globe, Plane, Shield, CreditCard, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
+import { PaymentLogosRow } from '@/components/ui/payment-logos'
 
 export function Footer() {
   const t = useTranslations()
@@ -188,8 +189,16 @@ export function Footer() {
           </div>
         </motion.div>
 
+        {/* Payment logos */}
+        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
+            {locale === 'ar' ? 'وسائل الدفع المقبولة' : 'Accepted payment methods'}
+          </p>
+          <PaymentLogosRow />
+        </div>
+
         {/* Copyright */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
+        <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
           <p className="text-sm font-medium tracking-wide">
             {t('footer.copyright')}
           </p>

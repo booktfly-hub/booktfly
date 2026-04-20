@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useLocale } from 'next-intl'
@@ -9,13 +9,14 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { z } from 'zod'
-import { Mail, Lock, User, Phone, Loader2, CheckCircle2, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, Loader2, CheckCircle2, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { getAuthCallbackUrl, getAuthErrorKey, getSafeRedirectPath } from '@/lib/auth-client'
 import { getSignupSchema } from '@/lib/validations'
 import { toast } from '@/components/ui/toaster'
 import { GoogleAuthButton } from '@/components/auth/google-auth-button'
+import { PhoneInput } from '@/components/shared/phone-input'
 import { cn } from '@/lib/utils'
 
 type SignupFormData = z.infer<ReturnType<typeof getSignupSchema>>
@@ -385,20 +386,19 @@ function SignupContent() {
                     {t('phone')}{' '}
                     <span className="text-muted-foreground font-normal">({tCommon('optional')})</span>
                   </label>
-                  <div className="group relative">
-                    <div className="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
-                      <Phone className="w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    </div>
-                    <input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      {...form.register('phone')}
-                      className="w-full ps-12 pe-4 py-4 rounded-2xl border border-border bg-background/50 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-border/80 transition-all duration-200 shadow-sm text-base font-medium"
-                      placeholder="+966 5XX XXX XXXX"
-                      dir="ltr"
-                    />
-                  </div>
+                  <Controller
+                    name="phone"
+                    control={form.control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        id="phone"
+                        value={field.value}
+                        onChange={field.onChange}
+                        defaultIso={locale === 'ar' ? 'SA' : 'SA'}
+                        error={!!form.formState.errors.phone}
+                      />
+                    )}
+                  />
                   {form.formState.errors.phone && (
                     <p className="text-sm text-destructive mt-1.5 font-semibold flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
                       <span className="w-1 h-1 rounded-full bg-destructive" />

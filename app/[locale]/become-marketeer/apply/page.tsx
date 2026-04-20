@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -25,6 +25,7 @@ import {
   CreditCard,
   Calendar,
 } from 'lucide-react'
+import { PhoneInput } from '@/components/shared/phone-input'
 
 type FormData = z.infer<ReturnType<typeof getMarkeeteerApplicationSchema>>
 
@@ -72,6 +73,7 @@ export default function ApplyMarkeeteerPage() {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm<FormData>({
     resolver: zodResolver(getMarkeeteerApplicationSchema(locale)),
   })
@@ -96,7 +98,12 @@ export default function ApplyMarkeeteerPage() {
       }
 
       toast({ title: t('application_received'), variant: 'success' })
-      router.push(`/${locale}/become-marketeer/status`)
+      const applicationId = result?.data?.id
+      if (applicationId) {
+        router.push(`/${locale}/become-marketeer/sign-contract/${applicationId}`)
+      } else {
+        router.push(`/${locale}/become-marketeer/status`)
+      }
     } catch {
       toast({ title: te('network_error'), variant: 'destructive' })
     } finally {
@@ -177,31 +184,49 @@ export default function ApplyMarkeeteerPage() {
                 <CardDescription>{t('subtitle')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                {fields.map((f) => (
-                  <div key={f.name}>
-                    <Label className="mb-2 flex items-center gap-2">
-                      <f.icon className="h-4 w-4 text-muted-foreground" />
-                      {f.label}
-                      {f.required
-                        ? <span className="text-destructive">*</span>
-                        : <span className="text-muted-foreground font-normal">({tc('optional')})</span>
-                      }
-                    </Label>
-                    <Input
-                      type={f.type}
-                      dir={f.dir}
-                      placeholder={f.placeholder}
-                      data-testid={`marketeer-${String(f.name)}`}
-                      {...register(f.name)}
-                      className="h-12 rounded-xl border-border/60 bg-background px-4 py-3 text-sm"
-                    />
-                    {errors[f.name] && (
-                      <p className="text-destructive text-xs mt-1.5 font-medium">
-                        {errors[f.name]?.message}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                {fields.map((f) => {
+                  const isPhone = f.name === 'phone' || f.name === 'phone_alt'
+                  return (
+                    <div key={f.name}>
+                      <Label className="mb-2 flex items-center gap-2">
+                        <f.icon className="h-4 w-4 text-muted-foreground" />
+                        {f.label}
+                        {f.required
+                          ? <span className="text-destructive">*</span>
+                          : <span className="text-muted-foreground font-normal">({tc('optional')})</span>
+                        }
+                      </Label>
+                      {isPhone ? (
+                        <Controller
+                          name={f.name}
+                          control={control}
+                          render={({ field }) => (
+                            <PhoneInput
+                              value={field.value as string | undefined}
+                              onChange={field.onChange}
+                              defaultIso="SA"
+                              error={!!errors[f.name]}
+                            />
+                          )}
+                        />
+                      ) : (
+                        <Input
+                          type={f.type}
+                          dir={f.dir}
+                          placeholder={f.placeholder}
+                          data-testid={`marketeer-${String(f.name)}`}
+                          {...register(f.name)}
+                          className="h-12 rounded-xl border-border/60 bg-background px-4 py-3 text-sm"
+                        />
+                      )}
+                      {errors[f.name] && (
+                        <p className="text-destructive text-xs mt-1.5 font-medium">
+                          {errors[f.name]?.message}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })}
               </CardContent>
             </Card>
           </motion.div>

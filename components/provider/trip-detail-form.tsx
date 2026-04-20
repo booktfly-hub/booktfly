@@ -11,6 +11,8 @@ import { toast } from '@/components/ui/toaster'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SeatMap } from '@/components/trips/seat-map'
+import { TripPricingPolicyCard } from '@/components/trips/trip-pricing-policy-card'
+import { PriceHistoryWidget } from '@/components/provider/price-history-widget'
 import { DEFAULT_SEAT_MAP_CONFIG, countSeatMapCapacity, normalizeSeatNumber, parseSeatRowList } from '@/lib/seat-map'
 import { format, isValid, parseISO, startOfDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -145,6 +147,15 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const [upFrontRowsText, setUpFrontRowsText] = useState(initialSeatMapConfig.up_front_rows.join(', '))
   const [extraLegroomRowsText, setExtraLegroomRowsText] = useState(initialSeatMapConfig.extra_legroom_rows.join(', '))
   const [blockedSeats, setBlockedSeats] = useState<string[]>(initialSeatMapConfig.blocked_seats)
+  const [nameChangeAllowed, setNameChangeAllowed] = useState(initialTrip.name_change_allowed ?? false)
+  const [nameChangeFee, setNameChangeFee] = useState<number | ''>(initialTrip.name_change_fee ?? 0)
+  const [nameChangeRefundable, setNameChangeRefundable] = useState(initialTrip.name_change_is_refundable ?? true)
+  const [childDiscountPct, setChildDiscountPct] = useState<number | ''>(initialTrip.child_discount_percentage ?? 0)
+  const [infantDiscountPct, setInfantDiscountPct] = useState<number | ''>(initialTrip.infant_discount_percentage ?? 0)
+  const [specialDiscountPct, setSpecialDiscountPct] = useState<number | ''>(initialTrip.special_discount_percentage ?? 0)
+  const [specialDiscountLabelAr, setSpecialDiscountLabelAr] = useState(initialTrip.special_discount_label_ar ?? '')
+  const [specialDiscountLabelEn, setSpecialDiscountLabelEn] = useState(initialTrip.special_discount_label_en ?? '')
+  const [commissionOverride, setCommissionOverride] = useState<number | ''>(initialTrip.commission_rate_override ?? '')
 
   const hasBookings = bookings.some((b) => b.status === 'confirmed' || b.status === 'payment_processing')
 
@@ -237,6 +248,15 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
       formData.append('checked_baggage_kg', checkedBaggageKg === '' ? '' : String(checkedBaggageKg))
       formData.append('cabin_baggage_kg', cabinBaggageKg === '' ? '' : String(cabinBaggageKg))
       formData.append('meal_included', String(mealIncluded))
+      formData.append('name_change_allowed', String(nameChangeAllowed))
+      formData.append('name_change_fee', String(nameChangeFee === '' ? 0 : nameChangeFee))
+      formData.append('name_change_is_refundable', String(nameChangeRefundable))
+      formData.append('child_discount_percentage', String(childDiscountPct === '' ? 0 : childDiscountPct))
+      formData.append('infant_discount_percentage', String(infantDiscountPct === '' ? 0 : infantDiscountPct))
+      formData.append('special_discount_percentage', String(specialDiscountPct === '' ? 0 : specialDiscountPct))
+      formData.append('special_discount_label_ar', specialDiscountLabelAr)
+      formData.append('special_discount_label_en', specialDiscountLabelEn)
+      formData.append('commission_rate_override', commissionOverride === '' ? '' : String(commissionOverride))
       formData.append('seat_selection_included', String(seatSelectionIncluded))
       formData.append('seat_map_enabled', String(seatMapEnabled))
       if (seatMapEnabled) {
@@ -599,6 +619,31 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
             </label>
           )}
         </div>
+
+        {/* Price change history */}
+        <PriceHistoryWidget tripId={initialTrip.id} />
+
+        {/* Name-change + discounts + commission override */}
+        <TripPricingPolicyCard
+          nameChangeAllowed={nameChangeAllowed}
+          onNameChangeAllowedChange={setNameChangeAllowed}
+          nameChangeFee={nameChangeFee}
+          onNameChangeFeeChange={setNameChangeFee}
+          nameChangeRefundable={nameChangeRefundable}
+          onNameChangeRefundableChange={setNameChangeRefundable}
+          childDiscountPct={childDiscountPct}
+          onChildDiscountChange={setChildDiscountPct}
+          infantDiscountPct={infantDiscountPct}
+          onInfantDiscountChange={setInfantDiscountPct}
+          specialDiscountPct={specialDiscountPct}
+          onSpecialDiscountChange={setSpecialDiscountPct}
+          specialDiscountLabelAr={specialDiscountLabelAr}
+          onSpecialDiscountLabelArChange={setSpecialDiscountLabelAr}
+          specialDiscountLabelEn={specialDiscountLabelEn}
+          onSpecialDiscountLabelEnChange={setSpecialDiscountLabelEn}
+          commissionOverride={commissionOverride}
+          onCommissionOverrideChange={setCommissionOverride}
+        />
 
         {/* Actions */}
         <div className="flex gap-3">

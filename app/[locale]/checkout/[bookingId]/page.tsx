@@ -22,6 +22,10 @@ import {
 import { formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { toast } from '@/components/ui/toaster'
 import { CheckoutPageSkeleton } from '@/components/shared/loading-skeleton'
+import { ClientContractStep } from '@/components/checkout/client-contract-step'
+import { ProgressStepper } from '@/components/bookings/progress-stepper'
+import { CrossSellPanel } from '@/components/bookings/cross-sell-panel'
+import { TrustBadges } from '@/components/bookings/trust-badges'
 import type { Booking, RoomBooking, CarBooking, PackageBooking } from '@/types'
 
 type CheckoutState = 'transfer' | 'uploading' | 'submitted' | 'confirmed' | 'failed'
@@ -176,23 +180,48 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
 
   // Confirmed state
   if (state === 'confirmed') {
+    const crossKind: 'trip' | 'room' | 'car' | 'package' = isPackageBooking ? 'package' : isCarBooking ? 'car' : isRoomBooking ? 'room' : 'trip'
+    const destCity = isPackageBooking && packageBooking
+      ? (isAr ? packageBooking.package?.destination_city_ar : packageBooking.package?.destination_city_en) ?? undefined
+      : !isPackageBooking && !isCarBooking && !isRoomBooking && booking
+        ? (isAr ? booking.trip?.destination_city_ar : booking.trip?.destination_city_en) ?? undefined
+        : undefined
+
     return (
-      <div className="max-w-lg mx-auto px-4 py-16 md:py-24 text-center animate-fade-in-up">
-        <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-emerald-50 border-[6px] border-emerald-100 mb-6 md:mb-8 relative">
-          <div className="absolute inset-0 rounded-full animate-ping bg-emerald-100 opacity-50" />
-          <CheckCircle2 className="h-10 w-10 md:h-12 md:w-12 text-emerald-500 relative z-10" />
+      <div className="max-w-2xl mx-auto px-4 py-16 md:py-24 animate-fade-in-up">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-emerald-50 border-[6px] border-emerald-100 mb-6 md:mb-8 relative">
+            <div className="absolute inset-0 rounded-full animate-ping bg-emerald-100 opacity-50" />
+            <CheckCircle2 className="h-10 w-10 md:h-12 md:w-12 text-emerald-500 relative z-10" />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 md:mb-3">{t('booking.booking_confirmed')}</h2>
+          <p className="text-base md:text-lg text-slate-500 font-medium mb-6 md:mb-8">
+            {t('booking.booking_reference')}: <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">{shortId(bookingId)}</span>
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+            <Link href={detailHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-primary text-white text-sm md:text-base font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+              {t('booking.view_booking')}
+            </Link>
+            {/* Itinerary PDF download (P1-20) */}
+            {!isPackageBooking && !isCarBooking && !isRoomBooking && (
+              <a
+                href={`/api/bookings/${bookingId}/itinerary`}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-900 text-white text-sm md:text-base font-bold hover:bg-slate-800 transition-all"
+              >
+                {isAr ? 'تحميل خط السير' : 'Download itinerary'}
+              </a>
+            )}
+            <Link href={browseHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-50 text-slate-700 border border-slate-200 text-sm md:text-base font-bold hover:bg-slate-100 transition-all">
+              {isAr ? (isPackageBooking ? 'تصفح الباقات' : isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isPackageBooking ? 'Browse Packages' : isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
+            </Link>
+          </div>
         </div>
-        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 md:mb-3">{t('booking.booking_confirmed')}</h2>
-        <p className="text-base md:text-lg text-slate-500 font-medium mb-6 md:mb-8">
-          {t('booking.booking_reference')}: <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">{shortId(bookingId)}</span>
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-          <Link href={detailHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-primary text-white text-sm md:text-base font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-            {t('booking.view_booking')}
-          </Link>
-          <Link href={browseHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-50 text-slate-700 border border-slate-200 text-sm md:text-base font-bold hover:bg-slate-100 transition-all">
-            {isAr ? (isPackageBooking ? 'تصفح الباقات' : isCarBooking ? 'تصفح السيارات' : isRoomBooking ? 'تصفح الغرف' : 'تصفح الرحلات') : (isPackageBooking ? 'Browse Packages' : isCarBooking ? 'Browse Cars' : isRoomBooking ? 'Browse Rooms' : 'Browse Trips')}
-          </Link>
+
+        {/* Cross-sell on success page (P2-21) */}
+        <div className="mt-12">
+          <CrossSellPanel currentKind={crossKind} city={destCity} />
         </div>
       </div>
     )
@@ -230,6 +259,34 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   const bankName = isAr ? bankInfo?.bank_name_ar : bankInfo?.bank_name_en
   const accountHolder = isAr ? bankInfo?.bank_account_holder_ar : bankInfo?.bank_account_holder_en
 
+  // Signature gate: every booking type signs the client contract before payment
+  const activeRecord = isPackageBooking ? packageBooking : isCarBooking ? carBooking : isRoomBooking ? roomBooking : booking
+  type SignableRecord = { contract_signed_at?: string | null }
+  const activeSigned = (activeRecord as SignableRecord | null)?.contract_signed_at
+  const signTargetType: 'booking' | 'room_booking' | 'car_booking' | 'package_booking' =
+    isPackageBooking ? 'package_booking' : isCarBooking ? 'car_booking' : isRoomBooking ? 'room_booking' : 'booking'
+  const apiPath = isPackageBooking ? `/api/package-bookings/${bookingId}`
+    : isCarBooking ? `/api/car-bookings/${bookingId}`
+    : isRoomBooking ? `/api/room-bookings/${bookingId}`
+    : `/api/bookings/${bookingId}`
+  if (activeRecord && !activeSigned) {
+    return (
+      <ClientContractStep
+        bookingId={bookingId}
+        guestToken={searchParams.get('guest_token')}
+        targetType={signTargetType}
+        onSigned={() => {
+          fetch(apiPath).then(r => r.json()).then(d => {
+            if (isPackageBooking && d.booking) setPackageBooking(d.booking)
+            else if (isCarBooking && d.booking) setCarBooking(d.booking)
+            else if (isRoomBooking && d.booking) setRoomBooking(d.booking)
+            else if (d.booking) setBooking(d.booking)
+          })
+        }}
+      />
+    )
+  }
+
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 pt-24 pb-12 md:pt-32 lg:pt-36 animate-fade-in-up">
       <button
@@ -242,10 +299,15 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         {t('common.back')}
       </button>
 
-      <div className="mb-8 md:mb-10">
+      <div className="mb-6 md:mb-8">
+        {/* Labelled checkout stepper (P0-11) — on payment step */}
+        <ProgressStepper currentStep={3} className="mb-6" />
         <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">{isAr ? 'الدفع عبر التحويل البنكي' : 'Bank Transfer Payment'}</h1>
         <p className="text-sm md:text-base text-slate-500 font-medium">{isAr ? 'حوّل المبلغ المطلوب إلى الحساب التالي' : 'Transfer the required amount to the following account'}</p>
       </div>
+
+      {/* Trust badges with payment logos (P0-5) */}
+      <TrustBadges className="mb-6" />
 
       {/* Order summary */}
       <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-5 md:p-6 mb-6 md:mb-8 shadow-sm">

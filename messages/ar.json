@@ -391,7 +391,9 @@
     "occupancy": "الإشغال",
     "no_activity": "لا يوجد نشاط حديث",
     "live": "مباشر",
-    "of_previous": "من المرحلة السابقة"
+    "of_previous": "من المرحلة السابقة",
+    "templates": "القوالب",
+    "contract_events": "سجل العقود"
   },
   "status": {
     "active": "نشطة",
@@ -541,6 +543,33 @@
     "flight_request_cta_point2": "استلم عروض أسعار من مزودي خدمة معتمدين",
     "flight_request_cta_point3": "اختر العرض الأنسب لك واحجز مباشرة",
     "flight_request_cta_button": "اطلب رحلتك الآن"
+  },
+  "category_heroes": {
+    "trips": {
+      "eyebrow": "استكشف آفاقاً جديدة",
+      "title": "عروض طيران لا تقاوم",
+      "description": "احجز رحلتك القادمة من أفضل مزودي الخدمة في المملكة. أفضل الأسعار، تأكيد فوري، وخيارات سفر مرنة."
+    },
+    "rooms": {
+      "eyebrow": "إقامة استثنائية",
+      "title": "فنادق ومنتجعات مريحة",
+      "description": "اعثر على الغرفة المثالية لرحلتك القادمة. من الفنادق الفاخرة إلى الشقق المريحة، كل ما تحتاجه في مكان واحد."
+    },
+    "cars": {
+      "eyebrow": "انطلق في طريقك",
+      "title": "تأجير سيارات بمرونة",
+      "description": "استأجر السيارة المثالية لرحلتك. مجموعة واسعة من المركبات، أسعار تنافسية، وخيارات استلام سهلة."
+    },
+    "packages": {
+      "eyebrow": "تجربة متكاملة",
+      "title": "باقات سفر مختارة",
+      "description": "تجارب سفر كاملة تشمل الرحلات والإقامة والمزيد. وفر الكثير مع عروض العطلات المجمعة لدينا."
+    },
+    "last_minute": {
+      "eyebrow": "جاهز للانطلاق؟",
+      "title": "عروض اللحظة الأخيرة",
+      "description": "هل أنت مسافر عفوي؟ احصل على عروضنا الحصرية للسفر في اللحظة الأخيرة وانطلق اليوم بتكلفة أقل بكثير."
+    }
   },
   "validation": {
     "name_required": "الاسم مطلوب",
@@ -1077,5 +1106,226 @@
     "filter_results": "تصفية النتائج",
     "loading_results": "جاري تحميل النتائج",
     "results_updated": "تم تحديث النتائج"
+  },
+  "contract": {
+    "role_client": "العميل",
+    "role_marketeer": "المسوِّق",
+    "role_service_provider": "مزود الخدمة",
+    "version": "الإصدار",
+    "show_other_lang": "عرض النسخة الإنجليزية",
+    "hide_other_lang": "إخفاء النسخة الإنجليزية",
+    "accept_label": "لقد قرأت العقد وأوافق على جميع الشروط والأحكام الواردة فيه.",
+    "sign_and_continue": "توقيع ومتابعة",
+    "signing": "جارٍ توقيع العقد...",
+    "signed_at": "تم التوقيع بتاريخ",
+    "not_signed": "لم يتم التوقيع بعد",
+    "view_signature": "عرض التوقيع",
+    "step_title_client": "توقيع عقد الخدمة",
+    "step_title_marketeer": "توقيع عقد الشراكة التسويقية",
+    "step_title_service_provider": "توقيع عقد تقديم الخدمات",
+    "step_subtitle": "يرجى قراءة العقد بعناية ثم التوقيع للمتابعة",
+    "error_sign_failed": "فشل حفظ التوقيع. الرجاء المحاولة مرة أخرى."
+  },
+  "signature": {
+    "label": "التوقيع",
+    "placeholder": "ارسم توقيعك هنا",
+    "hint": "استخدم الماوس أو اللمس لرسم توقيعك",
+    "clear": "مسح",
+    "captured": "تم الالتقاط",
+    "canvas_aria": "لوحة التوقيع"
+  },
+  "name_change": {
+    "allowed": "تغيير الاسم مسموح",
+    "not_allowed": "تغيير الاسم غير مسموح",
+    "fee_label": "رسوم تغيير الاسم",
+    "refundable": "قابل للاسترداد",
+    "non_refundable": "غير قابل للاسترداد",
+    "free": "مجاناً",
+    "allow_toggle": "السماح بتغيير اسم المسافر بعد الحجز",
+    "fee_input": "رسوم التغيير (ريال)",
+    "refundable_toggle": "الرسوم قابلة للاسترداد",
+    "request": "طلب تغيير الاسم"
+  },
+  "discount": {
+    "adult": "بالغ",
+    "child": "طفل (2-12 سنة)",
+    "infant": "رضيع (أقل من سنتين)",
+    "child_discount": "خصم الأطفال",
+    "infant_discount": "خصم الرضع",
+    "special_discount": "خصم خاص",
+    "special_label_ar": "تسمية الخصم (عربي)",
+    "special_label_en": "تسمية الخصم (إنجليزي)",
+    "percentage": "النسبة المئوية"
+  },
+  "bnpl": {
+    "installments_badge": "{count} أقساط بدون فوائد",
+    "split_into": "قسّم المبلغ على {count} دفعات",
+    "or_per_month": "أو {amount} × {count}",
+    "month": "شهر"
+  },
+  "ribbon": {
+    "best_value": "أفضل قيمة",
+    "cheapest": "الأرخص",
+    "fastest": "الأسرع"
+  },
+  "passport_hint": {
+    "title": "أدخل الأسماء تماماً كما في جواز السفر",
+    "description": "يجب أن يطابق الاسم الأول والأخير جواز سفر المسافر، بالأحرف اللاتينية فقط.",
+    "example": "مثال: AHMAD AL SAUDI",
+    "compact": "استخدم الأحرف اللاتينية كما في جواز السفر"
+  },
+  "payment": {
+    "trust_note": "دفع آمن",
+    "accepted": "وسائل الدفع المقبولة"
+  },
+  "phone_input": {
+    "pick_country": "اختر الدولة",
+    "search_country": "ابحث عن دولة أو رقم",
+    "no_matches": "لا توجد نتائج"
+  },
+  "hijri": {
+    "gregorian": "ميلادي",
+    "hijri": "هجري",
+    "day": "اليوم",
+    "month": "الشهر",
+    "year": "السنة",
+    "gregorian_label": "ميلادي",
+    "hijri_label": "هجري"
+  },
+  "age_category": {
+    "adult": "بالغ",
+    "adult_desc": "12 سنة فأكثر",
+    "child": "طفل",
+    "child_desc": "من 2 إلى 11 سنة",
+    "infant": "رضيع",
+    "infant_desc": "أقل من سنتين",
+    "total": "{count} مسافر",
+    "limits": "حد أقصى {max} في الحجز"
+  },
+  "sort_tabs": {
+    "price_asc": "الأرخص",
+    "price_desc": "الأعلى سعراً",
+    "fastest": "الأسرع",
+    "newest": "الأحدث",
+    "rating": "الأعلى تقييماً"
+  },
+  "fare_tier": {
+    "title": "اختر نوع التذكرة",
+    "subtitle": "اختر ما يناسبك",
+    "cabin_kg": "{kg} كجم حقيبة يد",
+    "checked_kg": "{kg} كجم حقيبة سفر",
+    "no_cabin": "بدون حقيبة يد",
+    "no_checked": "بدون حقيبة سفر",
+    "refundable": "قابلة للاسترداد",
+    "no_refund": "غير قابلة للاسترداد",
+    "changeable": "تعديل مجاني",
+    "no_change": "تعديل مع دفع رسوم",
+    "seat_selection": "اختيار المقعد مشمول",
+    "no_seat_selection": "اختيار المقعد إضافي",
+    "select": "اختر",
+    "selected": "مختار"
+  },
+  "luggage": {
+    "title": "الأمتعة",
+    "description": "وفّر الوقت والمال بشراء وزن إضافي مسبقاً.",
+    "cabin_bag": "حقيبة مقصورة {kg} كجم",
+    "checked_bag": "حقيبة سفر {kg} كجم",
+    "checked_bag_not_included": "أمتعة السفر غير مشمولة",
+    "included": "مشمول",
+    "not_included": "غير مشمول",
+    "add_extra": "أضف حقيبة سفر إضافية",
+    "per_bag": "{amount} {currency} لكل حقيبة",
+    "subtotal": "المجموع الفرعي: {amount} {currency}"
+  },
+  "book_for_other": {
+    "title": "أنا أحجز لشخص آخر",
+    "desc_on": "جهة الاتصال منفصلة عن بيانات المسافر",
+    "desc_off": "سأستخدم اسمي كمسافر رئيسي"
+  },
+  "checkout_sidebar": {
+    "total": "الإجمالي",
+    "ssl": "محمي بـ SSL",
+    "secure": "دفع آمن"
+  },
+  "guest_lookup": {
+    "title": "ابحث عن حجزك",
+    "subtitle": "أدخل البريد الإلكتروني ورقم الحجز للوصول إلى حجزك.",
+    "email_label": "البريد الإلكتروني",
+    "email_placeholder": "you@example.com",
+    "ref_label": "رقم الحجز",
+    "ref_placeholder": "مثال: 1234-5678",
+    "ref_hint": "تجده في رسالة التأكيد",
+    "fill_both": "الرجاء تعبئة الحقلين",
+    "not_found": "لم نجد حجزاً مطابقاً",
+    "generic_error": "حدث خطأ ما. الرجاء المحاولة مجدداً.",
+    "find_booking": "ابحث عن حجزي",
+    "searching": "جاري البحث..."
+  },
+  "price_strip": {
+    "prev_week": "الأسبوع السابق",
+    "next_week": "الأسبوع التالي",
+    "loading": "جاري تحميل الأسعار...",
+    "cheapest_hint": "اضغط على يوم لمقارنة الأسعار",
+    "from": "من {amount}"
+  },
+  "stale_search": {
+    "title": "لشه معانا؟",
+    "description": "الأسعار قد تتغير. قم بتحديث الصفحة لعرض أحدث الأسعار.",
+    "refresh": "تحديث النتائج",
+    "new_search": "ابدأ رحلة بحث جديدة"
+  },
+  "cross_sell": {
+    "title": "أكمل رحلتك",
+    "subtitle": "وفّر وقتك بحجز باقي رحلتك مع BookitFly",
+    "trip_title": "رحلات طيران",
+    "trip_desc": "اعثر على أفضل الرحلات إلى وجهتك",
+    "room_title": "إقامة",
+    "room_desc": "تصفّح الغرف في وجهتك",
+    "car_title": "تأجير سيارات",
+    "car_desc": "استلم سيارتك عند الوصول",
+    "package_title": "باقات",
+    "package_desc": "باقات جاهزة للرحلات الكاملة"
+  },
+  "currency": {
+    "change_currency": "تغيير عملة العرض"
+  },
+  "booking_success": {
+    "title": "تم تأكيد الحجز!",
+    "reference": "رقم الحجز",
+    "download_pdf": "تحميل خط السير (PDF)",
+    "email_sent": "تم إرسال رسالة التأكيد إلى {email}"
+  },
+  "check_in": {
+    "reminder_title": "يقترب موعد تسجيل الوصول",
+    "reminder_body_24h": "تقلع رحلتك بعد 24 ساعة. تذكّر تسجيل الوصول مع شركة الطيران.",
+    "reminder_body_3h": "تقلع رحلتك بعد 3 ساعات. الرجاء التوجه إلى المطار."
+  },
+  "loyalty": {
+    "label": "النقاط",
+    "earn_on_booking": "اكسب {points} نقطة بهذا الحجز",
+    "redeem_title": "استبدال النقاط",
+    "redeem_cta": "استخدم {points} نقطة"
+  },
+  "price_freeze": {
+    "title": "ثبّت السعر 48 ساعة",
+    "description": "ثبّت سعر اليوم بينما تفكّر. قابل للاسترداد إذا ألغيت.",
+    "cta": "ثبّت السعر مقابل {fee} {currency}",
+    "held_until": "السعر مثبّت حتى {date}"
+  },
+  "map_view": {
+    "list": "قائمة",
+    "map": "خريطة",
+    "toggle": "تبديل الخريطة"
+  },
+  "flex_destination": {
+    "title": "أي مكان",
+    "subtitle": "سنقترح عليك أفضل الوجهات ضمن ميزانيتك"
+  },
+  "saved_passengers": {
+    "title": "المسافرون المحفوظون",
+    "subtitle": "ملء الحقول من حجوزات سابقة",
+    "add_new": "أضف مسافراً جديداً",
+    "use_this": "استخدم هذا المسافر",
+    "confirm_delete": "هل تريد حذف المسافر المحفوظ؟"
   }
 }

@@ -22,6 +22,7 @@ import {
   X,
   CalendarIcon,
 } from 'lucide-react'
+import { NameChangePolicyCard } from '@/components/shared/name-change-policy-card'
 
 type FormData = z.infer<ReturnType<typeof getRoomSchema>>
 
@@ -51,6 +52,9 @@ export default function NewRoomPage() {
       instant_book: true,
       amenities: [],
       category: '',
+      name_change_allowed: false,
+      name_change_fee: 0,
+      name_change_is_refundable: true,
     },
   })
 
@@ -479,6 +483,17 @@ export default function NewRoomPage() {
             </label>
           )}
         </div>
+
+        {/* Name change policy */}
+        <NameChangePolicyCard
+          allowed={!!watch('name_change_allowed')}
+          onAllowedChange={(v) => setValue('name_change_allowed', v, { shouldDirty: true })}
+          fee={watch('name_change_fee') ?? 0}
+          onFeeChange={(v) => setValue('name_change_fee', v === '' ? 0 : v, { shouldDirty: true })}
+          refundable={watch('name_change_is_refundable') ?? true}
+          onRefundableChange={(v) => setValue('name_change_is_refundable', v, { shouldDirty: true })}
+          title={isAr ? 'سياسة تغيير اسم الضيف' : 'Guest name change policy'}
+        />
 
         {/* Submit */}
         <button

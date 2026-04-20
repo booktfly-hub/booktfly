@@ -206,6 +206,19 @@ export async function POST(request: NextRequest) {
         : undefined,
       description_ar: (formData.get('description_ar') as string) || undefined,
       description_en: (formData.get('description_en') as string) || undefined,
+      name_change_allowed: formData.get('name_change_allowed') === 'true',
+      name_change_fee: formData.get('name_change_fee') ? Number(formData.get('name_change_fee')) : undefined,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== 'false',
+      child_discount_percentage: formData.get('child_discount_percentage') ? Number(formData.get('child_discount_percentage')) : undefined,
+      infant_discount_percentage: formData.get('infant_discount_percentage') ? Number(formData.get('infant_discount_percentage')) : undefined,
+      special_discount_percentage: formData.get('special_discount_percentage') ? Number(formData.get('special_discount_percentage')) : undefined,
+      special_discount_label_ar: (formData.get('special_discount_label_ar') as string) || undefined,
+      special_discount_label_en: (formData.get('special_discount_label_en') as string) || undefined,
+      commission_rate_override: formData.get('commission_rate_override') ? Number(formData.get('commission_rate_override')) : undefined,
+      duration_minutes: formData.get('duration_minutes') ? Number(formData.get('duration_minutes')) : undefined,
+      fare_tiers: formData.get('fare_tiers')
+        ? JSON.parse(formData.get('fare_tiers') as string)
+        : undefined,
     }
 
     const flightRequestId = (formData.get('flight_request_id') as string) || null
@@ -274,6 +287,17 @@ export async function POST(request: NextRequest) {
         description_en: parsed.data.description_en || null,
         image_url: imageUrl,
         flight_request_id: flightRequestId,
+        name_change_allowed: parsed.data.name_change_allowed || false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
+        child_discount_percentage: parsed.data.child_discount_percentage ?? 0,
+        infant_discount_percentage: parsed.data.infant_discount_percentage ?? 0,
+        special_discount_percentage: parsed.data.special_discount_percentage ?? 0,
+        special_discount_label_ar: parsed.data.special_discount_label_ar || null,
+        special_discount_label_en: parsed.data.special_discount_label_en || null,
+        commission_rate_override: parsed.data.commission_rate_override ?? null,
+        duration_minutes: parsed.data.duration_minutes ?? null,
+        fare_tiers: parsed.data.fare_tiers ?? [],
         status: 'active',
       })
       .select()
