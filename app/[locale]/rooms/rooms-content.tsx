@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import {
   Search,
   SlidersHorizontal,
@@ -278,7 +278,7 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
               <span className="flex min-w-0 items-center gap-2 truncate">
                 <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
                 {validCheckInDate
-                  ? format(validCheckInDate, 'PPP', { locale: isAr ? arSA : enUS })
+                  ? format(validCheckInDate, 'PPP', { locale: enUS })
                   : t('rooms.filter_date')}
               </span>
               <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />

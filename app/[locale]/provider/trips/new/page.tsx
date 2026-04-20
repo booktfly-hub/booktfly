@@ -18,7 +18,7 @@ import { DEFAULT_SEAT_MAP_CONFIG, countSeatMapCapacity, normalizeSeatNumber, par
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO, startOfDay } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import {
   Loader2,
   ImageIcon,

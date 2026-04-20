@@ -118,7 +118,7 @@ export function Navbar() {
                       ? "text-warning hover:bg-warning/10"
                       : scrolled
                         ? "text-foreground hover:border-border hover:bg-muted"
-                        : "text-primary hover:bg-surface/80"
+                        : "text-white drop-shadow-sm hover:bg-white/20"
                 )}
               >
                 <Icon
@@ -128,7 +128,9 @@ export function Navbar() {
                       ? "text-white"
                       : highlight
                         ? "text-warning"
-                        : "text-primary"
+                        : scrolled
+                          ? "text-primary"
+                          : "text-white drop-shadow-sm"
                       )}
                 />
                 <span
@@ -147,8 +149,8 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex flex-nowrap items-center gap-1.5 sm:gap-6 min-w-0 shrink-0">
             <div className="hidden sm:flex items-center gap-1">
-               <LanguageSwitcher compact={desktopCompact} />
-               <CurrencySwitcher />
+               <LanguageSwitcher compact={desktopCompact} className={cn(scrolled ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "text-white drop-shadow-sm hover:bg-white/20")} />
+               <CurrencySwitcher className={cn(scrolled ? "hover:bg-muted text-foreground" : "text-white drop-shadow-sm hover:bg-white/20")} />
             </div>
 
             {loading ? (
@@ -176,26 +178,31 @@ export function Navbar() {
                         type="button"
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
                         className={cn(
-                          'flex items-center rounded-lg border border-border bg-surface p-1.5 shadow-sm transition-shadow hover:shadow-md',
+                          'flex items-center rounded-lg border p-1.5 shadow-sm transition-all hover:shadow-md',
+                          scrolled ? 'border-border bg-surface' : 'border-transparent bg-white/10 hover:bg-white/20',
                           desktopCompact ? 'gap-1 pe-1.5' : 'gap-2 pe-4'
                         )}
                         aria-expanded={userMenuOpen}
                         aria-controls={userMenuId}
                         aria-label={profile?.full_name || user.email || t('common.account')}
                       >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground shadow-sm">
+                        <div className={cn(
+                          "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-black shadow-sm transition-colors",
+                          scrolled ? "bg-primary text-primary-foreground" : "bg-white text-primary"
+                        )}>
                           {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </div>
                         <span
                           className={cn(
-                            'hidden overflow-hidden whitespace-nowrap text-sm font-bold text-primary transition-[max-width,opacity,margin] duration-300 lg:inline-block',
+                            'hidden overflow-hidden whitespace-nowrap text-sm font-bold transition-[max-width,opacity,margin] duration-300 lg:inline-block',
+                            scrolled ? 'text-primary' : 'text-white drop-shadow-sm',
                             desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-[120px] opacity-100'
                           )}
                           aria-hidden={desktopCompact}
                         >
                           {profile?.full_name || user.email}
                         </span>
-                        <ChevronDown className={cn("h-4 w-4 text-primary transition-transform duration-300", userMenuOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", scrolled ? "text-primary" : "text-white", userMenuOpen && "rotate-180")} />
                       </button>
 
                       {userMenuOpen && (
@@ -265,7 +272,8 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/login`}
                       className={cn(
-                        'inline-flex shrink-0 rounded-xl text-slate-700 transition-colors whitespace-nowrap hover:bg-slate-100',
+                        'inline-flex shrink-0 rounded-xl transition-colors whitespace-nowrap',
+                        scrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-white drop-shadow-sm hover:bg-white/20',
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -274,7 +282,8 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/signup`}
                       className={cn(
-                        'shrink-0 rounded-lg bg-primary text-primary-foreground shadow-sm transition-colors whitespace-nowrap hover:bg-primary/90',
+                        'shrink-0 rounded-lg shadow-sm transition-colors whitespace-nowrap',
+                        scrolled ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-white text-primary hover:bg-white/90',
                         isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
                       )}
                     >
@@ -288,7 +297,7 @@ export function Navbar() {
             {/* Mobile hamburger */}
             <button
               type="button"
-              className="md:hidden shrink-0 self-center rounded-lg p-2 transition-colors hover:bg-muted"
+              className={cn("md:hidden shrink-0 self-center rounded-lg p-2 transition-colors", scrolled ? "hover:bg-muted" : "hover:bg-white/20")}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
@@ -322,11 +331,11 @@ export function Navbar() {
                       isActive
                         ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                         : highlight
-                          ? 'border-warning/20 bg-warning/10 text-warning'
+                          ? 'border-orange-200 bg-orange-50 text-orange-700'
                           : 'border-border bg-muted text-foreground hover:bg-surface'
                     )}
                   >
-                    <Icon className={cn('h-4 w-4', isActive ? 'text-primary-foreground' : highlight ? 'text-warning' : 'text-primary')} />
+                    <Icon className={cn('h-4 w-4', isActive ? 'text-primary-foreground' : highlight ? 'text-orange-600' : 'text-primary')} />
                     {label}
                   </Link>
                   )

@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocale, useTranslations } from 'next-intl'
 import { z } from 'zod'
 import { format } from 'date-fns'
-import { arSA } from 'date-fns/locale'
 import Link from 'next/link'
 import { getFlightRequestSchema } from '@/lib/validations'
 import { FLIGHT_REQUEST_STATUS_COLORS, TRIP_REQUEST_OFFER_STATUS_COLORS } from '@/lib/constants'
@@ -89,11 +88,9 @@ function DatePickerField({
         )}
         aria-invalid={hasError || undefined}
       >
-        <span>
-          {selected
-            ? format(selected, 'PPP', { locale: isAr ? arSA : undefined })
-            : placeholder}
-        </span>
+                <span>
+                  {selected ? format(selected, 'PPP') : placeholder}
+                </span>
         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align={isAr ? 'end' : 'start'}>
@@ -107,7 +104,6 @@ function DatePickerField({
             }
           }}
           disabled={disabled}
-          locale={isAr ? arSA : undefined}
           captionLayout="dropdown"
           autoFocus
         />

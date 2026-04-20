@@ -41,12 +41,12 @@ export function CurrencySwitcher({ className }: { className?: string }) {
   }
 
   return (
-    <div className={cn('relative', className)}>
+    <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t('change_currency')}
-        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold hover:bg-muted"
+        className={cn("inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors", className || "hover:bg-muted text-foreground")}
       >
         <DollarSign className="h-3 w-3" />
         {cur}

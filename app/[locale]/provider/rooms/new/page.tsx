@@ -15,7 +15,7 @@ import { ROOM_CATEGORIES, ROOM_AMENITIES } from '@/lib/constants'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, isValid, parseISO } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import {
   Loader2,
   ImageIcon,
