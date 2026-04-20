@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PhoneInput } from '@/components/shared/phone-input'
 
 type FormData = z.infer<ReturnType<typeof getProviderApplicationSchema>>
 
@@ -137,6 +138,7 @@ export default function ApplyProviderPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    control,
   } = useForm<FormData>({
     resolver: zodResolver(getProviderApplicationSchema(locale)),
     defaultValues: {
@@ -273,7 +275,13 @@ export default function ApplyProviderPage() {
         title: t('application_received'),
         variant: 'success',
       })
-      router.push(`/${locale}/become-provider/status`)
+      // After saving the application, route to contract-signing step before status
+      const applicationId = result?.data?.id
+      if (applicationId) {
+        router.push(`/${locale}/become-provider/sign-contract/${applicationId}`)
+      } else {
+        router.push(`/${locale}/become-provider/status`)
+      }
     } catch (error) {
       const message =
         error instanceof Error && error.message
@@ -488,12 +496,17 @@ export default function ApplyProviderPage() {
                   <label className="text-sm font-semibold block mb-2 flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" /> {tc('phone')} <span className="text-destructive">*</span>
                   </label>
-                  <input
-                    type="tel"
-                    {...register('contact_phone')}
-                    dir="ltr"
-                    className="w-full border-2 border-border/50 rounded-xl px-4 py-3 text-sm bg-background transition-colors focus:outline-none focus:ring-0 focus:border-primary hover:border-primary/30"
-                    placeholder="+1234567890"
+                  <Controller
+                    name="contact_phone"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        defaultIso="SA"
+                        error={!!errors.contact_phone}
+                      />
+                    )}
                   />
                   {errors.contact_phone && (
                     <p className="text-destructive text-xs mt-1.5 font-medium">{errors.contact_phone.message}</p>

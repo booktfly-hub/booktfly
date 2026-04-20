@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { TripCard } from '@/components/trips/trip-card'
 import { EmptyState } from '@/components/shared/empty-state'
+import { CategoryHero } from '@/components/shared/category-hero'
 import type { Trip } from '@/types'
 import { Loader2, Flame, Users, ArrowLeftRight, CheckCircle2 } from 'lucide-react'
 
@@ -32,7 +33,7 @@ interface LastMinuteContentProps {
 }
 
 export function LastMinuteContent({ initialTrips, initialHasMore }: LastMinuteContentProps) {
-  const t = useTranslations('lastMinute')
+  const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [trips, setTrips] = useState<Trip[]>(initialTrips)
@@ -82,15 +83,20 @@ export function LastMinuteContent({ initialTrips, initialHasMore }: LastMinuteCo
   }
 
   return (
-    <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-200">
-          <Flame className="h-5 w-5 text-orange-500" />
-          <span className="text-sm font-bold text-orange-700">{t('badge')}</span>
+    <>
+      <CategoryHero
+        eyebrow={t('category_heroes.last_minute.eyebrow')}
+        title={t('category_heroes.last_minute.title')}
+        description={t('category_heroes.last_minute.description')}
+        image="https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&w=2400&q=85"
+      />
+      <div className="min-h-screen -mt-20 pt-0 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 relative z-20">
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-200">
+            <Flame className="h-5 w-5 text-orange-500" />
+            <span className="text-sm font-bold text-orange-700">{t('lastMinute.badge')}</span>
+          </div>
         </div>
-        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('title')}</h1>
-        <p className="text-slate-500 text-lg max-w-md mx-auto">{t('subtitle')}</p>
-      </div>
 
       {/* Preferences prompt */}
       <div className="max-w-xl mx-auto rounded-2xl border border-orange-100 bg-orange-50/60 p-5 space-y-4">
@@ -174,5 +180,6 @@ export function LastMinuteContent({ initialTrips, initialHasMore }: LastMinuteCo
         </div>
       )}
     </div>
+    </>
   )
 }

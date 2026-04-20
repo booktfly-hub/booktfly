@@ -391,7 +391,9 @@
     "occupancy": "Occupancy",
     "no_activity": "No recent activity",
     "live": "LIVE",
-    "of_previous": "of previous stage"
+    "of_previous": "of previous stage",
+    "templates": "Templates",
+    "contract_events": "Contract Log"
   },
   "status": {
     "active": "Active",
@@ -541,6 +543,33 @@
     "flight_request_cta_point2": "Receive price offers from verified providers",
     "flight_request_cta_point3": "Choose the best offer and book directly",
     "flight_request_cta_button": "Request Your Trip Now"
+  },
+  "category_heroes": {
+    "trips": {
+      "eyebrow": "Explore the Skies",
+      "title": "Unbeatable Flight Deals",
+      "description": "Book flights from top providers across the kingdom. Best prices, instant confirmation, and flexible travel options."
+    },
+    "rooms": {
+      "eyebrow": "Stay in Style",
+      "title": "Comfortable Stays & Resorts",
+      "description": "Find the perfect room for your next trip. From luxury hotels to cozy apartments, we've got you covered."
+    },
+    "cars": {
+      "eyebrow": "Hit the Road",
+      "title": "Flexible Car Rentals",
+      "description": "Rent the perfect car for your journey. Wide range of vehicles, competitive prices, and easy pickup options."
+    },
+    "packages": {
+      "eyebrow": "All-in-One",
+      "title": "Curated Travel Packages",
+      "description": "Complete travel experiences including flights, stays, and more. Save big with our bundled holiday deals."
+    },
+    "last_minute": {
+      "eyebrow": "Ready to Go?",
+      "title": "Last Minute Travel Deals",
+      "description": "Spontaneous traveler? Grab our exclusive last-minute offers and fly today for much less."
+    }
   },
   "validation": {
     "name_required": "Name is required",
@@ -1077,5 +1106,226 @@
     "filter_results": "Filter results",
     "loading_results": "Loading results",
     "results_updated": "Results updated"
+  },
+  "contract": {
+    "role_client": "Client",
+    "role_marketeer": "Marketer",
+    "role_service_provider": "Service Provider",
+    "version": "Version",
+    "show_other_lang": "Show Arabic version",
+    "hide_other_lang": "Hide Arabic version",
+    "accept_label": "I have read this contract and agree to all its terms and conditions.",
+    "sign_and_continue": "Sign and continue",
+    "signing": "Signing contract...",
+    "signed_at": "Signed at",
+    "not_signed": "Not signed yet",
+    "view_signature": "View signature",
+    "step_title_client": "Sign Service Agreement",
+    "step_title_marketeer": "Sign Marketing Partnership",
+    "step_title_service_provider": "Sign Service Provider Contract",
+    "step_subtitle": "Please read the contract carefully, then sign to continue",
+    "error_sign_failed": "Failed to save signature. Please try again."
+  },
+  "signature": {
+    "label": "Signature",
+    "placeholder": "Draw your signature here",
+    "hint": "Use mouse or touch to draw your signature",
+    "clear": "Clear",
+    "captured": "Captured",
+    "canvas_aria": "Signature pad"
+  },
+  "name_change": {
+    "allowed": "Name change allowed",
+    "not_allowed": "Name change not allowed",
+    "fee_label": "Name change fee",
+    "refundable": "Refundable",
+    "non_refundable": "Non-refundable",
+    "free": "Free",
+    "allow_toggle": "Allow passenger name change after booking",
+    "fee_input": "Change fee (SAR)",
+    "refundable_toggle": "Fee is refundable",
+    "request": "Request name change"
+  },
+  "discount": {
+    "adult": "Adult",
+    "child": "Child (2-12)",
+    "infant": "Infant (<2)",
+    "child_discount": "Child discount",
+    "infant_discount": "Infant discount",
+    "special_discount": "Special discount",
+    "special_label_ar": "Discount label (Arabic)",
+    "special_label_en": "Discount label (English)",
+    "percentage": "Percentage"
+  },
+  "bnpl": {
+    "installments_badge": "{count}× no interest",
+    "split_into": "Split into {count} payments",
+    "or_per_month": "or {amount} × {count}",
+    "month": "mo"
+  },
+  "ribbon": {
+    "best_value": "Best Value",
+    "cheapest": "Cheapest",
+    "fastest": "Fastest"
+  },
+  "passport_hint": {
+    "title": "Enter names exactly as on passport",
+    "description": "First and last names must match the traveler's passport, in Latin letters only.",
+    "example": "Example: AHMAD AL SAUDI",
+    "compact": "Use passport-exact Latin letters only"
+  },
+  "payment": {
+    "trust_note": "Secure payment",
+    "accepted": "Accepted payment methods"
+  },
+  "phone_input": {
+    "pick_country": "Pick country",
+    "search_country": "Search country or code",
+    "no_matches": "No matching countries"
+  },
+  "hijri": {
+    "gregorian": "Gregorian",
+    "hijri": "Hijri",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "gregorian_label": "Gregorian",
+    "hijri_label": "Hijri"
+  },
+  "age_category": {
+    "adult": "Adult",
+    "adult_desc": "12+ years",
+    "child": "Child",
+    "child_desc": "2–11 years",
+    "infant": "Infant",
+    "infant_desc": "Under 2 years",
+    "total": "{count} passenger(s)",
+    "limits": "Max {max} per booking"
+  },
+  "sort_tabs": {
+    "price_asc": "Cheapest",
+    "price_desc": "Highest price",
+    "fastest": "Fastest",
+    "newest": "Newest",
+    "rating": "Top rated"
+  },
+  "fare_tier": {
+    "title": "Choose your fare",
+    "subtitle": "Select what matters most to you",
+    "cabin_kg": "{kg} kg cabin",
+    "checked_kg": "{kg} kg checked",
+    "no_cabin": "No cabin bag",
+    "no_checked": "No checked bag",
+    "refundable": "Refundable",
+    "no_refund": "Non-refundable",
+    "changeable": "Free changes",
+    "no_change": "Changes with fee",
+    "seat_selection": "Seat choice included",
+    "no_seat_selection": "Seat choice extra",
+    "select": "Select",
+    "selected": "Selected"
+  },
+  "luggage": {
+    "title": "Baggage",
+    "description": "Save time and money by buying extra weight in advance.",
+    "cabin_bag": "{kg} kg cabin bag",
+    "checked_bag": "{kg} kg checked bag",
+    "checked_bag_not_included": "Checked luggage not included",
+    "included": "Included",
+    "not_included": "Not included",
+    "add_extra": "Add extra checked bag",
+    "per_bag": "{amount} {currency} per bag",
+    "subtotal": "Subtotal: {amount} {currency}"
+  },
+  "book_for_other": {
+    "title": "I'm booking for someone else",
+    "desc_on": "Booker contact is separate from the passenger",
+    "desc_off": "I'll use my name as the lead passenger"
+  },
+  "checkout_sidebar": {
+    "total": "Total",
+    "ssl": "SSL secured",
+    "secure": "Safe checkout"
+  },
+  "guest_lookup": {
+    "title": "Look up a booking",
+    "subtitle": "Enter the email and reference we sent you to access your booking.",
+    "email_label": "Email",
+    "email_placeholder": "you@example.com",
+    "ref_label": "Booking reference",
+    "ref_placeholder": "e.g. 1234-5678",
+    "ref_hint": "Find it in your confirmation email",
+    "fill_both": "Please fill in both fields",
+    "not_found": "We couldn't find a booking matching those details",
+    "generic_error": "Something went wrong. Please try again.",
+    "find_booking": "Find my booking",
+    "searching": "Searching..."
+  },
+  "price_strip": {
+    "prev_week": "Previous week",
+    "next_week": "Next week",
+    "loading": "Loading prices...",
+    "cheapest_hint": "Tap a day to compare prices",
+    "from": "from {amount}"
+  },
+  "stale_search": {
+    "title": "Still browsing?",
+    "description": "Prices may have changed since you last checked. Refresh to see the latest.",
+    "refresh": "Refresh results",
+    "new_search": "Start a new search"
+  },
+  "cross_sell": {
+    "title": "Complete your trip",
+    "subtitle": "Save time by booking the rest of your trip with BookitFly",
+    "trip_title": "Flights",
+    "trip_desc": "Find the best flights to your destination",
+    "room_title": "Stay",
+    "room_desc": "Browse rooms at your destination",
+    "car_title": "Car rental",
+    "car_desc": "Pick up a car on arrival",
+    "package_title": "Packages",
+    "package_desc": "Ready-made bundles for complete trips"
+  },
+  "currency": {
+    "change_currency": "Change display currency"
+  },
+  "booking_success": {
+    "title": "Booking confirmed!",
+    "reference": "Booking reference",
+    "download_pdf": "Download itinerary (PDF)",
+    "email_sent": "A confirmation email has been sent to {email}"
+  },
+  "check_in": {
+    "reminder_title": "Online check-in opens soon",
+    "reminder_body_24h": "Your flight departs in 24 hours. Remember to check in online with the airline.",
+    "reminder_body_3h": "Your flight departs in 3 hours. Please head to the airport."
+  },
+  "loyalty": {
+    "label": "Points",
+    "earn_on_booking": "Earn {points} points with this booking",
+    "redeem_title": "Redeem points",
+    "redeem_cta": "Use {points} pts"
+  },
+  "price_freeze": {
+    "title": "Hold this price for 48 hours",
+    "description": "Secure today's price while you decide. Refundable if you cancel the hold.",
+    "cta": "Hold for {fee} {currency}",
+    "held_until": "Price held until {date}"
+  },
+  "map_view": {
+    "list": "List",
+    "map": "Map",
+    "toggle": "Toggle map"
+  },
+  "flex_destination": {
+    "title": "Anywhere",
+    "subtitle": "We'll suggest top destinations in your budget"
+  },
+  "saved_passengers": {
+    "title": "Saved travelers",
+    "subtitle": "Autofill details from past bookings",
+    "add_new": "Add new traveler",
+    "use_this": "Use this traveler",
+    "confirm_delete": "Remove saved traveler?"
   }
 }

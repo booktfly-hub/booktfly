@@ -126,6 +126,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       pickup_hour_to: (formData.get('pickup_hour_to') as string) || existingCar.pickup_hour_to,
       return_hour_from: (formData.get('return_hour_from') as string) || existingCar.return_hour_from,
       return_hour_to: (formData.get('return_hour_to') as string) || existingCar.return_hour_to,
+      name_change_allowed: formData.get('name_change_allowed') !== null
+        ? formData.get('name_change_allowed') === 'true'
+        : existingCar.name_change_allowed,
+      name_change_fee: formData.get('name_change_fee') !== null
+        ? Number(formData.get('name_change_fee'))
+        : existingCar.name_change_fee,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== null
+        ? formData.get('name_change_is_refundable') === 'true'
+        : existingCar.name_change_is_refundable,
     }
 
     const parsed = carSchema.safeParse(rawData)
@@ -214,6 +223,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         pickup_hour_to: parsed.data.pickup_hour_to || null,
         return_hour_from: parsed.data.return_hour_from || null,
         return_hour_to: parsed.data.return_hour_to || null,
+        name_change_allowed: parsed.data.name_change_allowed ?? false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

@@ -81,6 +81,39 @@ export function getTripSchema(locale: Locale = 'ar') {
     seat_map_config: seatMapConfigSchema.optional(),
     description_ar: z.string().optional(),
     description_en: z.string().optional(),
+    // Name-change policy
+    name_change_allowed: z.boolean().optional(),
+    name_change_fee: z.number().min(0).optional(),
+    name_change_is_refundable: z.boolean().optional(),
+    // Age-based and special discounts
+    child_discount_percentage: z.number().min(0).max(100).optional(),
+    infant_discount_percentage: z.number().min(0).max(100).optional(),
+    special_discount_percentage: z.number().min(0).max(100).optional(),
+    special_discount_label_ar: z.string().optional(),
+    special_discount_label_en: z.string().optional(),
+    // Admin-only per-trip commission override
+    commission_rate_override: z.number().min(0).max(50).optional(),
+    // Familiarity upgrades (P0-6 fare tiers + P3-29 map view geocoords)
+    fare_tiers: z.array(z.object({
+      code: z.string().min(1),
+      name_ar: z.string().min(1),
+      name_en: z.string().min(1),
+      price: z.number().min(0),
+      cabin_kg: z.number().min(0).nullable().optional(),
+      checked_kg: z.number().min(0).nullable().optional(),
+      refundable: z.boolean().optional(),
+      changeable: z.boolean().optional(),
+      seat_selection: z.boolean().optional(),
+      badge_ar: z.string().nullable().optional(),
+      badge_en: z.string().nullable().optional(),
+      description_ar: z.string().nullable().optional(),
+      description_en: z.string().nullable().optional(),
+    })).optional(),
+    duration_minutes: z.number().int().min(15).max(2880).optional(),
+    origin_lat: z.number().min(-90).max(90).nullable().optional(),
+    origin_lon: z.number().min(-180).max(180).nullable().optional(),
+    destination_lat: z.number().min(-90).max(90).nullable().optional(),
+    destination_lon: z.number().min(-180).max(180).nullable().optional(),
   })
 }
 
@@ -93,6 +126,7 @@ export const passengerSchema = z.object({
   id_number: z.string().min(4, 'ID/Passport number is required').regex(/^[a-zA-Z0-9]+$/, 'Please enter ID number in English only'),
   id_expiry_date: z.string().min(1, 'ID expiry date is required'),
   seat_number: z.string().regex(/^\d+[A-Z]$/, 'Invalid seat number').optional(),
+  age_category: z.enum(['adult', 'child', 'infant']).optional(),
 })
 
 export const bookingContactSchema = z.object({
@@ -149,6 +183,9 @@ export function getRoomSchema(locale: Locale = 'ar') {
     instant_book: z.boolean(),
     available_from: z.string().optional(),
     available_to: z.string().optional(),
+    name_change_allowed: z.boolean().optional(),
+    name_change_fee: z.number().min(0).optional(),
+    name_change_is_refundable: z.boolean().optional(),
   })
 }
 
@@ -226,6 +263,9 @@ export function getCarSchema(locale: Locale = 'ar') {
     pickup_hour_to: z.string().optional(),
     return_hour_from: z.string().optional(),
     return_hour_to: z.string().optional(),
+    name_change_allowed: z.boolean().optional(),
+    name_change_fee: z.number().min(0).optional(),
+    name_change_is_refundable: z.boolean().optional(),
   })
 }
 
@@ -306,6 +346,9 @@ export function getPackageSchema(locale: Locale = 'ar') {
     start_date: z.string().optional(),
     end_date: z.string().optional(),
     max_bookings: z.number().min(1).optional(),
+    name_change_allowed: z.boolean().optional(),
+    name_change_fee: z.number().min(0).optional(),
+    name_change_is_refundable: z.boolean().optional(),
   })
 }
 

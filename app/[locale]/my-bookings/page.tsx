@@ -17,8 +17,10 @@ import {
 } from 'lucide-react'
 import { capitalizeFirst, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
+import { ContractPill } from '@/components/bookings/contract-pill'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
+import { GuestBookingLookup } from '@/components/auth/guest-booking-lookup'
 import type { Booking, RoomBooking, CarBooking, PackageBooking } from '@/types'
 
 type BuyerBookingItem =
@@ -78,12 +80,16 @@ export default function MyBookingsPage() {
           ))}
         </div>
       ) : bookings.length === 0 ? (
-        <EmptyState
-          icon={Ticket}
-          message={t('booking.no_bookings')}
-          actionLabel={t('nav.browse_trips')}
-          actionHref={`/${locale}/trips`}
-        />
+        <div className="space-y-6">
+          <EmptyState
+            icon={Ticket}
+            message={t('booking.no_bookings')}
+            actionLabel={t('nav.browse_trips')}
+            actionHref={`/${locale}/trips`}
+          />
+          {/* Guest lookup fallback — P1-18 */}
+          <GuestBookingLookup />
+        </div>
       ) : (
         <div className="space-y-4">
           {bookings.map(({ kind, item }) => {
@@ -139,7 +145,14 @@ export default function MyBookingsPage() {
                       </span>
                       <span>{createdDate}</span>
                     </div>
-                    <BookingStatusBadge status={item.status} />
+                    <div className="flex items-center gap-2">
+                      <ContractPill
+                        signedAt={(item as Booking | RoomBooking | CarBooking | PackageBooking).contract_signed_at}
+                        targetType={isPackage ? 'package_booking' : isCar ? 'car_booking' : isRoom ? 'room_booking' : 'booking'}
+                        bookingId={item.id}
+                      />
+                      <BookingStatusBadge status={item.status} />
+                    </div>
                   </div>
 
                   {trip && (

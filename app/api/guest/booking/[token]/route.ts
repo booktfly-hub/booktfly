@@ -11,7 +11,7 @@ export async function GET(
 
     const { data: booking } = await supabaseAdmin
       .from('bookings')
-      .select('id, passenger_name, passenger_email, seats_count, total_amount, status, transfer_receipt_url, booking_type, price_per_seat, created_at, trip:trips(airline, origin_city_en, origin_city_ar, destination_city_en, destination_city_ar, departure_at, return_at, cabin_class)')
+      .select('id, passenger_name, passenger_email, seats_count, total_amount, status, transfer_receipt_url, booking_type, price_per_seat, contract_signed_at, buyer_signature_url, created_at, trip:trips(airline, origin_city_en, origin_city_ar, destination_city_en, destination_city_ar, departure_at, return_at, cabin_class)')
       .eq('guest_token', token)
       .single()
 

@@ -180,6 +180,9 @@ export async function POST(request: NextRequest) {
       instant_book: formData.get('instant_book') === 'true',
       available_from: (formData.get('available_from') as string) || undefined,
       available_to: (formData.get('available_to') as string) || undefined,
+      name_change_allowed: formData.get('name_change_allowed') === 'true',
+      name_change_fee: formData.get('name_change_fee') ? Number(formData.get('name_change_fee')) : undefined,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== 'false',
     }
 
     const parsed = roomSchema.safeParse(rawData)
@@ -237,6 +240,9 @@ export async function POST(request: NextRequest) {
         instant_book: parsed.data.instant_book ?? false,
         available_from: parsed.data.available_from || null,
         available_to: parsed.data.available_to || null,
+        name_change_allowed: parsed.data.name_change_allowed ?? false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
         status: 'active',
       })
       .select()

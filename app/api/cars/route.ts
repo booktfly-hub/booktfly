@@ -209,6 +209,9 @@ export async function POST(request: NextRequest) {
       pickup_hour_to: (formData.get('pickup_hour_to') as string) || undefined,
       return_hour_from: (formData.get('return_hour_from') as string) || undefined,
       return_hour_to: (formData.get('return_hour_to') as string) || undefined,
+      name_change_allowed: formData.get('name_change_allowed') === 'true',
+      name_change_fee: formData.get('name_change_fee') ? Number(formData.get('name_change_fee')) : undefined,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== 'false',
     }
 
     const parsed = carSchema.safeParse(rawData)
@@ -281,6 +284,9 @@ export async function POST(request: NextRequest) {
         pickup_hour_to: parsed.data.pickup_hour_to || null,
         return_hour_from: parsed.data.return_hour_from || null,
         return_hour_to: parsed.data.return_hour_to || null,
+        name_change_allowed: parsed.data.name_change_allowed ?? false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
         status: 'active',
       })
       .select()

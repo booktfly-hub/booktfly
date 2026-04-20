@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { toast } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils'
 import { CABIN_CLASSES, CAR_CATEGORIES } from '@/lib/constants'
+import { NameChangePolicyCard } from '@/components/shared/name-change-policy-card'
 import type { Package, Trip, Room, Car } from '@/types'
 import {
   Loader2,
@@ -55,6 +56,11 @@ export default function EditPackagePage() {
   const [includesFlight, setIncludesFlight] = useState(false)
   const [includesHotel, setIncludesHotel] = useState(false)
   const [includesCar, setIncludesCar] = useState(false)
+
+  // Name-change policy
+  const [nameChangeAllowed, setNameChangeAllowed] = useState(false)
+  const [nameChangeFee, setNameChangeFee] = useState<number | ''>(0)
+  const [nameChangeRefundable, setNameChangeRefundable] = useState(true)
 
   // Flight
   const [flightMode, setFlightMode] = useState<'existing' | 'manual'>('existing')
@@ -139,6 +145,10 @@ export default function EditPackagePage() {
         setIncludesFlight(p.includes_flight)
         setIncludesHotel(p.includes_hotel)
         setIncludesCar(p.includes_car)
+
+        setNameChangeAllowed(p.name_change_allowed ?? false)
+        setNameChangeFee(p.name_change_fee ?? 0)
+        setNameChangeRefundable(p.name_change_is_refundable ?? true)
 
         if (p.trip_id) {
           setFlightMode('existing')
@@ -326,6 +336,9 @@ export default function EditPackagePage() {
       if (maxBookings) formData.append('max_bookings', String(maxBookings))
       if (startDate) formData.append('start_date', startDate)
       if (endDate) formData.append('end_date', endDate)
+      formData.append('name_change_allowed', String(nameChangeAllowed))
+      formData.append('name_change_fee', String(nameChangeFee === '' ? 0 : nameChangeFee))
+      formData.append('name_change_is_refundable', String(nameChangeRefundable))
 
       formData.append('existing_images', JSON.stringify(existingImages))
       newImageFiles.forEach(file => {
@@ -914,6 +927,16 @@ export default function EditPackagePage() {
             </label>
           )}
         </div>
+
+        <NameChangePolicyCard
+          allowed={nameChangeAllowed}
+          onAllowedChange={setNameChangeAllowed}
+          fee={nameChangeFee}
+          onFeeChange={setNameChangeFee}
+          refundable={nameChangeRefundable}
+          onRefundableChange={setNameChangeRefundable}
+          title={isAr ? 'سياسة تغيير اسم المسافر الرئيسي' : 'Lead traveler name change policy'}
+        />
 
         <button
           type="submit"

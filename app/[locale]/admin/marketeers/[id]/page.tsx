@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import type { MarkeeteerApplication } from '@/types'
 import { ArrowRight, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { SignatureDisplay } from '@/components/admin/signature-display'
 
 export default function AdminMarkeeteerDetail() {
   const { id } = useParams<{ id: string }>()
@@ -106,6 +107,19 @@ export default function AdminMarkeeteerDetail() {
               <p className="font-medium" dir={f.ltr ? 'ltr' : undefined}>{f.value}</p>
             </div>
           ))}
+        </div>
+
+        <div>
+          <h3 className="font-semibold mb-3">{t('contract.step_title_marketeer')}</h3>
+          <SignatureDisplay
+            signatureUrl={app.signature_url}
+            signedAt={app.contract_signed_at}
+            version={app.contract_version}
+            role="marketeer"
+            printTargetType="marketeer_application"
+            printTargetId={app.id}
+            archiveUrl={app.contract_archive_url}
+          />
         </div>
 
         {app.admin_comment && (

@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/components/ui/toaster'
 import { BOOKING_STATUS_COLORS } from '@/lib/constants'
 import { ArrowRight, RotateCcw, XCircle, Check, X } from 'lucide-react'
+import { SignatureDisplay } from '@/components/admin/signature-display'
 import { shortId } from '@/lib/utils'
 
 export default function AdminBookingDetail() {
@@ -91,6 +92,20 @@ export default function AdminBookingDetail() {
             <div><p className="text-muted-foreground">{t('trips.departure')}</p><p className="font-medium">{new Date(booking.trip?.departure_at).toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US')}</p></div>
             <div><p className="text-muted-foreground">{t('admin.providers')}</p><p className="font-medium">{booking.provider?.company_name_ar}</p></div>
           </div>
+        </div>
+
+        {/* Signed Contract */}
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-semibold mb-3">{t('contract.step_title_client')}</h3>
+          <SignatureDisplay
+            signatureUrl={booking.buyer_signature_url}
+            signedAt={booking.contract_signed_at}
+            version={booking.contract_version}
+            role="client"
+            printTargetType="booking"
+            printTargetId={booking.id}
+            archiveUrl={booking.contract_archive_url}
+          />
         </div>
 
         {/* Passenger */}

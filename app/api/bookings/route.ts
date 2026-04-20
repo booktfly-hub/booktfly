@@ -109,7 +109,41 @@ export async function POST(request: NextRequest) {
     const effectivePrice = (trip.trip_type === 'round_trip' && booking_type === 'one_way' && trip.price_per_seat_one_way)
       ? trip.price_per_seat_one_way
       : trip.price_per_seat
-    const totalAmount = effectivePrice * requestedSeatsCount
+
+    // Age-based + special discount pricing — infers per-passenger price.
+    const childPct = Number(trip.child_discount_percentage ?? 0)
+    const infantPct = Number(trip.infant_discount_percentage ?? 0)
+    const specialPct = Number(trip.special_discount_percentage ?? 0)
+    type AgeCategory = 'adult' | 'child' | 'infant'
+    const categories: AgeCategory[] = normalizedPassengers.map((p) => {
+      const pc = (p as unknown as { age_category?: AgeCategory }).age_category
+      return pc === 'child' || pc === 'infant' ? pc : 'adult'
+    })
+    // Fill remaining (seat count > passengers) with adult
+    while (categories.length < requestedSeatsCount) categories.push('adult')
+    const categoryPrice = (cat: AgeCategory) => {
+      const baseDiscount = cat === 'child' ? childPct : cat === 'infant' ? infantPct : 0
+      const combinedPct = Math.min(100, baseDiscount + specialPct)
+      return effectivePrice * (1 - combinedPct / 100)
+    }
+    const lineItems = categories.map((cat) => ({ age_category: cat, unit_price: categoryPrice(cat) }))
+    const totalAmount = lineItems.reduce((sum, it) => sum + it.unit_price, 0)
+
+    // Average price_per_seat kept for backwards-compat on bookings.price_per_seat
+    const blendedPrice = requestedSeatsCount > 0 ? totalAmount / requestedSeatsCount : effectivePrice
+    const priceBreakdown = {
+      base_price_per_seat: effectivePrice,
+      child_discount_percentage: childPct,
+      infant_discount_percentage: infantPct,
+      special_discount_percentage: specialPct,
+      counts: {
+        adult: categories.filter((c) => c === 'adult').length,
+        child: categories.filter((c) => c === 'child').length,
+        infant: categories.filter((c) => c === 'infant').length,
+      },
+      line_items: lineItems,
+      total: totalAmount,
+    }
     const commissionAmount = (totalAmount * commissionRate) / 100
     const providerPayout = totalAmount - commissionAmount
     const bookingId = crypto.randomUUID()
@@ -129,8 +163,9 @@ export async function POST(request: NextRequest) {
         passengers: normalizedPassengers || null,
         booking_type,
         seats_count: requestedSeatsCount,
-        price_per_seat: effectivePrice,
+        price_per_seat: blendedPrice,
         total_amount: totalAmount,
+        price_breakdown: priceBreakdown,
         commission_rate: commissionRate,
         commission_amount: commissionAmount,
         provider_payout: providerPayout,

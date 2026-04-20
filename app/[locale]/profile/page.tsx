@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, Calendar, Lock, Check, LayoutDashboard, BadgeCheck, ShieldCheck, Star, Copy, CheckCheck, Users, Gift } from 'lucide-react'
+import { User, Mail, Calendar, Lock, Check, LayoutDashboard, BadgeCheck, ShieldCheck, Star, Copy, CheckCheck, Users, Gift } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { ProfileSignatureSection } from '@/components/profile/profile-signature-section'
+import { PhoneInput } from '@/components/shared/phone-input'
 
 export default function ProfilePage() {
   const t = useTranslations()
@@ -296,17 +298,7 @@ export default function ProfilePage() {
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">
               {t('profile.phone')}
             </label>
-            <div className="relative">
-              <Phone className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isAr ? "right-3" : "left-3")} />
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={cn(
-                  "w-full rounded-xl border bg-background px-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all",
-                )}
-              />
-            </div>
+            <PhoneInput value={phone} onChange={setPhone} defaultIso="SA" />
           </div>
 
           {error && (
@@ -341,6 +333,8 @@ export default function ProfilePage() {
           </div>
         </form>
       </div>
+
+      <ProfileSignatureSection initialSignatureUrl={profile.signature_url ?? null} />
     </div>
   )
 }

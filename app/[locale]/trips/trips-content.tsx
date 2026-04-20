@@ -19,9 +19,15 @@ import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SortTabs, type SortKey } from '@/components/trips/sort-tabs'
+import { PriceStrip } from '@/components/trips/price-strip'
+import { computeRibbons } from '@/components/ui/ribbon-badge'
+import { StaleSearchModal } from '@/components/ui/stale-search-modal'
+import { CategoryHero } from '@/components/shared/category-hero'
 import type { Trip } from '@/types'
+import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
-import { arSA, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 
 type Filters = {
   origin: string
@@ -69,6 +75,19 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(initialTotalPages)
+
+  // Compute ribbon badges (best-value / cheapest / fastest) from the currently rendered set
+  const tripRibbons = useMemo(
+    () =>
+      computeRibbons(
+        trips.map((tr) => ({
+          id: tr.id,
+          price: tr.price_per_seat,
+          duration_minutes: tr.duration_minutes ?? null,
+        })),
+      ),
+    [trips],
+  )
 
   const [filters, setFilters] = useState<Filters>({ ...emptyFilters, ...initialFilters })
   const [showFilters, setShowFilters] = useState(false)
@@ -228,9 +247,16 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
     'w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border-none text-slate-700 text-sm md:text-base font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-colors hover:bg-slate-100'
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 md:pt-32 md:pb-16 lg:pt-36 lg:pb-20 animate-fade-in-up">
-      {/* Main Search Bar */}
-      <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
+    <>
+      <CategoryHero
+        eyebrow={t('category_heroes.trips.eyebrow')}
+        title={t('category_heroes.trips.title')}
+        description={t('category_heroes.trips.description')}
+        image="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+        {/* Main Search Bar */}
+        <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
 
         {/* Row 1: Origin & Destination */}
         <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
@@ -426,6 +452,52 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
         </div>
       )}
 
+      {/* 7-day price strip under search (P0-2) */}
+      {filters.origin && filters.destination && (
+        <div className="mb-4">
+          <PriceStrip
+            originCode={filters.origin}
+            destinationCode={filters.destination}
+            cabinClass={filters.cabin_class || undefined}
+            selectedDate={departureDate}
+            onDateSelect={(d) => updateFilter('date_from', format(d, 'yyyy-MM-dd'))}
+          />
+        </div>
+      )}
+
+      {/* Sort tabs (P1-17) */}
+      {!loading && trips.length > 0 && (
+        <div className="mb-4">
+          <SortTabs
+            value={(filters.sort as SortKey) || 'newest'}
+            onChange={(k) => updateFilter('sort', k)}
+            previews={{
+              price_asc: {
+                price: trips.reduce((min, tr) => Math.min(min, tr.price_per_seat), trips[0]?.price_per_seat ?? 0),
+                currency: trips[0]?.currency,
+              },
+              fastest: (() => {
+                const withDur = trips.filter((tr) => tr.duration_minutes && tr.duration_minutes > 0)
+                if (!withDur.length) return undefined
+                return { durationMin: withDur.reduce((min, tr) => Math.min(min, tr.duration_minutes!), withDur[0].duration_minutes!) }
+              })(),
+              rating: (() => {
+                const rated = trips.filter((tr) => tr.provider?.avg_rating && tr.provider.avg_rating > 0)
+                if (!rated.length) return undefined
+                const top = rated.reduce((a, b) => ((a.provider!.avg_rating || 0) >= (b.provider!.avg_rating || 0) ? a : b))
+                return { rating: top.provider?.avg_rating ?? 0 }
+              })(),
+            }}
+          />
+        </div>
+      )}
+
+      {/* Stale-search modal (P2-26) */}
+      <StaleSearchModal
+        onRefresh={() => fetchTrips(1)}
+        onNewSearch={() => clearFilters()}
+      />
+
       {/* Results Count */}
       {!loading && trips.length > 0 && (
         <div className="mb-4" role="status" aria-live="polite">
@@ -456,7 +528,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {trips.map((trip, idx) => (
               <div key={trip.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}>
-                <TripCard trip={trip} />
+                <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
               </div>
             ))}
           </div>
@@ -476,5 +548,6 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
         </>
       )}
     </div>
+    </>
   )
 }

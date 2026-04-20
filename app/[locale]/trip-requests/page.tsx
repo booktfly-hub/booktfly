@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { PhoneInput } from '@/components/shared/phone-input'
 import {
   PlaneTakeoff,
   Send,
@@ -355,7 +356,18 @@ export default function TripRequestsPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_phone')}</Label>
-                  <Input {...register('phone')} type="tel" aria-invalid={!!errors.phone} />
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        defaultIso="SA"
+                        error={!!errors.phone}
+                      />
+                    )}
+                  />
                   {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
                 </div>
                 <div className="space-y-1.5">

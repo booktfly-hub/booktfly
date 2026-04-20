@@ -3,12 +3,14 @@
 import { useTranslations } from 'next-intl'
 import { ShieldCheck, Lock, RefreshCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PaymentLogosRow } from '@/components/ui/payment-logos'
 
 interface TrustBadgesProps {
   className?: string
+  showPayments?: boolean
 }
 
-export function TrustBadges({ className }: TrustBadgesProps) {
+export function TrustBadges({ className, showPayments = true }: TrustBadgesProps) {
   const t = useTranslations('booking_flow')
 
   const badges = [
@@ -18,7 +20,7 @@ export function TrustBadges({ className }: TrustBadgesProps) {
   ]
 
   return (
-    <div className={cn('rounded-lg border border-border bg-muted/30 p-3', className)}>
+    <div className={cn('rounded-lg border border-border bg-muted/30 p-3 space-y-3', className)}>
       <div className="flex flex-wrap items-center justify-center gap-4">
         {badges.map((badge) => (
           <div key={badge.label} className="flex items-center gap-1.5">
@@ -27,6 +29,9 @@ export function TrustBadges({ className }: TrustBadgesProps) {
           </div>
         ))}
       </div>
+      {showPayments && (
+        <PaymentLogosRow className="justify-center" dense />
+      )}
     </div>
   )
 }

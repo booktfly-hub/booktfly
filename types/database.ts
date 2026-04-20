@@ -134,6 +134,9 @@ export type NotificationType =
   | 'package_removed'
   | 'price_alert_triggered'
   | 'new_review'
+  | 'contract_signed'
+  | 'name_change_requested'
+  | 'name_change_approved'
 
 export type Profile = {
   id: string
@@ -145,8 +148,62 @@ export type Profile = {
   locale: string
   referral_code: string | null
   referred_by: string | null
+  signature_url: string | null
   created_at: string
   updated_at: string
+}
+
+export type PassengerAgeCategory = 'adult' | 'child' | 'infant'
+
+export type ContractRole = 'client' | 'marketeer' | 'service_provider'
+
+export type SiteVisit = {
+  id: string
+  session_id: string
+  path: string
+  country: string | null
+  city: string | null
+  region: string | null
+  ip_hash: string | null
+  user_agent: string | null
+  user_id: string | null
+  referrer: string | null
+  created_at: string
+}
+
+export type EmailTemplate = {
+  id: string
+  slug: string
+  subject_ar: string
+  subject_en: string
+  body_html_ar: string
+  body_html_en: string
+  body_text_ar: string | null
+  body_text_en: string | null
+  variables: string[]
+  enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type WhatsappTemplate = {
+  id: string
+  slug: string
+  body_ar: string
+  body_en: string
+  variables: string[]
+  enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type TripPriceHistory = {
+  id: string
+  trip_id: string
+  old_price: number | null
+  new_price: number
+  changed_by: string | null
+  changed_at: string
 }
 
 export type ProviderApplication = {
@@ -165,6 +222,10 @@ export type ProviderApplication = {
   doc_civil_aviation_url: string | null
   doc_iata_permit_url: string | null
   terms_accepted_at: string
+  signature_url: string | null
+  contract_signed_at: string | null
+  contract_version: string | null
+  contract_archive_url: string | null
   status: ApplicationStatus
   admin_comment: string | null
   reviewed_by: string | null
@@ -237,12 +298,96 @@ export type Trip = {
   original_price: number | null
   discount_percentage: number
   flight_request_id: string | null
+  name_change_allowed: boolean
+  name_change_fee: number
+  name_change_is_refundable: boolean
+  child_discount_percentage: number
+  infant_discount_percentage: number
+  special_discount_percentage: number
+  special_discount_label_ar: string | null
+  special_discount_label_en: string | null
+  commission_rate_override: number | null
+  // Added by familiarity-upgrades migration
+  fare_tiers: FareTier[] | null
+  duration_minutes: number | null
+  origin_lat: number | null
+  origin_lon: number | null
+  destination_lat: number | null
+  destination_lon: number | null
   status: TripStatus
   removed_reason: string | null
   removed_by: string | null
   created_at: string
   updated_at: string
   provider?: Provider
+}
+
+export type FareTier = {
+  code: string
+  name_ar: string
+  name_en: string
+  price: number
+  cabin_kg?: number | null
+  checked_kg?: number | null
+  refundable?: boolean
+  changeable?: boolean
+  seat_selection?: boolean
+  badge_ar?: string | null
+  badge_en?: string | null
+  description_ar?: string | null
+  description_en?: string | null
+}
+
+export type SavedPassenger = {
+  id: string
+  user_id: string
+  label: string | null
+  first_name: string
+  last_name: string
+  date_of_birth: string
+  nationality_iso: string | null
+  id_number: string
+  id_expiry_date: string
+  is_self: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type LoyaltyWallet = {
+  user_id: string
+  balance_points: number
+  lifetime_points: number
+  tier: 'silver' | 'gold' | 'platinum'
+  updated_at: string
+}
+
+export type LoyaltyTransaction = {
+  id: string
+  user_id: string
+  kind: 'earn' | 'redeem' | 'adjustment' | 'expire'
+  points: number
+  booking_id: string | null
+  booking_kind: string | null
+  description: string | null
+  created_at: string
+}
+
+export type PriceFreeze = {
+  id: string
+  user_id: string | null
+  guest_email: string | null
+  trip_id: string | null
+  room_id: string | null
+  car_id: string | null
+  package_id: string | null
+  frozen_price: number
+  currency: string
+  fee_paid: number
+  expires_at: string
+  consumed_at: string | null
+  booking_id: string | null
+  refunded_at: string | null
+  created_at: string
 }
 
 export type Booking = {
@@ -277,6 +422,21 @@ export type Booking = {
   cancelled_at: string | null
   cancelled_by: string | null
   admin_notes: string | null
+  buyer_signature_url: string | null
+  contract_signed_at: string | null
+  contract_version: string | null
+  contract_archive_url: string | null
+  name_change_count: number
+  name_change_fee_paid: number
+  price_breakdown: Record<string, unknown> | null
+  // Added by familiarity-upgrades migration
+  reference_code: string
+  selected_fare_tier: string | null
+  extra_checked_bags: number
+  extra_bag_fee: number
+  booked_for_other: boolean
+  checkin_reminder_24h_sent_at: string | null
+  checkin_reminder_3h_sent_at: string | null
   created_at: string
   updated_at: string
   trip?: Trip
@@ -380,7 +540,13 @@ export type WithdrawalRequest = {
   provider?: Provider
 }
 
-export type Room = {
+export type NameChangePolicy = {
+  name_change_allowed: boolean
+  name_change_fee: number
+  name_change_is_refundable: boolean
+}
+
+export type Room = NameChangePolicy & {
   id: string
   provider_id: string
   name_ar: string
@@ -411,7 +577,14 @@ export type Room = {
   provider?: Provider
 }
 
-export type RoomBooking = {
+type BookingSigningFields = {
+  buyer_signature_url: string | null
+  contract_signed_at: string | null
+  contract_version: string | null
+  contract_archive_url: string | null
+}
+
+export type RoomBooking = BookingSigningFields & {
   id: string
   room_id: string
   buyer_id: string | null
@@ -476,6 +649,10 @@ export type MarkeeteerApplication = {
   phone_alt: string | null
   email: string
   national_address: string
+  signature_url: string | null
+  contract_signed_at: string | null
+  contract_version: string | null
+  contract_archive_url: string | null
   status: ApplicationStatus
   admin_comment: string | null
   reviewed_by: string | null
@@ -601,7 +778,7 @@ export type AdminAlert = {
 export type PickupReturnType = 'airport' | 'branch'
 export type ReturnLocationType = 'same_location' | 'airport' | 'branch'
 
-export type Car = {
+export type Car = NameChangePolicy & {
   id: string
   provider_id: string
   brand_ar: string
@@ -647,7 +824,7 @@ export type Car = {
   provider?: Provider
 }
 
-export type CarBooking = {
+export type CarBooking = BookingSigningFields & {
   id: string
   car_id: string
   buyer_id: string | null
@@ -686,7 +863,7 @@ export type CarBooking = {
   buyer?: Profile
 }
 
-export type Package = {
+export type Package = NameChangePolicy & {
   id: string
   provider_id: string
   name_ar: string
@@ -755,7 +932,7 @@ export type Package = {
   car?: Car
 }
 
-export type PackageBooking = {
+export type PackageBooking = BookingSigningFields & {
   id: string
   package_id: string
   buyer_id: string | null

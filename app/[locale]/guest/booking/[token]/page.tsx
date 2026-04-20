@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { Plane, Upload, Loader2, CheckCircle2, Clock, XCircle, Building2, CreditCard } from 'lucide-react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { ClientContractStep } from '@/components/checkout/client-contract-step'
 
 type BookingData = {
   booking: {
@@ -17,6 +18,8 @@ type BookingData = {
     transfer_receipt_url: string | null
     booking_type: string
     price_per_seat: number
+    contract_signed_at: string | null
+    buyer_signature_url: string | null
     created_at: string
     trip: {
       airline: string
@@ -117,6 +120,19 @@ export default function GuestBookingPage() {
   const isConfirmed = booking.status === 'confirmed'
   const isPending = booking.status === 'payment_processing'
   const hasReceipt = !!booking.transfer_receipt_url
+
+  // Guest must sign the client contract before seeing payment details
+  if (isPending && !booking.contract_signed_at) {
+    return (
+      <ClientContractStep
+        bookingId={booking.id}
+        guestToken={token}
+        onSigned={() => {
+          fetch(`/api/guest/booking/${token}`).then(r => r.json()).then(d => { if (!d.error) setData(d) })
+        }}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4">

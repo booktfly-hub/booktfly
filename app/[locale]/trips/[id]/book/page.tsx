@@ -29,6 +29,7 @@ import {
   CalendarIcon,
   ScanLine,
   ImagePlus,
+  Users,
 } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { MAX_SEATS_PER_BOOKING } from '@/lib/constants'
@@ -43,7 +44,17 @@ import { normalizeSeatNumber } from '@/lib/seat-map'
 import { ProgressStepper } from '@/components/bookings/progress-stepper'
 import { TrustBadges } from '@/components/bookings/trust-badges'
 import { PriceBreakdown } from '@/components/bookings/price-breakdown'
-import type { Trip } from '@/types'
+import { BookForOtherToggle } from '@/components/bookings/book-for-other-toggle'
+import { LuggageAddonPanel } from '@/components/bookings/luggage-addon-panel'
+import { SavedPassengersPicker } from '@/components/shared/saved-passengers-picker'
+import { FareTierSelector } from '@/components/trips/fare-tier-selector'
+import { PassengerCategoryPicker, type PassengerCounts } from '@/components/shared/passenger-category-picker'
+import { PassportNameHint } from '@/components/ui/passport-name-hint'
+import { PhoneInput } from '@/components/shared/phone-input'
+import { PriceFreezeButton } from '@/components/bookings/price-freeze-button'
+import { LoyaltyBadge } from '@/components/shared/loyalty-badge'
+import { HijriDatePicker } from '@/components/shared/hijri-date-picker'
+import type { Trip, FareTier, SavedPassenger } from '@/types'
 
 type PassengerFormData = z.infer<typeof passengerSchema>
 type BookingContactFormData = z.infer<typeof bookingContactSchema>
@@ -94,6 +105,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const initialSeatsCount = parseInt(searchParams.get('seats') || '1', 10)
   const initialBookingType = searchParams.get('bookingType') === 'one_way' ? 'one_way' : 'round_trip'
   const [seatsCount, setSeatsCount] = useState(initialSeatsCount)
+  // New familiarity upgrade state
+  const [bookingForOther, setBookingForOther] = useState(false)
+  const [extraCheckedBags, setExtraCheckedBags] = useState(0)
+  const [selectedFareTier, setSelectedFareTier] = useState<string | null>(null)
+  const [passengerCounts, setPassengerCounts] = useState<PassengerCounts>({ adults: initialSeatsCount, children: 0, infants: 0 })
   const [bookingType] = useState<'round_trip' | 'one_way'>(initialBookingType)
   const [bookingStep, setBookingStep] = useState<'details' | 'seats'>('details')
   const [scanningIndex, setScanningIndex] = useState<number | null>(null)
@@ -132,6 +148,10 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     control,
     name: 'passengers',
   })
+
+  const [passengerAgeCategories, setPassengerAgeCategories] = useState<Record<number, 'adult' | 'child' | 'infant'>>({})
+  const setAgeCategory = (index: number, cat: 'adult' | 'child' | 'infant') =>
+    setPassengerAgeCategories((cur) => ({ ...cur, [index]: cat }))
 
   const seatMapEnabled = Boolean(trip?.seat_map_enabled && trip?.seat_map_config)
   const desiredPassengerCount = seatMapEnabled
@@ -410,6 +430,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       const enrichedPassengers = data.passengers.map((passenger, index) => ({
         ...passenger,
         seat_number: selectedSeatNumbers[index],
+        age_category: passengerAgeCategories[index] ?? 'adult',
       }))
       const firstPassenger = enrichedPassengers[0]
       const res = await fetch('/api/bookings', {
@@ -548,6 +569,54 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
           {/* Booking form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8" id="booking-form">
             {(!seatMapEnabled || bookingStep === 'details') && (<>
+
+            {/* Fare tier selector (P0-6) */}
+            {trip.fare_tiers && trip.fare_tiers.length > 0 && (
+              <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                <FareTierSelector
+                  tiers={trip.fare_tiers as FareTier[]}
+                  value={selectedFareTier}
+                  onChange={setSelectedFareTier}
+                  currency={trip.currency}
+                />
+              </div>
+            )}
+
+            {/* Passenger age-category picker (P0-8) */}
+            <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-3 text-lg font-black text-slate-900">
+                {isAr ? 'عدد المسافرين' : 'Passengers'}
+              </h3>
+              <PassengerCategoryPicker
+                value={passengerCounts}
+                onChange={(c) => {
+                  setPassengerCounts(c)
+                  setSeatsCount(c.adults + c.children + c.infants)
+                }}
+                maxTotal={MAX_SEATS_PER_BOOKING}
+              />
+            </div>
+
+            {/* Book-for-other toggle (P1-15) */}
+            <BookForOtherToggle value={bookingForOther} onChange={setBookingForOther} />
+
+            {/* Luggage add-on panel (P1-13) */}
+            <LuggageAddonPanel
+              cabinKg={trip.cabin_baggage_kg ?? 7}
+              checkedKg={trip.checked_baggage_kg}
+              extraBags={extraCheckedBags}
+              onChange={setExtraCheckedBags}
+              currency={trip.currency}
+            />
+
+            {/* Price freeze + loyalty strip (P3-27, P3-28) */}
+            <div className="grid gap-3 md:grid-cols-2">
+              <PriceFreezeButton tripId={trip.id} price={trip.price_per_seat * seatsCount} currency={trip.currency} />
+              <div className="rounded-xl border border-border bg-card p-3 flex items-center gap-2">
+                <LoyaltyBadge estimatedEarn={Math.floor((trip.price_per_seat * seatsCount) / 10)} />
+              </div>
+            </div>
+
             <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="mb-6 flex items-center gap-2 md:gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -570,12 +639,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     {isAr ? 'رقم الجوال' : 'Phone Number'}
                     <span className="text-destructive">*</span>
                   </label>
-                  <input
-                    {...register('contact.phone')}
-                    type="tel"
-                    dir="ltr"
-                    className={cn(inputClass, 'font-mono font-medium', errors.contact?.phone && errorInputClass)}
-                    placeholder="+966 50 000 0000"
+                  {/* Intl phone input (P0-3b) */}
+                  <PhoneInput
+                    value={watch('contact.phone') as string | null | undefined}
+                    onChange={(e164) => setValue('contact.phone', e164, { shouldValidate: true })}
+                    error={!!errors.contact?.phone}
                   />
                   {errors.contact?.phone && (
                     <p className="text-xs font-bold text-destructive mt-1">{errors.contact.phone.message}</p>
@@ -619,10 +687,18 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                      )}
                    </div>
                 </div>
-                <div className="mb-4 md:mb-5 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-xs md:text-sm font-semibold text-amber-700">
-                  <ShieldCheck className="h-4 w-4 shrink-0" />
-                  {isAr ? 'يرجى إدخال جميع بيانات المسافر باللغة الإنجليزية كما في جواز السفر' : 'Please enter all passenger details in English as shown on the passport'}
-                </div>
+                {/* Passport hint + saved passengers picker (P0-10 + P2-22) */}
+                <PassportNameHint variant="expanded" className="mb-4 md:mb-5" />
+                <SavedPassengersPicker
+                  className="mb-4"
+                  onSelect={(p: SavedPassenger) => {
+                    setValue(`passengers.${index}.first_name`, p.first_name)
+                    setValue(`passengers.${index}.last_name`, p.last_name)
+                    setValue(`passengers.${index}.date_of_birth`, p.date_of_birth)
+                    setValue(`passengers.${index}.id_number`, p.id_number)
+                    setValue(`passengers.${index}.id_expiry_date`, p.id_expiry_date)
+                  }}
+                />
 
                 <div className="mb-6 md:mb-8">
                   <input
@@ -729,17 +805,12 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                           </span>
                           <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <DateCalendar
-                            mode="single"
-                            captionLayout="dropdown"
-                            startMonth={new Date(1920, 0)}
-                            endMonth={new Date()}
-                            defaultMonth={parseDateValue(watch(`passengers.${index}.date_of_birth`)) || new Date(2000, 0)}
-                            selected={parseDateValue(watch(`passengers.${index}.date_of_birth`))}
-                            onSelect={(date) => setValue(`passengers.${index}.date_of_birth`, date ? format(date, 'yyyy-MM-dd') : '', { shouldValidate: true, shouldDirty: true })}
-                            disabled={(date) => date > new Date()}
-                            autoFocus
+                        <PopoverContent className="w-auto p-3" align="start">
+                          {/* Hijri-aware DOB picker (P0-1) */}
+                          <HijriDatePicker
+                            value={parseDateValue(watch(`passengers.${index}.date_of_birth`))}
+                            onChange={(date) => setValue(`passengers.${index}.date_of_birth`, date ? format(date, 'yyyy-MM-dd') : '', { shouldValidate: true, shouldDirty: true })}
+                            maxDate={new Date()}
                           />
                         </PopoverContent>
                       </Popover>
@@ -806,6 +877,38 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                       {errors.passengers?.[index]?.id_expiry_date && (
                         <p className="text-xs font-bold text-destructive mt-1">{errors.passengers[index].id_expiry_date.message}</p>
                       )}
+                    </div>
+
+                    {/* Age category — drives per-passenger discounts */}
+                    <div className="space-y-1.5 md:space-y-2 sm:col-span-2">
+                      <label className={labelClass}>
+                        <Users className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                        {isAr ? 'فئة العمر' : 'Age category'}
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['adult', 'child', 'infant'] as const).map((cat) => {
+                          const selected = (passengerAgeCategories[index] ?? 'adult') === cat
+                          const label = cat === 'adult' ? t('discount.adult') : cat === 'child' ? t('discount.child') : t('discount.infant')
+                          const pctKey = cat === 'child' ? 'child_discount_percentage' : cat === 'infant' ? 'infant_discount_percentage' : null
+                          const pct = pctKey ? Number(trip[pctKey as 'child_discount_percentage' | 'infant_discount_percentage'] ?? 0) : 0
+                          return (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setAgeCategory(index, cat)}
+                              className={cn(
+                                'rounded-xl border px-3 py-2 text-xs font-bold transition-colors text-center',
+                                selected
+                                  ? 'border-primary bg-primary text-white shadow-sm'
+                                  : 'border-slate-200 bg-white hover:border-primary/40'
+                              )}
+                            >
+                              <span className="block">{label}</span>
+                              {pct > 0 && <span className="block text-[10px] font-semibold opacity-70">−{pct}%</span>}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
                 </div>
               </div>

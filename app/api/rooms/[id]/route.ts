@@ -113,6 +113,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : existingRoom.instant_book,
       available_from: (formData.get('available_from') as string) || existingRoom.available_from,
       available_to: (formData.get('available_to') as string) || existingRoom.available_to,
+      name_change_allowed: formData.get('name_change_allowed') !== null
+        ? formData.get('name_change_allowed') === 'true'
+        : existingRoom.name_change_allowed,
+      name_change_fee: formData.get('name_change_fee') !== null
+        ? Number(formData.get('name_change_fee'))
+        : existingRoom.name_change_fee,
+      name_change_is_refundable: formData.get('name_change_is_refundable') !== null
+        ? formData.get('name_change_is_refundable') === 'true'
+        : existingRoom.name_change_is_refundable,
     }
 
     const parsed = roomSchema.safeParse(rawData)
@@ -172,6 +181,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         instant_book: parsed.data.instant_book ?? false,
         available_from: parsed.data.available_from || null,
         available_to: parsed.data.available_to || null,
+        name_change_allowed: parsed.data.name_change_allowed ?? false,
+        name_change_fee: parsed.data.name_change_fee ?? 0,
+        name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

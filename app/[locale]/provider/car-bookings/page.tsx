@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { BOOKING_STATUS_COLORS } from '@/lib/constants'
 import type { BookingStatus } from '@/types'
 import { CarFront, Loader2, Filter } from 'lucide-react'
+import { ContractPill } from '@/components/bookings/contract-pill'
 
 type CarBookingRow = {
   id: string
@@ -17,6 +18,7 @@ type CarBookingRow = {
   pickup_date: string
   status: string
   created_at: string
+  contract_signed_at: string | null
   car: { brand_ar: string; brand_en: string | null; model_ar: string; model_en: string | null } | null
 }
 
@@ -112,6 +114,7 @@ export default function ProviderCarBookingsPage() {
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('total')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'حصتك' : 'Your Payout'}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('status')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'العقد' : 'Contract'}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('date')}</th>
                 </tr>
               </thead>
@@ -134,6 +137,9 @@ export default function ProviderCarBookingsPage() {
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${BOOKING_STATUS_COLORS[b.status]}`}>
                           {t(`status.${b.status}`)}
                         </span>
+                      </td>
+                      <td className="p-5">
+                        <ContractPill signedAt={b.contract_signed_at} targetType="car_booking" bookingId={b.id} />
                       </td>
                       <td className="p-5 text-slate-500">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
                     </tr>

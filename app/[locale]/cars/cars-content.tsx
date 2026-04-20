@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useCallback, useRef, useState } from 'react'
+import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import {
   Search, SlidersHorizontal, X, Car, ChevronDown, Loader2,
-  Users, ArrowUpDown, Fuel, Gauge, CalendarIcon, Plane, Building, ArrowRightLeft,
+  ArrowUpDown, Fuel, Gauge, CalendarIcon, Plane, Building, ArrowRightLeft,
 } from 'lucide-react'
 import { format, isValid, parseISO } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { CarCard } from '@/components/cars/car-card'
+import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CategoryHero } from '@/components/shared/category-hero'
 
 type Filters = {
   city: string
@@ -55,6 +57,10 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
   const isAr = locale === 'ar'
 
   const [cars, setCars] = useState<CarType[]>(initialCars)
+  const carRibbons = useMemo(
+    () => computeRibbons(cars.map((c) => ({ id: c.id, price: c.price_per_day, duration_minutes: null }))),
+    [cars],
+  )
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -150,13 +156,16 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
   ].filter(Boolean) as string[]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 md:pt-32 md:pb-16 lg:pt-36 lg:pb-20 animate-fade-in-up">
-      <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight mb-3 md:mb-4">{t('cars.title')}</h1>
-        <p className="text-base md:text-lg text-slate-500 font-medium px-4">{t('cars.subtitle')}</p>
-      </div>
-
-      <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
+    <>
+      <CategoryHero
+        eyebrow={t('category_heroes.cars.eyebrow')}
+        title={t('category_heroes.cars.title')}
+        description={t('category_heroes.cars.description')}
+        image="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2400&q=85"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+        {/* Main Search Bar */}
+        <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
         {/* Row 1: Pickup Location */}
         <div className="space-y-3 mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
@@ -337,7 +346,7 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {cars.map((car, idx) => (<div key={car.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}><CarCard car={car} /></div>))}
+            {cars.map((car, idx) => (<div key={car.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}><CarCard car={car} ribbon={carRibbons.get(car.id)} /></div>))}
           </div>
           {page < totalPages && (
             <div className="flex justify-center mt-12 md:mt-16">
@@ -350,5 +359,6 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
         </>
       )}
     </div>
+    </>
   )
 }

@@ -31,7 +31,10 @@ import { ReviewList } from '@/components/reviews/review-list'
 import { Breadcrumbs } from '@/components/shared/breadcrumbs'
 import { PriceAlertButton } from '@/components/trips/price-alert-button'
 import { TripDirectionIndicator } from '@/components/trips/trip-direction-indicator'
-import type { Trip } from '@/types'
+import { NameChangeBadge } from '@/components/trips/trip-pricing-policy-card'
+import { FlightDetailSheet } from '@/components/trips/flight-detail-sheet'
+import { FareTierSelector } from '@/components/trips/fare-tier-selector'
+import type { Trip, FareTier } from '@/types'
 
 export default function TripDetailClient({ params }: { params: Promise<{ id: string, locale: string }> }) {
   const t = useTranslations()
@@ -45,6 +48,8 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const [loading, setLoading] = useState(true)
   const [seatsCount, setSeatsCount] = useState(1)
   const [bookingType, setBookingType] = useState<'round_trip' | 'one_way'>('round_trip')
+  const [showDetailSheet, setShowDetailSheet] = useState(false)
+  const [previewFareTier, setPreviewFareTier] = useState<string | null>(null)
 
   const Back = isAr ? ChevronRight : ChevronLeft
 
@@ -347,6 +352,23 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
             </div>
           )}
 
+          {/* Fare tier preview (P0-6) — read-only preview; selection happens on booking page */}
+          {trip.fare_tiers && trip.fare_tiers.length > 0 && (
+            <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+              <FareTierSelector
+                tiers={trip.fare_tiers as FareTier[]}
+                value={previewFareTier}
+                onChange={setPreviewFareTier}
+                currency={trip.currency}
+              />
+              <p className="mt-3 text-xs font-medium text-slate-500">
+                {isAr
+                  ? 'سيتم تأكيد فئة التذكرة عند الحجز.'
+                  : 'Your fare will be confirmed on the booking page.'}
+              </p>
+            </div>
+          )}
+
         </div>
 
         {/* Sidebar: Booking section (Desktop) */}
@@ -355,6 +377,27 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
             <div className="border-b border-slate-200 bg-[linear-gradient(180deg,#0f172a_0%,#111827_100%)] p-8 text-white">
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-slate-400">{t('trips.price_per_seat')}</p>
               <p className="text-4xl font-black tracking-tight">{fmt(selectedPrice)}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <NameChangeBadge
+                  allowed={trip.name_change_allowed}
+                  fee={Number(trip.name_change_fee)}
+                  refundable={trip.name_change_is_refundable}
+                  currency={trip.currency}
+                />
+                {trip.special_discount_percentage > 0 && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 border border-amber-100">
+                    <Sparkles className="h-3 w-3" />
+                    {(isAr ? trip.special_discount_label_ar : trip.special_discount_label_en) || t('discount.special_discount')} −{trip.special_discount_percentage}%
+                  </div>
+                )}
+                {(trip.child_discount_percentage > 0 || trip.infant_discount_percentage > 0) && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 border border-sky-100">
+                    {trip.child_discount_percentage > 0 && <span>{t('discount.child')} −{trip.child_discount_percentage}%</span>}
+                    {trip.child_discount_percentage > 0 && trip.infant_discount_percentage > 0 && <span>·</span>}
+                    {trip.infant_discount_percentage > 0 && <span>{t('discount.infant')} −{trip.infant_discount_percentage}%</span>}
+                  </div>
+                )}
+              </div>
               <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'نوع الحجز' : 'Booking Type'}</p>
                 <div className="grid grid-cols-2 gap-2">
@@ -520,10 +563,16 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
           </button>
         </div>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 p-4 pb-safe">
-            <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('trips.price_per_seat')}</span>
+            <button
+              type="button"
+              onClick={() => setShowDetailSheet(true)}
+              className="flex flex-col items-start text-start"
+            >
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest underline decoration-dotted">
+                  {isAr ? 'تفاصيل الرحلة' : 'Flight details'}
+                </span>
                 <span className="text-2xl font-black text-white">{fmt(selectedPrice)}</span>
-            </div>
+            </button>
 
             {isBookable ? (
                 <Link
@@ -544,6 +593,15 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
             )}
         </div>
     </div>
+
+    {/* Mobile flight detail bottom sheet (P1-16) */}
+    <FlightDetailSheet
+      trip={trip}
+      open={showDetailSheet}
+      onClose={() => setShowDetailSheet(false)}
+      primaryLabel={t('trips.book_now')}
+      onPrimary={() => router.push(`/${locale}/trips/${trip.id}/book?seats=${seatsCount}&bookingType=${bookingType}`)}
+    />
     </>
   )
 }

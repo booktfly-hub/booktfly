@@ -1,4 +1,4 @@
-import { getTranslations, getLocale } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { HeroSection } from '@/components/home/hero-section'
 import { LastMinuteDeals } from '@/components/home/last-minute-deals'
@@ -51,7 +51,7 @@ export default async function HomePage() {
   ])
 
   return (
-    <main className="overflow-x-hidden bg-[linear-gradient(180deg,#fffaf5_0%,#ffffff_26%,#f7fbff_58%,#fff8ef_100%)]">
+    <main className="overflow-x-hidden bg-background">
       <HeroSection locale={locale} />
 
       <FlightRequestSection />
@@ -70,18 +70,15 @@ export default async function HomePage() {
         locale={locale}
       />
 
-      <div className="relative">
-        <div className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-orange-100/40 blur-[110px]" />
+      <div className="relative border-y border-border bg-surface">
         <ValueProposition locale={locale} />
       </div>
 
-      <div className="relative">
-        <div className="pointer-events-none absolute right-0 top-10 h-80 w-80 rounded-full bg-sky-100/50 blur-[120px]" />
+      <div className="relative bg-background">
         <HowItWorks />
       </div>
 
-      <div className="relative">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-200 to-transparent" />
+      <div className="relative border-t border-border bg-surface">
         <Testimonials locale={locale} />
       </div>
 

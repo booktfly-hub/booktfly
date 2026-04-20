@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { cn, formatPrice, shortId } from '@/lib/utils'
 import { BOOKING_STATUS_COLORS } from '@/lib/constants'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
+import { ContractPill } from '@/components/bookings/contract-pill'
 import type { RoomBooking, BookingStatus } from '@/types'
 import {
   BedDouble,
@@ -133,6 +134,9 @@ export default function ProviderRoomBookingsPage() {
                     {tc('status')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
+                    {isAr ? 'العقد' : 'Contract'}
+                  </th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('date')}
                   </th>
                 </tr>
@@ -179,6 +183,9 @@ export default function ProviderRoomBookingsPage() {
                     </td>
                     <td className="p-5">
                       <BookingStatusBadge status={booking.status} />
+                    </td>
+                    <td className="p-5">
+                      <ContractPill signedAt={booking.contract_signed_at} targetType="room_booking" bookingId={booking.id} />
                     </td>
                     <td className="p-5 text-slate-500 text-xs">
                       {new Date(booking.created_at).toLocaleDateString(

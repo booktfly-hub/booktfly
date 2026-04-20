@@ -29,9 +29,9 @@ export function LastMinuteBadge({ discount, className, size = 'sm' }: LastMinute
   return (
     <div
       className={cn(
-        'inline-flex items-center font-bold rounded-full',
-        'bg-gradient-to-r from-orange-500 to-red-500 text-white',
-        'shadow-sm shadow-orange-500/20',
+        'inline-flex items-center rounded-md font-bold',
+        'bg-destructive text-destructive-foreground',
+        'shadow-sm shadow-destructive/20',
         sizes[size],
         className
       )}
@@ -39,7 +39,7 @@ export function LastMinuteBadge({ discount, className, size = 'sm' }: LastMinute
       <Flame className={cn(iconSizes[size], 'animate-pulse')} />
       <span>{isAr ? 'لحظة أخيرة' : 'Last Minute'}</span>
       {discount != null && discount > 0 && (
-        <span className="bg-white/20 rounded-full px-1.5 py-0.5 text-[9px] font-black">
+        <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[9px] font-black">
           {discount}%
         </span>
       )}

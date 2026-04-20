@@ -6,7 +6,7 @@ import { format, isValid, parseISO } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { resolveApiErrorMessage } from '@/lib/api-error'
 import {
@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { cn, formatPriceEN } from '@/lib/utils'
 import { RoomBookingPageSkeleton } from '@/components/shared/loading-skeleton'
+import { PhoneInput } from '@/components/shared/phone-input'
 import { getPackageBookingSchema } from '@/lib/validations'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -72,6 +73,7 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<PackageBookingFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -289,12 +291,17 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
                       <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       {t('room_booking.guest_phone')}
                     </label>
-                    <input
-                      {...register('guest_phone')}
-                      type="tel"
-                      dir="ltr"
-                      className={cn(inputClass, 'font-mono font-medium', errors.guest_phone && errorInputClass)}
-                      placeholder="+966 50 000 0000"
+                    <Controller
+                      name="guest_phone"
+                      control={control}
+                      render={({ field }) => (
+                        <PhoneInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          defaultIso="SA"
+                          error={!!errors.guest_phone}
+                        />
+                      )}
                     />
                     {errors.guest_phone && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_phone.message}</p>

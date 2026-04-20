@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format, isValid, parseISO } from 'date-fns'
 import { arSA, enUS } from 'date-fns/locale'
 import type { Room } from '@/types'
+import { NameChangePolicyCard } from '@/components/shared/name-change-policy-card'
 import {
   Loader2,
   ImageIcon,
@@ -59,6 +60,9 @@ export default function EditRoomPage() {
       instant_book: true,
       amenities: [],
       category: '',
+      name_change_allowed: false,
+      name_change_fee: 0,
+      name_change_is_refundable: true,
     },
   })
 
@@ -101,6 +105,9 @@ export default function EditRoomPage() {
           instant_book: r.instant_book,
           available_from: r.available_from || '',
           available_to: r.available_to || '',
+          name_change_allowed: r.name_change_allowed ?? false,
+          name_change_fee: r.name_change_fee ?? 0,
+          name_change_is_refundable: r.name_change_is_refundable ?? true,
         })
       } catch {
         router.push(`/${locale}/provider/rooms`)
@@ -572,6 +579,17 @@ export default function EditRoomPage() {
             </label>
           )}
         </div>
+
+        {/* Name change policy */}
+        <NameChangePolicyCard
+          allowed={!!watch('name_change_allowed')}
+          onAllowedChange={(v) => setValue('name_change_allowed', v, { shouldDirty: true })}
+          fee={watch('name_change_fee') ?? 0}
+          onFeeChange={(v) => setValue('name_change_fee', v === '' ? 0 : v, { shouldDirty: true })}
+          refundable={watch('name_change_is_refundable') ?? true}
+          onRefundableChange={(v) => setValue('name_change_is_refundable', v, { shouldDirty: true })}
+          title={isAr ? 'سياسة تغيير اسم الضيف' : 'Guest name change policy'}
+        />
 
         {/* Submit */}
         <button

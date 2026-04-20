@@ -11,14 +11,17 @@ import { isLastMinute } from '@/lib/last-minute'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { CountdownTimer } from '@/components/ui/countdown-timer'
 import { FavoriteButton } from '@/components/shared/favorite-button'
+import { BnplBadge } from '@/components/ui/bnpl-badge'
+import { RibbonBadge, type RibbonKind } from '@/components/ui/ribbon-badge'
 import type { Trip } from '@/types'
 
 type TripCardProps = {
   trip: Trip
   className?: string
+  ribbon?: RibbonKind
 }
 
-export function TripCard({ trip, className }: TripCardProps) {
+export function TripCard({ trip, className, ribbon }: TripCardProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -58,18 +61,25 @@ export function TripCard({ trip, className }: TripCardProps) {
     <Link href={`/${locale}/trips/${trip.id}`} className="block group h-full focus:outline-none">
       <div
         className={cn(
-          'relative h-full flex flex-col rounded-[2rem] border border-slate-200 bg-white overflow-hidden transition-all duration-300',
-          'hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1',
+          'relative h-full flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-[border-color,box-shadow,transform] duration-200',
+          'hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
           className
         )}
       >
         <div className="flex flex-col h-full p-6">
+          {/* Ribbon (Best value / Cheapest / Fastest) */}
+          {ribbon && (
+            <div className="mb-3">
+              <RibbonBadge kind={ribbon} />
+            </div>
+          )}
+
           {/* Social Proof Badge (inline) */}
           {(isTopRated || isMostBooked) && (
             <div className="mb-3">
               <span className={cn(
-                'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
-                isTopRated ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-semibold',
+                isTopRated ? 'border-warning/20 bg-warning/10 text-warning' : 'border-primary/20 bg-primary/10 text-primary'
               )}>
                 {isTopRated ? <Star className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
                 {isTopRated
@@ -82,7 +92,7 @@ export function TripCard({ trip, className }: TripCardProps) {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-colors duration-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors duration-200 group-hover:border-primary/20 group-hover:bg-primary/10 group-hover:text-primary">
                 <Plane className="h-5 w-5 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
               </div>
               <div className="flex flex-col">
@@ -130,9 +140,9 @@ export function TripCard({ trip, className }: TripCardProps) {
             
             <div className="flex items-center justify-center opacity-50 group-hover:opacity-100 transition-opacity">
               <div className="flex items-center w-full gap-1.5">
-                <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
+                <div className="h-[2px] flex-1 rounded-full bg-border" />
                 <Arrow className="h-4 w-4 shrink-0 text-primary" />
-                <div className="h-[2px] flex-1 bg-slate-200 rounded-full" />
+                <div className="h-[2px] flex-1 rounded-full bg-border" />
               </div>
             </div>
 
@@ -154,12 +164,12 @@ export function TripCard({ trip, className }: TripCardProps) {
 
           {/* Meta Information Pills */}
           <div className={cn('grid items-center gap-2 mb-6', lastMinute ? 'grid-cols-3' : 'grid-cols-2')}>
-             <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-slate-600">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+             <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs font-semibold">{departureDate}</span>
              </div>
-             <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 text-slate-600">
-                <Clock className="h-3.5 w-3.5 text-slate-400" />
+             <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-xs font-semibold">{departureTime}</span>
              </div>
              {lastMinute && (
@@ -186,16 +196,17 @@ export function TripCard({ trip, className }: TripCardProps) {
              )}
 
              {/* Footer Price & CTA */}
-             <div className="flex items-end justify-between pt-5 border-t border-slate-100">
+             <div className="flex items-end justify-between border-t border-border pt-5">
                <div className="flex flex-col">
                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('common.per_seat')}</span>
                  {hasDiscount && (
                    <span className="text-sm font-bold text-slate-400 line-through leading-none mb-0.5">{originalFormatted}</span>
                  )}
-                 <span className={cn('text-2xl font-black leading-none', hasDiscount ? 'text-orange-600' : 'text-slate-900')}>{formattedPrice}</span>
+                 <span className={cn('text-2xl font-black leading-none', hasDiscount ? 'text-accent' : 'text-foreground')}>{formattedPrice}</span>
+                 <BnplBadge price={trip.price_per_seat} currency={trip.currency} className="mt-1.5" />
                </div>
-               
-               <div className="h-10 w-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center transition-all duration-300 shadow-sm group-hover:bg-[var(--color-primary)] group-hover:text-white group-hover:shadow-md group-hover:shadow-[color:var(--color-primary)]/20 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 shrink-0">
+
+               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground shadow-sm transition-[background-color,color,transform] duration-200 group-hover:bg-primary group-hover:text-primary-foreground ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
                  <Arrow className="h-4 w-4 rtl:rotate-180 text-current" />
                </div>
              </div>
