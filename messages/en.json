@@ -70,7 +70,8 @@
     "language": "Language",
     "trip_requests": "Trip Requests",
     "last_minute": "Last Minute",
-    "packages": "Packages"
+    "packages": "Packages",
+    "saved": "Saved"
   },
   "auth": {
     "login_title": "Log in to your account",
@@ -1017,6 +1018,7 @@
     "saved_trips": "Saved Trips",
     "saved_rooms": "Saved Rooms",
     "saved_cars": "Saved Cars",
+    "saved_packages": "Saved Packages",
     "no_saved": "No saved items yet",
     "save": "Save",
     "unsave": "Unsave",

@@ -2,26 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Plane, Building, CarFront, HeartOff } from 'lucide-react'
+import { Plane, Building, CarFront, Package, HeartOff } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { TripCard } from '@/components/trips/trip-card'
 import { RoomCard } from '@/components/rooms/room-card'
 import { CarCard } from '@/components/cars/car-card'
+import { PackageCard } from '@/components/packages/package-card'
 import { cn } from '@/lib/utils'
-import type { Trip, Room, Car } from '@/types'
+import type { Trip, Room, Car, Package as PackageType } from '@/types'
 
-type Tab = 'trip' | 'room' | 'car'
+type Tab = 'trip' | 'room' | 'car' | 'package'
 
 interface SavedData {
   trips: Trip[]
   rooms: Room[]
   cars: Car[]
+  packages: PackageType[]
 }
 
 export function SavedPageClient() {
   const t = useTranslations('saved')
   const [tab, setTab] = useState<Tab>('trip')
-  const [data, setData] = useState<SavedData>({ trips: [], rooms: [], cars: [] })
+  const [data, setData] = useState<SavedData>({ trips: [], rooms: [], cars: [], packages: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function SavedPageClient() {
             trips: tab === 'trip' ? (json.trips || []) : prev.trips,
             rooms: tab === 'room' ? (json.rooms || []) : prev.rooms,
             cars: tab === 'car' ? (json.cars || []) : prev.cars,
+            packages: tab === 'package' ? (json.packages || []) : prev.packages,
           }))
         }
       } catch {}
@@ -48,12 +51,14 @@ export function SavedPageClient() {
     { key: 'trip', label: t('saved_trips'), icon: Plane },
     { key: 'room', label: t('saved_rooms'), icon: Building },
     { key: 'car', label: t('saved_cars'), icon: CarFront },
+    { key: 'package', label: t('saved_packages'), icon: Package },
   ]
 
   const currentItems =
     tab === 'trip' ? data.trips :
     tab === 'room' ? data.rooms :
-    data.cars
+    tab === 'car' ? data.cars :
+    data.packages
 
   return (
     <div className="container max-w-5xl py-8 px-4 mx-auto">
@@ -95,6 +100,9 @@ export function SavedPageClient() {
           ))}
           {tab === 'car' && data.cars.map(car => (
             <CarCard key={car.id} car={car} />
+          ))}
+          {tab === 'package' && data.packages.map(pkg => (
+            <PackageCard key={pkg.id} pkg={pkg} />
           ))}
         </div>
       )}

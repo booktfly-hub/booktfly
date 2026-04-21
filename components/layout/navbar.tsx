@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect, useId } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon, Heart } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
 import { CurrencySwitcher } from '@/components/shared/currency-switcher'
@@ -23,6 +23,15 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const mobileMenuId = useId()
   const userMenuId = useId()
+  const heroOverlayRoutes = new Set([
+    `/${locale}`,
+    `/${locale}/trips`,
+    `/${locale}/rooms`,
+    `/${locale}/cars`,
+    `/${locale}/packages`,
+    `/${locale}/last-minute`,
+  ])
+  const useHeroOverlay = heroOverlayRoutes.has(pathname) && !scrolled
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,22 +84,29 @@ export function Navbar() {
   const isNavItemActive = (href: string) =>
     href !== '#' && (pathname === href || pathname.startsWith(`${href}/`))
 
-  const desktopCompact = scrolled
+  const desktopCompact = scrolled || useHeroOverlay
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-50 flex justify-center px-4 pt-3 pointer-events-none transition-all duration-300 sm:px-6 md:pt-4">
-      <nav 
+    <div
+      className={cn(
+        'z-50 flex justify-center px-4 pt-3 transition-all duration-300 sm:px-6 md:pt-4',
+        useHeroOverlay
+          ? 'fixed left-0 right-0 top-0 pointer-events-none'
+          : 'sticky top-0'
+      )}
+    >
+      <nav
         className={cn(
-          "pointer-events-auto flex w-full flex-col border transition-all duration-300",
-          scrolled 
-            ? "max-w-5xl rounded-lg border-border bg-surface/95 shadow-lg shadow-slate-200/60 backdrop-blur-xl" 
-            : "max-w-7xl rounded-lg border-transparent bg-transparent"
+          'pointer-events-auto flex w-full flex-col border transition-all duration-300',
+          useHeroOverlay
+            ? 'max-w-7xl rounded-2xl border-white/15 bg-slate-950/30 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur-xl'
+            : 'max-w-7xl rounded-2xl border-border/80 bg-surface/95 shadow-lg shadow-slate-200/60 backdrop-blur-xl'
         )}
       >
-        <div className={cn("flex items-center justify-between transition-all duration-500 px-4 sm:px-6 py-1 gap-4")}>
+        <div className={cn('flex items-center justify-between gap-3 px-3 py-1.5 transition-all duration-500 sm:gap-4 sm:px-4 md:px-6')}>
           {/* Logo */}
           <Link href={`/${locale}`} className="relative flex z-5">
-            <div className={cn("relative flex h-16 w-48 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 md:h-18 md:w-56")}>
+            <div className={cn('relative flex h-14 w-40 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 md:h-16 md:w-48', desktopCompact && 'md:w-44')}>
               <Image 
                 src="/navbar.png"   
                 width={224} height={72}
@@ -111,26 +127,26 @@ export function Navbar() {
                 title={label}
                 className={cn(
                   'inline-flex items-center justify-center rounded-lg border border-transparent text-sm font-bold transition-colors',
-                  desktopCompact ? 'gap-0 min-w-11 px-3 py-2.5' : 'gap-2 px-4 py-2',
+                  desktopCompact ? 'gap-0 min-w-10 px-2.5 py-2' : 'gap-2 px-4 py-2',
                   isNavItemActive(href)
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : highlight
-                      ? "text-warning hover:bg-warning/10"
-                      : scrolled
-                        ? "text-foreground hover:border-border hover:bg-muted"
-                        : "text-white drop-shadow-sm hover:bg-white/20"
+                        : highlight
+                          ? 'text-warning hover:bg-warning/10'
+                          : useHeroOverlay
+                            ? 'text-white drop-shadow-sm hover:bg-white/15'
+                            : 'text-foreground hover:border-border hover:bg-muted'
                 )}
               >
                 <Icon
                   className={cn(
-                    "h-4 w-4",
+                    'h-4 w-4',
                     isNavItemActive(href)
-                      ? "text-white"
-                      : highlight
-                        ? "text-warning"
-                        : scrolled
-                          ? "text-primary"
-                          : "text-white drop-shadow-sm"
+                      ? 'text-white'
+                        : highlight
+                          ? 'text-warning'
+                          : useHeroOverlay
+                            ? 'text-white drop-shadow-sm'
+                            : 'text-primary'
                       )}
                 />
                 <span
@@ -149,8 +165,8 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex flex-nowrap items-center gap-1.5 sm:gap-6 min-w-0 shrink-0">
             <div className="hidden sm:flex items-center gap-1">
-               <LanguageSwitcher compact={desktopCompact} className={cn(scrolled ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "text-white drop-shadow-sm hover:bg-white/20")} />
-               <CurrencySwitcher className={cn(scrolled ? "hover:bg-muted text-foreground" : "text-white drop-shadow-sm hover:bg-white/20")} />
+               <LanguageSwitcher compact={desktopCompact} className={cn(useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/15' : 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
+               <CurrencySwitcher className={cn(desktopCompact ? 'px-2 py-1 text-xs' : 'px-2 py-1 text-xs', useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/15' : 'text-foreground hover:bg-muted')} />
             </div>
 
             {loading ? (
@@ -168,8 +184,8 @@ export function Navbar() {
                   <>
                     <NotificationBell
                       userId={user.id}
-                      className={cn(!scrolled && "hover:bg-white/10")}
-                      iconClassName={cn(scrolled ? "text-foreground" : "text-white drop-shadow-sm")}
+                      className={cn(useHeroOverlay && 'hover:bg-white/10')}
+                      iconClassName={cn(useHeroOverlay ? 'text-white drop-shadow-sm' : 'text-foreground')}
                     />
 
                     {/* User dropdown */}
@@ -179,7 +195,7 @@ export function Navbar() {
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
                         className={cn(
                           'flex items-center rounded-lg border p-1.5 shadow-sm transition-all hover:shadow-md',
-                          scrolled ? 'border-border bg-surface' : 'border-transparent bg-white/10 hover:bg-white/20',
+                          useHeroOverlay ? 'border-white/10 bg-white/10 hover:bg-white/20' : 'border-border bg-surface',
                           desktopCompact ? 'gap-1 pe-1.5' : 'gap-2 pe-4'
                         )}
                         aria-expanded={userMenuOpen}
@@ -188,21 +204,21 @@ export function Navbar() {
                       >
                         <div className={cn(
                           "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-black shadow-sm transition-colors",
-                          scrolled ? "bg-primary text-primary-foreground" : "bg-white text-primary"
+                          useHeroOverlay ? 'bg-white text-primary' : 'bg-primary text-primary-foreground'
                         )}>
                           {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </div>
                         <span
                           className={cn(
                             'hidden overflow-hidden whitespace-nowrap text-sm font-bold transition-[max-width,opacity,margin] duration-300 lg:inline-block',
-                            scrolled ? 'text-primary' : 'text-white drop-shadow-sm',
+                            useHeroOverlay ? 'text-white drop-shadow-sm' : 'text-primary',
                             desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-[120px] opacity-100'
                           )}
                           aria-hidden={desktopCompact}
                         >
                           {profile?.full_name || user.email}
                         </span>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", scrolled ? "text-primary" : "text-white", userMenuOpen && "rotate-180")} />
+                        <ChevronDown className={cn('h-4 w-4 transition-transform duration-300', useHeroOverlay ? 'text-white' : 'text-primary', userMenuOpen && 'rotate-180')} />
                       </button>
 
                       {userMenuOpen && (
@@ -252,6 +268,14 @@ export function Navbar() {
                                   <Ticket className="h-4 w-4 text-muted-foreground" />
                                   {t('nav.my_bookings')}
                                 </Link>
+                                <Link
+                                  href={`/${locale}/saved`}
+                                  onClick={() => setUserMenuOpen(false)}
+                                  className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                                >
+                                  <Heart className="h-4 w-4 text-muted-foreground" />
+                                  {t('nav.saved')}
+                                </Link>
                               </div>
                               <div className="h-px bg-border/50 my-2" />
                               <button
@@ -273,8 +297,14 @@ export function Navbar() {
                       href={`/${locale}/auth/login`}
                       className={cn(
                         'inline-flex shrink-0 rounded-xl transition-colors whitespace-nowrap',
-                        scrolled ? 'text-slate-700 hover:bg-slate-100' : 'text-white drop-shadow-sm hover:bg-white/20',
-                        isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
+                        useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100',
+                        desktopCompact
+                          ? isAr
+                            ? 'text-[10px] font-bold px-2 py-2'
+                            : 'text-xs font-bold px-2.5 py-2'
+                          : isAr
+                            ? 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5'
+                            : 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5'
                       )}
                     >
                       {t('common.login')}
@@ -283,8 +313,14 @@ export function Navbar() {
                       href={`/${locale}/auth/signup`}
                       className={cn(
                         'shrink-0 rounded-lg shadow-sm transition-colors whitespace-nowrap',
-                        scrolled ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-white text-primary hover:bg-white/90',
-                        isAr ? "text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5" : "text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5"
+                        useHeroOverlay ? 'bg-white text-primary hover:bg-white/90' : 'bg-primary text-primary-foreground hover:bg-primary/90',
+                        desktopCompact
+                          ? isAr
+                            ? 'text-[10px] font-bold px-2 py-2'
+                            : 'text-xs font-bold px-2.5 py-2'
+                          : isAr
+                            ? 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5'
+                            : 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5'
                       )}
                     >
                       {t('common.signup')}
@@ -297,16 +333,16 @@ export function Navbar() {
             {/* Mobile hamburger */}
             <button
               type="button"
-              className={cn("md:hidden shrink-0 self-center rounded-lg p-2 transition-colors", scrolled ? "hover:bg-muted" : "hover:bg-white/20")}
+              className={cn('md:hidden shrink-0 self-center rounded-lg p-2 transition-colors', useHeroOverlay ? 'hover:bg-white/10' : 'hover:bg-muted')}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
               aria-controls={mobileMenuId}
             >
               {mobileOpen ? (
-                <X className={cn("h-5 w-5", scrolled ? "text-foreground" : "text-white drop-shadow-sm")} />
+                <X className={cn('h-5 w-5', useHeroOverlay ? 'text-white drop-shadow-sm' : 'text-foreground')} />
               ) : (
-                <Menu className={cn("h-5 w-5", scrolled ? "text-foreground" : "text-white drop-shadow-sm")} />
+                <Menu className={cn('h-5 w-5', useHeroOverlay ? 'text-white drop-shadow-sm' : 'text-foreground')} />
               )}
             </button>
           </div>
@@ -358,6 +394,14 @@ export function Navbar() {
                     >
                       <Ticket className="h-4 w-4 text-muted-foreground" />
                       {t('nav.my_bookings')}
+                    </Link>
+                    <Link
+                      href={`/${locale}/saved`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                    >
+                      <Heart className="h-4 w-4 text-muted-foreground" />
+                      {t('nav.saved')}
                     </Link>
                     {getDashboardLink() && (
                       <Link

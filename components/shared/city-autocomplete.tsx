@@ -135,7 +135,7 @@ export function CityAutocomplete({
 
   return (
     <div ref={wrapperRef} className="relative w-full sm:flex-1 group/input">
-      <div className="absolute inset-y-0 start-0 pl-5 md:pl-6 flex items-center pointer-events-none">
+      <div className="absolute inset-y-0 start-0 flex items-center ps-5 md:ps-6 pointer-events-none">
         <MapPin className="h-4 w-4 text-primary transition-colors md:h-5 md:w-5" />
       </div>
       <input

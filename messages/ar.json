@@ -70,7 +70,8 @@
     "language": "اللغة",
     "trip_requests": "طلبات الرحلات",
     "last_minute": "اللحظة الأخيرة",
-    "packages": "الباقات"
+    "packages": "الباقات",
+    "saved": "المحفوظات"
   },
   "auth": {
     "login_title": "تسجيل الدخول",
@@ -1017,6 +1018,7 @@
     "saved_trips": "الرحلات المحفوظة",
     "saved_rooms": "الغرف المحفوظة",
     "saved_cars": "السيارات المحفوظة",
+    "saved_packages": "الباقات المحفوظة",
     "no_saved": "لا توجد عناصر محفوظة بعد",
     "save": "حفظ",
     "unsave": "إلغاء الحفظ",

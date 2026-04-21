@@ -36,26 +36,29 @@ export function Toaster() {
   }, [])
 
   return (
-    <div className="fixed bottom-4 end-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed start-1/2 top-24 z-[70] flex w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 md:start-auto md:end-4 md:top-auto md:bottom-4 md:w-auto md:translate-x-0">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={cn(
-            'rounded-lg border p-4 shadow-lg bg-card text-card-foreground animate-in slide-in-from-bottom-5',
-            t.variant === 'destructive' && 'border-destructive bg-destructive/10',
-            t.variant === 'success' && 'border-success bg-success/10'
+            'rounded-xl border p-4 shadow-2xl animate-in slide-in-from-bottom-5 backdrop-blur-md',
+            t.variant === 'destructive'
+              ? 'border-destructive/70 bg-destructive text-destructive-foreground'
+              : t.variant === 'success'
+                ? 'border-success/70 bg-success text-success-foreground'
+                : 'border-slate-700 bg-slate-950 text-white'
           )}
         >
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="font-medium text-sm">{t.title}</p>
               {t.description && (
-                <p className="text-sm text-muted-foreground mt-1">{t.description}</p>
+                <p className="mt-1 text-sm text-white/80">{t.description}</p>
               )}
             </div>
             <button
               onClick={() => setToasts((prev) => prev.filter((toast) => toast.id !== t.id))}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-white/80 hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
