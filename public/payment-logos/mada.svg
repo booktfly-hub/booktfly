@@ -1,0 +1,8 @@
+<svg width="256" height="80" viewBox="0 0 256 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="mada">
+  <rect width="256" height="80" rx="18" fill="white"/>
+  <rect x="1" y="1" width="254" height="78" rx="17" stroke="#D7DDE6"/>
+  <path d="M50 28C58.3 28 63.8 33.2 63.8 40C63.8 46.8 58.3 52 50 52H35V28H50Z" fill="#00A650"/>
+  <path d="M36 31.8C42.2 31.8 45.8 35.3 45.8 40C45.8 44.7 42.2 48.2 36 48.2H28.8V31.8H36Z" fill="#00A650" opacity="0.82"/>
+  <text x="78" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#1F2937">mada</text>
+  <text x="78" y="62" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#EF4444" letter-spacing="1">مدى</text>
+</svg>

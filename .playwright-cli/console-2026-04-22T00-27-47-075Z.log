@@ -1,0 +1,61 @@
+[    3742ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    3825ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    4225ms] [WARNING] Image with src "https://xitstzqbjpdgkagtvczw.supabase.co/storage/v1/object/public/package-images/packages/52e11d4a-808d-42bf-98be-5dd620fad79d/1775403602635-0.webp" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    5606ms] [WARNING] Image with src "/booktfly-logo-symbol.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio. @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  102983ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  103148ms] [LOG] [Fast Refresh] done in 255ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  127850ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  128394ms] [LOG] [Fast Refresh] done in 644ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  155453ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  155927ms] [LOG] [Fast Refresh] done in 484ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  172382ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  172488ms] [LOG] [Fast Refresh] done in 117ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  317228ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  317901ms] [LOG] [Fast Refresh] done in 717ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  326903ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  329154ms] [LOG] [Fast Refresh] done in 2356ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  350261ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  350295ms] [LOG] [Fast Refresh] done in 136ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  394006ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  394293ms] [LOG] [Fast Refresh] done in 214ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  405907ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  406538ms] [LOG] [Fast Refresh] done in 732ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  408536ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  408542ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  422750ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  424531ms] [LOG] [Fast Refresh] done in 1882ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  426079ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  426229ms] [LOG] [Fast Refresh] done in 252ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  566394ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  566417ms] [LOG] [Fast Refresh] done in 125ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  567591ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  567654ms] [LOG] [Fast Refresh] done in 163ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  568496ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  569077ms] [LOG] [Fast Refresh] done in 682ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  588025ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  588429ms] [LOG] [Fast Refresh] done in 506ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  662130ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  662240ms] [LOG] [Fast Refresh] done in 206ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  669001ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  669052ms] [LOG] [Fast Refresh] done in 147ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  690277ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  690644ms] [LOG] [Fast Refresh] done in 470ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  773698ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  773711ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  812459ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  812708ms] [LOG] [Fast Refresh] done in 352ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  875265ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  875313ms] [LOG] [Fast Refresh] done in 150ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  883256ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  884672ms] [LOG] [Fast Refresh] done in 1516ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  885302ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  885310ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  933171ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  933195ms] [LOG] [Fast Refresh] done in 127ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  936980ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  937032ms] [LOG] [Fast Refresh] done in 153ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  950120ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  950698ms] [LOG] [Fast Refresh] done in 678ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  985135ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  985150ms] [LOG] [Fast Refresh] done in 74ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297

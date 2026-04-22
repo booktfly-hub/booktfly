@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState, use } from 'react'
+import { useEffect, useRef, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -18,6 +18,8 @@ import {
   X,
   Clock,
   Upload,
+  Shield,
+  Apple,
 } from 'lucide-react'
 import { formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { toast } from '@/components/ui/toaster'
@@ -25,10 +27,10 @@ import { CheckoutPageSkeleton } from '@/components/shared/loading-skeleton'
 import { ClientContractStep } from '@/components/checkout/client-contract-step'
 import { ProgressStepper } from '@/components/bookings/progress-stepper'
 import { CrossSellPanel } from '@/components/bookings/cross-sell-panel'
-import { TrustBadges } from '@/components/bookings/trust-badges'
 import type { Booking, RoomBooking, CarBooking, PackageBooking } from '@/types'
 
 type CheckoutState = 'transfer' | 'uploading' | 'submitted' | 'confirmed' | 'failed'
+type PayMethod = 'mada' | 'apple_pay' | 'bank'
 
 type BankInfo = {
   bank_name_ar: string | null
@@ -60,6 +62,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [payMethod, setPayMethod] = useState<PayMethod>('bank')
+  const [dummyPaying, setDummyPaying] = useState(false)
+  const fetchedForRef = useRef<string | null>(null)
 
   const Back = isAr ? ChevronRight : ChevronLeft
   const currency = packageBooking?.package?.currency || carBooking?.car?.currency || roomBooking?.room?.currency || booking?.trip?.currency || 'SAR'
@@ -70,12 +75,16 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   const bookingRecord = isPackageBooking ? packageBooking : isCarBooking ? carBooking : isRoomBooking ? roomBooking : booking
 
   useEffect(() => {
-    async function fetchData() {
+    const key = `${bookingId}:${isPackageBooking ? 'package' : isCarBooking ? 'car' : isRoomBooking ? 'room' : 'flight'}`
+    if (fetchedForRef.current === key) return
+    fetchedForRef.current = key
+    const controller = new AbortController()
+    ;(async () => {
       try {
         const apiPath = isPackageBooking ? `/api/package-bookings/${bookingId}` : isCarBooking ? `/api/car-bookings/${bookingId}` : isRoomBooking ? `/api/room-bookings/${bookingId}` : `/api/bookings/${bookingId}`
         const [bookingRes, bankRes] = await Promise.all([
-          fetch(apiPath),
-          fetch('/api/bank-info'),
+          fetch(apiPath, { signal: controller.signal }),
+          fetch('/api/bank-info', { signal: controller.signal }),
         ])
         const bookingData = await bookingRes.json()
         const bankData = await bankRes.json()
@@ -99,14 +108,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         if (bankData.bank_iban) {
           setBankInfo(bankData)
         }
-      } catch {
-        // handled
+      } catch (err) {
+        if ((err as { name?: string })?.name === 'AbortError') return
       } finally {
         setLoading(false)
       }
-    }
-    fetchData()
-  }, [bookingId, isRoomBooking, isCarBooking])
+    })()
+    return () => controller.abort()
+  }, [bookingId, isRoomBooking, isCarBooking, isPackageBooking])
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text)
@@ -119,36 +128,83 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
     setReceiptPreview(file ? URL.createObjectURL(file) : null)
   }
 
+  const handleDummyPay = async () => {
+    setDummyPaying(true)
+    try {
+      // Simulate processing to match the "charge flow" UX.
+      await new Promise((r) => setTimeout(r, 1500))
+      const dummyPath = isPackageBooking
+        ? `/api/package-bookings/${bookingId}/dummy-pay`
+        : isCarBooking
+          ? `/api/car-bookings/${bookingId}/dummy-pay`
+          : isRoomBooking
+            ? `/api/room-bookings/${bookingId}/dummy-pay`
+            : `/api/bookings/${bookingId}/dummy-pay`
+      const res = await fetch(dummyPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          method: payMethod === 'apple_pay' ? 'apple_pay' : 'mada',
+          guest_token: searchParams.get('guest_token') || undefined,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'payment failed')
+      }
+      setState('confirmed')
+    } catch {
+      setDummyPaying(false)
+      toast({ title: isAr ? 'تعذّر إتمام الدفع، حاول مرة أخرى' : 'Payment failed, please try again', variant: 'destructive' })
+    }
+  }
+
   const handleConfirmTransfer = async () => {
+    if (!receiptFile) {
+      toast({
+        title: isAr ? 'يجب رفع صورة الإيصال' : 'Receipt image is required',
+        variant: 'destructive',
+      })
+      return
+    }
     setState('uploading')
     try {
       let receiptUrl: string | undefined
 
-      // Upload receipt if provided
-      if (receiptFile) {
-        const formData = new FormData()
-        formData.append('receipt', receiptFile)
-        const uploadPath = isPackageBooking ? `/api/package-bookings/${bookingId}/upload-receipt` : isCarBooking ? `/api/car-bookings/${bookingId}/upload-receipt` : isRoomBooking ? `/api/room-bookings/${bookingId}/upload-receipt` : `/api/bookings/${bookingId}/upload-receipt`
-        const uploadRes = await fetch(uploadPath, {
-          method: 'POST',
-          body: formData,
+      const formData = new FormData()
+      formData.append('receipt', receiptFile)
+      const uploadPath = isPackageBooking ? `/api/package-bookings/${bookingId}/upload-receipt` : isCarBooking ? `/api/car-bookings/${bookingId}/upload-receipt` : isRoomBooking ? `/api/room-bookings/${bookingId}/upload-receipt` : `/api/bookings/${bookingId}/upload-receipt`
+      const uploadRes = await fetch(uploadPath, {
+        method: 'POST',
+        body: formData,
+      })
+      if (!uploadRes.ok) {
+        setState('transfer')
+        toast({
+          title: isAr ? 'فشل رفع الإيصال، حاول مرة أخرى' : 'Failed to upload receipt, please try again',
+          variant: 'destructive',
         })
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json()
-          receiptUrl = uploadData.url
-        }
+        return
       }
+      const uploadData = await uploadRes.json()
+      receiptUrl = uploadData.url
 
       // Confirm transfer
       const confirmPath = isPackageBooking ? `/api/package-bookings/${bookingId}/confirm` : isCarBooking ? `/api/car-bookings/${bookingId}/confirm` : isRoomBooking ? `/api/room-bookings/${bookingId}/confirm` : `/api/bookings/${bookingId}/confirm`
       const res = await fetch(confirmPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transfer_receipt_url: receiptUrl }),
+        body: JSON.stringify({
+          transfer_receipt_url: receiptUrl,
+          guest_token: searchParams.get('guest_token') || undefined,
+        }),
       })
 
       if (res.ok) {
         setState('submitted')
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
       } else {
         setState('transfer')
         toast({ title: t('common.error'), variant: 'destructive' })
@@ -288,10 +344,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 sm:px-6 pt-24 pb-12 md:pt-32 lg:pt-36 animate-fade-in-up">
+    <div className="max-w-xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 md:pt-24 lg:pt-28 pb-12 animate-fade-in-up">
       <button
         onClick={() => router.push(backHref)}
-        className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 mb-6 md:mb-8 transition-colors"
+        className="group inline-flex items-center gap-2 text-xs md:text-sm font-bold text-slate-500 hover:text-slate-900 mb-5 md:mb-8 transition-colors"
       >
         <div className="p-1.5 md:p-2 rounded-full bg-slate-100 group-hover:bg-slate-200 transition-colors">
           <Back className="h-3 w-3 md:h-4 md:w-4 rtl:rotate-180" />
@@ -302,12 +358,43 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       <div className="mb-6 md:mb-8">
         {/* Labelled checkout stepper (P0-11) — on payment step */}
         <ProgressStepper currentStep={3} className="mb-6" />
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">{isAr ? 'الدفع عبر التحويل البنكي' : 'Bank Transfer Payment'}</h1>
-        <p className="text-sm md:text-base text-slate-500 font-medium">{isAr ? 'حوّل المبلغ المطلوب إلى الحساب التالي' : 'Transfer the required amount to the following account'}</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">{isAr ? 'إتمام الدفع' : 'Complete payment'}</h1>
+        <p className="text-sm md:text-base text-slate-500 font-medium">{isAr ? 'اختر طريقة الدفع المناسبة لك' : 'Choose a payment method to continue'}</p>
       </div>
 
-      {/* Trust badges with payment logos (P0-5) */}
-      <TrustBadges className="mb-6" />
+      {/* Payment method selector — main actor of this page */}
+      <div className="mb-6 md:mb-8" role="radiogroup" aria-label={isAr ? 'طرق الدفع' : 'Payment methods'}>
+        <div className="grid grid-cols-3 gap-2 md:gap-3 p-1.5 bg-slate-100 rounded-2xl">
+          {([
+            { id: 'mada', label: 'mada', sub: isAr ? 'بطاقة بنكية' : 'Debit card' },
+            { id: 'apple_pay', label: 'Apple Pay', sub: isAr ? 'بلمسة واحدة' : 'One tap' },
+            { id: 'bank', label: isAr ? 'تحويل بنكي' : 'Bank transfer', sub: isAr ? 'تأكيد يدوي' : 'Manual review' },
+          ] as const).map((m) => {
+            const active = payMethod === m.id
+            return (
+              <button
+                key={m.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setPayMethod(m.id)}
+                className={
+                  'rounded-xl px-3 py-3 md:py-4 text-center transition-all ' +
+                  (active
+                    ? 'bg-white shadow-sm ring-1 ring-slate-900/10 text-slate-900'
+                    : 'bg-transparent text-slate-500 hover:text-slate-800')
+                }
+              >
+                <span className="flex items-center justify-center gap-1.5 font-black text-sm md:text-base">
+                  {m.id === 'apple_pay' && <Apple className="h-4 w-4" />}
+                  {m.label}
+                </span>
+                <span className="block text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{m.sub}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Order summary */}
       <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-5 md:p-6 mb-6 md:mb-8 shadow-sm">
@@ -330,8 +417,70 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         </div>
       </div>
 
+      {/* Mada / Apple Pay — dummy gateway */}
+      {payMethod !== 'bank' && (
+        <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm mb-6">
+          <div className="flex items-start gap-3 mb-5">
+            <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+              {payMethod === 'apple_pay' ? <Apple className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base md:text-lg font-bold text-slate-900">
+                {payMethod === 'apple_pay'
+                  ? (isAr ? 'الدفع بـ Apple Pay' : 'Pay with Apple Pay')
+                  : (isAr ? 'الدفع بواسطة mada' : 'Pay with mada')}
+              </h3>
+              <p className="text-sm text-slate-500">
+                {payMethod === 'apple_pay'
+                  ? (isAr ? 'أكّد الدفع بلمسة واحدة، وسيتم تأكيد حجزك فوراً.' : 'Confirm with one tap. Booking confirmed instantly.')
+                  : (isAr ? 'سيتم خصم المبلغ من بطاقتك وتأكيد الحجز مباشرةً.' : 'You’ll be charged instantly and your booking confirmed.')}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 mb-5">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{isAr ? 'المبلغ' : 'Amount'}</span>
+            <span className="text-xl md:text-2xl font-black text-primary tracking-tight">{fmt(bookingRecord.total_amount)}</span>
+          </div>
+
+          <button
+            onClick={handleDummyPay}
+            disabled={dummyPaying}
+            aria-busy={dummyPaying}
+            className={
+              'w-full h-14 md:h-16 rounded-xl md:rounded-2xl font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2 md:gap-3 active:scale-[0.98] disabled:opacity-70 ' +
+              (payMethod === 'apple_pay'
+                ? 'bg-black text-white hover:bg-black/90'
+                : 'bg-primary text-white hover:bg-primary/90')
+            }
+          >
+            {dummyPaying ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {isAr ? 'جارٍ معالجة الدفع...' : 'Processing payment...'}
+              </>
+            ) : payMethod === 'apple_pay' ? (
+              <>
+                <Apple className="h-5 w-5" />
+                {isAr ? 'ادفع بـ Apple Pay' : 'Pay with Apple Pay'}
+              </>
+            ) : (
+              <>
+                <Shield className="h-5 w-5" />
+                {isAr ? `ادفع ${fmt(bookingRecord.total_amount)}` : `Pay ${fmt(bookingRecord.total_amount)}`}
+              </>
+            )}
+          </button>
+
+          <p className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium mt-4">
+            <Shield className="h-3.5 w-3.5" />
+            {isAr ? 'اتصال آمن ومشفّر بالكامل' : 'Secure, encrypted connection'}
+          </p>
+        </div>
+      )}
+
       {/* Bank details */}
-      {bankInfo?.bank_iban && (
+      {payMethod === 'bank' && bankInfo?.bank_iban && (
         <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-xl shadow-slate-200/50 mb-6">
           <div className="flex items-center gap-2 md:gap-3 mb-6 md:mb-8">
             <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -393,9 +542,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       )}
 
       {/* Receipt Upload */}
+      {payMethod === 'bank' && (
       <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm mb-6">
-        <h3 className="text-sm md:text-base font-bold text-slate-900 mb-1">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
-        <p className="text-xs text-muted-foreground mb-4">{isAr ? 'اختياري - يساعد في تسريع المراجعة' : 'Optional - helps speed up the review process'}</p>
+        <h3 className="text-sm md:text-base font-bold text-slate-900 mb-1">
+          {isAr ? 'إيصال التحويل' : 'Transfer Receipt'}
+          <span className="text-destructive ms-1">*</span>
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">{isAr ? 'مطلوب - يجب رفع صورة الإيصال لتأكيد التحويل' : 'Required - upload the receipt image to confirm your transfer'}</p>
 
         {receiptPreview ? (
           <div className="relative w-full h-48 rounded-xl overflow-hidden bg-muted">
@@ -421,8 +574,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
           </label>
         )}
       </div>
+      )}
 
       {/* Confirm transfer button */}
+      {payMethod === 'bank' && (
+      <>
       <button
         onClick={handleConfirmTransfer}
         disabled={state === 'uploading'}
@@ -441,6 +597,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       <p className="text-xs text-muted-foreground text-center mt-4">
         {isAr ? 'سيتم مراجعة التحويل وتأكيد الحجز خلال ساعات العمل' : 'Your transfer will be reviewed and booking confirmed during business hours'}
       </p>
+      </>
+      )}
     </div>
   )
 }

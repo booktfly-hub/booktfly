@@ -48,10 +48,10 @@ const PROTECTED_ROUTES: Record<string, string[]> = {
   '/admin': ['admin'],
   '/marketeer': ['marketeer', 'admin'],
   '/my-bookings': ['buyer', 'provider', 'admin'],
-  '/become-provider/apply': ['buyer'],
-  '/become-provider/status': ['buyer'],
-  '/become-marketeer/apply': ['buyer'],
-  '/become-marketeer/status': ['buyer'],
+  '/become-provider/apply': ['buyer', 'admin'],
+  '/become-provider/status': ['buyer', 'admin'],
+  '/become-marketeer/apply': ['buyer', 'admin'],
+  '/become-marketeer/status': ['buyer', 'admin'],
 }
 
 const AUTH_REQUIRED_PATTERNS = [

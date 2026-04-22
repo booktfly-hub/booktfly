@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useRef, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -34,6 +34,7 @@ import { TripDirectionIndicator } from '@/components/trips/trip-direction-indica
 import { NameChangeBadge } from '@/components/trips/trip-pricing-policy-card'
 import { FlightDetailSheet } from '@/components/trips/flight-detail-sheet'
 import { FareTierSelector } from '@/components/trips/fare-tier-selector'
+import { ReportTripButton } from '@/components/trips/report-trip-button'
 import type { Trip, FareTier } from '@/types'
 
 export default function TripDetailClient({ params }: { params: Promise<{ id: string, locale: string }> }) {
@@ -52,23 +53,27 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const [previewFareTier, setPreviewFareTier] = useState<string | null>(null)
 
   const Back = isAr ? ChevronRight : ChevronLeft
+  const fetchedForRef = useRef<string | null>(null)
 
   useEffect(() => {
-    async function fetchTrip() {
+    if (fetchedForRef.current === tripId) return
+    fetchedForRef.current = tripId
+    const controller = new AbortController()
+    ;(async () => {
       try {
-        const res = await fetch(`/api/trips/${tripId}`)
+        const res = await fetch(`/api/trips/${tripId}`, { signal: controller.signal })
         const data = await res.json()
         if (data.trip) {
           setTrip(data.trip)
           setBookingType(data.trip.trip_type === 'one_way' ? 'one_way' : 'round_trip')
         }
       } catch {
-        // Error handled
+        // aborted or network error
       } finally {
         setLoading(false)
       }
-    }
-    fetchTrip()
+    })()
+    return () => controller.abort()
   }, [tripId])
 
   if (loading) return <TripDetailPageSkeleton />
@@ -161,15 +166,18 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
           </div>
           {t('common.back')}
         </button>
-        <PriceAlertButton
-          originCode={trip.origin_code || ''}
-          destinationCode={trip.destination_code || ''}
-          originNameAr={trip.origin_city_ar}
-          originNameEn={trip.origin_city_en || undefined}
-          destinationNameAr={trip.destination_city_ar}
-          destinationNameEn={trip.destination_city_en || undefined}
-          currentPrice={trip.price_per_seat}
-        />
+        <div className="flex items-center gap-3">
+          <ReportTripButton tripId={trip.id} />
+          <PriceAlertButton
+            originCode={trip.origin_code || ''}
+            destinationCode={trip.destination_code || ''}
+            originNameAr={trip.origin_city_ar}
+            originNameEn={trip.origin_city_en || undefined}
+            destinationNameAr={trip.destination_city_ar}
+            destinationNameEn={trip.destination_city_en || undefined}
+            currentPrice={trip.price_per_seat}
+          />
+        </div>
       </div>
 
       {/* Not available banner */}

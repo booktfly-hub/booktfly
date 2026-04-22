@@ -1,0 +1,72 @@
+[    4102ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    4248ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    4345ms] [WARNING] Image with src "/booktfly-logo-symbol.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio. @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    4364ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[    5407ms] [LOG] [Fast Refresh] done in 1143ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   53775ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   54195ms] [LOG] [Fast Refresh] done in 522ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   58367ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   59580ms] [LOG] [Fast Refresh] done in 1315ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   84473ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   84541ms] [LOG] [Fast Refresh] done in 170ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   85947ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[   85948ms] [LOG] [Fast Refresh] done in 102ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  205935ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  206158ms] [LOG] [Fast Refresh] done in 254ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  230805ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  231347ms] [LOG] [Fast Refresh] done in 644ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  232466ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  232528ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  232617ms] [WARNING] Image with src "/booktfly-logo-symbol.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio. @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  258406ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  258806ms] [LOG] [Fast Refresh] done in 494ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  275335ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  275366ms] [LOG] [Fast Refresh] done in 124ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  420181ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  421030ms] [LOG] [Fast Refresh] done in 786ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  429856ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  432107ms] [LOG] [Fast Refresh] done in 2356ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  453214ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  453248ms] [LOG] [Fast Refresh] done in 136ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  496960ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  497098ms] [LOG] [Fast Refresh] done in 231ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  508859ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  509491ms] [LOG] [Fast Refresh] done in 732ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  511491ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  511495ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  525704ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  527484ms] [LOG] [Fast Refresh] done in 1882ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  529032ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  529182ms] [LOG] [Fast Refresh] done in 252ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  669347ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  669370ms] [LOG] [Fast Refresh] done in 125ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  670544ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  670607ms] [LOG] [Fast Refresh] done in 163ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  671460ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  672030ms] [LOG] [Fast Refresh] done in 672ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  690979ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  691382ms] [LOG] [Fast Refresh] done in 506ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  765083ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  765189ms] [LOG] [Fast Refresh] done in 200ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  771957ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  772009ms] [LOG] [Fast Refresh] done in 152ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  793230ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  793597ms] [LOG] [Fast Refresh] done in 470ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  876652ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  876664ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  915412ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  915661ms] [LOG] [Fast Refresh] done in 352ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  978218ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  978266ms] [LOG] [Fast Refresh] done in 149ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  986209ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  987625ms] [LOG] [Fast Refresh] done in 1516ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  988255ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[  988264ms] [LOG] [Fast Refresh] done in 110ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1036123ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1036147ms] [LOG] [Fast Refresh] done in 126ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1039933ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1039985ms] [LOG] [Fast Refresh] done in 153ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1053074ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1053650ms] [LOG] [Fast Refresh] done in 678ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1088087ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1088103ms] [LOG] [Fast Refresh] done in 73ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297

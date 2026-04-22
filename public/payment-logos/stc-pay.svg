@@ -1,0 +1,6 @@
+<svg width="256" height="80" viewBox="0 0 256 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="stc pay">
+  <rect width="256" height="80" rx="18" fill="#4F008C"/>
+  <rect x="1" y="1" width="254" height="78" rx="17" stroke="white" stroke-opacity="0.1"/>
+  <text x="22" y="53" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#6B00B8">stc</text>
+  <text x="140" y="53" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#00D2A8">pay</text>
+</svg>

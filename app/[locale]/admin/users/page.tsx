@@ -304,7 +304,7 @@ export default function AdminUsersPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">{isAr ? 'مراقبة المستخدمين' : 'User Monitoring'}</h1>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
         {roleCards.map((card) => (
           <div key={card.role} className="bg-white rounded-2xl border p-5">
             <div className={cn('inline-flex items-center justify-center rounded-xl p-2.5 mb-3', card.bg)}>
@@ -318,7 +318,7 @@ export default function AdminUsersPage() {
 
       <div className="bg-white rounded-2xl border p-5 mb-6">
         <p className="text-sm font-semibold text-slate-900 mb-3">{isAr ? 'قمع التحويل' : 'Conversion Funnel'}</p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 xl:flex-row">
           {funnelItems.map((item) => (
             <div key={item.label} className="flex-1">
               <div className="flex items-center gap-1.5 mb-1">
@@ -337,8 +337,8 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1 max-w-xs">
+      <div className="mb-6 space-y-3">
+        <div className="relative w-full max-w-full sm:max-w-lg">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
@@ -348,37 +348,39 @@ export default function AdminUsersPage() {
             className="w-full rounded-lg border bg-white px-3 ps-9 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
-        <div className="flex gap-1.5 flex-wrap">
-          {roleTabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => { setRoleFilter(tab.value); setPage(0) }}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                roleFilter === tab.value
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-white border text-slate-600 hover:bg-slate-50'
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-1.5 flex-wrap">
-          {dateRanges.map((dr) => (
-            <button
-              key={dr.value}
-              onClick={() => { setDateRange(dr.value); setPage(0) }}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                dateRange === dr.value
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-white border text-slate-600 hover:bg-slate-50'
-              )}
-            >
-              {dr.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+            {roleTabs.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => { setRoleFilter(tab.value); setPage(0) }}
+                className={cn(
+                  'shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                  roleFilter === tab.value
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-white border text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1 xl:justify-end">
+            {dateRanges.map((dr) => (
+              <button
+                key={dr.value}
+                onClick={() => { setDateRange(dr.value); setPage(0) }}
+                className={cn(
+                  'shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                  dateRange === dr.value
+                    ? 'bg-slate-900 text-white shadow-sm'
+                    : 'bg-white border text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                {dr.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

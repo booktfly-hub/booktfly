@@ -90,7 +90,6 @@ export function HeroSectionClient({
   const [carPickupType, setCarPickupType] = useState('')
   const [carReturnSame, setCarReturnSame] = useState(true)
   const [carReturnCity, setCarReturnCity] = useState('')
-
   const heroBackgrounds: Record<typeof searchMode, string> = {
     flights: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85',
     hotels: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85',
@@ -731,6 +730,11 @@ export function HeroSectionClient({
           <p className="mx-auto mt-5 max-w-2xl animate-fade-in-up text-sm font-semibold leading-6 text-white/85 sm:text-base" style={{ animationDelay: '360ms', animationFillMode: 'both' }}>
             {isAr ? 'قارن الخيارات، اختر وقتك، واحجز رحلتك التالية في مكان واحد.' : 'Compare options, choose your timing, and book the next part of your trip in one place.'}
           </p>
+          <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-md animate-fade-in-up" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.15)]" />
+            <span>{isAr ? 'مقترحات السفر' : 'Travel picks'}</span>
+            <span className="text-white/70">{isAr ? 'اكتشف أحدث الوجهات' : 'Discover latest destinations'}</span>
+          </div>
         </div>
 
         {/* Search Component Container */}
@@ -763,6 +767,25 @@ export function HeroSectionClient({
             </div>
           </div>
 
+          <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-3" style={{ animationDelay: '460ms', animationFillMode: 'both' }}>
+            {heroDestinations.map((item) => (
+              <div key={item.city} className="relative min-h-28 overflow-hidden rounded-lg border border-white/20 bg-slate-950 shadow-lg">
+                <Image
+                  src={item.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 100vw, 280px"
+                  className="object-cover opacity-80 transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-slate-950/35" />
+                <div className="relative flex h-full min-h-28 flex-col justify-end p-4 text-white">
+                  <span className="text-lg font-black leading-none">{item.city}</span>
+                  <span className="mt-1 text-xs font-semibold text-white/80">{item.detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Search Box Card */}
           <div className="relative bg-transparent p-0 sm:p-2 lg:p-4">
             <form
@@ -778,25 +801,6 @@ export function HeroSectionClient({
               {renderSearchForm()}
             </form>
           </div>
-        </div>
-
-        <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-3" style={{ animationDelay: '460ms', animationFillMode: 'both' }}>
-          {heroDestinations.map((item) => (
-            <div key={item.city} className="relative min-h-28 overflow-hidden rounded-lg border border-white/20 bg-slate-950 shadow-lg">
-              <Image
-                src={item.image}
-                alt=""
-                fill
-                sizes="(max-width: 640px) 100vw, 280px"
-                className="object-cover opacity-80 transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-slate-950/35" />
-              <div className="relative flex h-full min-h-28 flex-col justify-end p-4 text-white">
-                <span className="text-lg font-black leading-none">{item.city}</span>
-                <span className="mt-1 text-xs font-semibold text-white/80">{item.detail}</span>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Trust Indicators */}

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('package_bookings')
-      .select('*, package:packages(*), buyer:profiles(*)', { count: 'exact' })
+      .select('*, package:packages(*), buyer:profiles!package_bookings_buyer_id_fkey(*)', { count: 'exact' })
       .eq('provider_id', provider.id)
       .order('created_at', { ascending: false })
 

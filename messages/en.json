@@ -70,7 +70,8 @@
     "language": "Language",
     "trip_requests": "Trip Requests",
     "last_minute": "Last Minute",
-    "packages": "Packages"
+    "packages": "Packages",
+    "saved": "Saved"
   },
   "auth": {
     "login_title": "Log in to your account",
@@ -353,6 +354,7 @@
     "users": "Users",
     "activity_logs": "Activity Logs",
     "alerts": "Alerts",
+    "reports": "Reports",
     "flight_analytics": "Flight Analytics",
     "provider_analytics": "Provider Analytics",
     "group_overview": "Overview",
@@ -569,6 +571,26 @@
       "eyebrow": "Ready to Go?",
       "title": "Last Minute Travel Deals",
       "description": "Spontaneous traveler? Grab our exclusive last-minute offers and fly today for much less."
+    },
+    "weekend_getaway": {
+      "eyebrow": "Short Escape",
+      "title": "Weekend Getaways",
+      "description": "Plan a quick break with zero hassle. Curated trips departing Thursday or Friday — back home refreshed by Sunday."
+    },
+    "hajj_season": {
+      "eyebrow": "Hajj Season",
+      "title": "Hajj Flights",
+      "description": "Dedicated Hajj-season flight packages from accredited providers. Limited seats — book early."
+    },
+    "umrah_offer": {
+      "eyebrow": "Umrah Deals",
+      "title": "Umrah Flights",
+      "description": "Umrah flights at the best prices from trusted providers. Flexible dates year-round."
+    },
+    "family_friendly": {
+      "eyebrow": "Family Trips",
+      "title": "Family Friendly Picks",
+      "description": "Destinations and schedules that work for families. Adjacent seats, generous baggage, and kid-ready options."
     }
   },
   "validation": {
@@ -667,6 +689,7 @@
     "users": "Users",
     "customers": "Customers",
     "campaigns": "Campaigns",
+    "creative_kit": "Creative Kit",
     "trip_requests": "Trip Requests",
     "revenue": "Revenue",
     "wallet": "Wallet",
@@ -1017,6 +1040,7 @@
     "saved_trips": "Saved Trips",
     "saved_rooms": "Saved Rooms",
     "saved_cars": "Saved Cars",
+    "saved_packages": "Saved Packages",
     "no_saved": "No saved items yet",
     "save": "Save",
     "unsave": "Unsave",
@@ -1132,7 +1156,13 @@
     "hint": "Use mouse or touch to draw your signature",
     "clear": "Clear",
     "captured": "Captured",
-    "canvas_aria": "Signature pad"
+    "canvas_aria": "Signature pad",
+    "mode_draw": "Draw",
+    "mode_upload": "Photo of paper",
+    "upload_hint": "Sign on paper, then take a photo of your signature",
+    "upload_cta": "Choose or take a photo",
+    "replace_photo": "Replace photo",
+    "processing": "Processing..."
   },
   "name_change": {
     "allowed": "Name change allowed",

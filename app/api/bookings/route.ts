@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { bookingSchema } from '@/lib/validations'
@@ -6,6 +7,11 @@ import { DEFAULT_COMMISSION_RATE } from '@/lib/constants'
 import { rateLimit } from '@/lib/rate-limit'
 import { notify } from '@/lib/notifications'
 import { shortId } from '@/lib/utils'
+import { render } from '@react-email/components'
+import GuestBooking from '@/emails/guest-booking'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -148,6 +154,11 @@ export async function POST(request: NextRequest) {
     const providerPayout = totalAmount - commissionAmount
     const bookingId = crypto.randomUUID()
 
+    const cookieStore = await cookies()
+    const utm_source = cookieStore.get('utm_source')?.value || null
+    const utm_campaign = cookieStore.get('utm_campaign')?.value || null
+    const utm_medium = cookieStore.get('utm_medium')?.value || null
+
     // Create booking
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from('bookings')
@@ -170,8 +181,11 @@ export async function POST(request: NextRequest) {
         commission_amount: commissionAmount,
         provider_payout: providerPayout,
         status: 'payment_processing',
+        utm_source,
+        utm_campaign,
+        utm_medium,
       })
-      .select('*, trip:trips(*), provider:providers(*)')
+      .select('*, guest_token, trip:trips(*), provider:providers(*)')
       .single()
 
     if (bookingError || !booking) {
@@ -229,6 +243,47 @@ export async function POST(request: NextRequest) {
         bodyEn: `New booking #${ref} received for the trip from ${tripOriginEn} to ${tripDestEn} - ${requestedSeatsCount} seat(s).`,
         data: { booking_id: booking.id },
       })
+    }
+
+    if (!user?.id && booking.guest_token && passenger_email) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://booktfly.com'
+        const paymentUrl = `${baseUrl}/ar/guest/booking/${booking.guest_token}`
+        const claimUrl = `${baseUrl}/ar/claim/${booking.guest_token}`
+
+        const { data: bankInfo } = await supabaseAdmin
+          .from('platform_settings')
+          .select('bank_name_en, bank_iban, bank_account_holder_en')
+          .limit(1)
+          .single()
+
+        const departureDate = new Date(trip.departure_at).toLocaleDateString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        })
+
+        const emailHtml = await render(GuestBooking({
+          passengerName: passenger_name,
+          origin: trip.origin_city_en || trip.origin_city_ar,
+          destination: trip.destination_city_en || trip.destination_city_ar,
+          departureDate,
+          seats: requestedSeatsCount,
+          amount: totalAmount,
+          bankName: bankInfo?.bank_name_en || 'N/A',
+          bankIban: bankInfo?.bank_iban || 'N/A',
+          bankHolder: bankInfo?.bank_account_holder_en || 'N/A',
+          paymentUrl,
+          claimUrl,
+        }))
+
+        await resend.emails.send({
+          from: 'BooktFly <noreply@booktfly.com>',
+          to: passenger_email,
+          subject: `Your Flight Booking #${ref} - Complete Payment`,
+          html: emailHtml,
+        })
+      } catch (emailErr) {
+        console.error('Failed to send guest booking email:', emailErr)
+      }
     }
 
     return NextResponse.json({ bookingId: booking.id }, { status: 201 })

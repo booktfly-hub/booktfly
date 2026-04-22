@@ -39,7 +39,7 @@ export function AlertsPageClient({ locale }: AlertsPageClientProps) {
 
   if (loading) {
     return (
-      <div className="container max-w-2xl py-8 px-4 mx-auto">
+      <div className="container max-w-2xl pt-6 pb-8 md:pt-8 lg:pt-10 px-4 mx-auto">
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-20 animate-pulse rounded-lg bg-muted" />
@@ -50,7 +50,7 @@ export function AlertsPageClient({ locale }: AlertsPageClientProps) {
   }
 
   return (
-    <div className="container max-w-2xl py-8 px-4 mx-auto">
+    <div className="container max-w-2xl pt-6 pb-8 md:pt-8 lg:pt-10 px-4 mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Bell className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold">{t('title')}</h1>

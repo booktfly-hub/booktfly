@@ -38,11 +38,13 @@ export async function GET(request: NextRequest) {
   const tripIds = items.filter(i => i.item_type === 'trip').map(i => i.item_id)
   const roomIds = items.filter(i => i.item_type === 'room').map(i => i.item_id)
   const carIds = items.filter(i => i.item_type === 'car').map(i => i.item_id)
+  const packageIds = items.filter(i => i.item_type === 'package').map(i => i.item_id)
 
-  const [tripsRes, roomsRes, carsRes] = await Promise.all([
+  const [tripsRes, roomsRes, carsRes, packagesRes] = await Promise.all([
     tripIds.length ? supabase.from('trips').select('*, provider:providers(*)').in('id', tripIds) : Promise.resolve({ data: [] }),
     roomIds.length ? supabase.from('rooms').select('*, provider:providers(*)').in('id', roomIds) : Promise.resolve({ data: [] }),
     carIds.length ? supabase.from('cars').select('*, provider:providers(*)').in('id', carIds) : Promise.resolve({ data: [] }),
+    packageIds.length ? supabase.from('packages').select('*, provider:providers(*)').in('id', packageIds) : Promise.resolve({ data: [] }),
   ])
 
   return NextResponse.json({
@@ -50,6 +52,7 @@ export async function GET(request: NextRequest) {
     trips: tripsRes.data || [],
     rooms: roomsRes.data || [],
     cars: carsRes.data || [],
+    packages: packagesRes.data || [],
   })
 }
 

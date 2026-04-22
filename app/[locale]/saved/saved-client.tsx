@@ -2,26 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Plane, Building, CarFront, HeartOff } from 'lucide-react'
+import { Plane, Building, CarFront, Package, HeartOff } from 'lucide-react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { TripCard } from '@/components/trips/trip-card'
 import { RoomCard } from '@/components/rooms/room-card'
 import { CarCard } from '@/components/cars/car-card'
+import { PackageCard } from '@/components/packages/package-card'
 import { cn } from '@/lib/utils'
-import type { Trip, Room, Car } from '@/types'
+import type { Trip, Room, Car, Package as PackageType } from '@/types'
 
-type Tab = 'trip' | 'room' | 'car'
+type Tab = 'trip' | 'room' | 'car' | 'package'
 
 interface SavedData {
   trips: Trip[]
   rooms: Room[]
   cars: Car[]
+  packages: PackageType[]
 }
 
 export function SavedPageClient() {
   const t = useTranslations('saved')
   const [tab, setTab] = useState<Tab>('trip')
-  const [data, setData] = useState<SavedData>({ trips: [], rooms: [], cars: [] })
+  const [data, setData] = useState<SavedData>({ trips: [], rooms: [], cars: [], packages: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function SavedPageClient() {
             trips: tab === 'trip' ? (json.trips || []) : prev.trips,
             rooms: tab === 'room' ? (json.rooms || []) : prev.rooms,
             cars: tab === 'car' ? (json.cars || []) : prev.cars,
+            packages: tab === 'package' ? (json.packages || []) : prev.packages,
           }))
         }
       } catch {}
@@ -48,24 +51,27 @@ export function SavedPageClient() {
     { key: 'trip', label: t('saved_trips'), icon: Plane },
     { key: 'room', label: t('saved_rooms'), icon: Building },
     { key: 'car', label: t('saved_cars'), icon: CarFront },
+    { key: 'package', label: t('saved_packages'), icon: Package },
   ]
 
   const currentItems =
     tab === 'trip' ? data.trips :
     tab === 'room' ? data.rooms :
-    data.cars
+    tab === 'car' ? data.cars :
+    data.packages
 
   return (
-    <div className="container max-w-5xl py-8 px-4 mx-auto">
+    <div className="container max-w-5xl pt-6 pb-8 md:pt-8 lg:pt-10 px-4 mx-auto">
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
-      <div className="flex gap-2 mb-8 border-b border-border pb-3">
+      <div className="mb-8 -mx-1 overflow-x-auto border-b border-border pb-3 px-1 scrollbar-hide">
+        <div className="flex min-w-max gap-2">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.key}
             onClick={() => setTab(tabItem.key)}
             className={cn(
-              'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm',
               tab === tabItem.key
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted'
@@ -75,6 +81,7 @@ export function SavedPageClient() {
             {tabItem.label}
           </button>
         ))}
+        </div>
       </div>
 
       {loading ? (
@@ -95,6 +102,9 @@ export function SavedPageClient() {
           ))}
           {tab === 'car' && data.cars.map(car => (
             <CarCard key={car.id} car={car} />
+          ))}
+          {tab === 'package' && data.packages.map(pkg => (
+            <PackageCard key={pkg.id} pkg={pkg} />
           ))}
         </div>
       )}

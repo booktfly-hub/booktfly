@@ -39,6 +39,10 @@ export type ActivityEventType =
   | 'package_booking_cancelled'
   | 'trip_request_offer_created'
   | 'trip_request_offer_accepted'
+  | 'trip_curated'
+  | 'trip_reported'
+  | 'guest_claim_new'
+  | 'guest_claim_existing'
 
 export async function logActivity(
   eventType: ActivityEventType,

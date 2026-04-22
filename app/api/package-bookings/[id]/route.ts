@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const { data: booking, error } = await supabaseAdmin
       .from('package_bookings')
-      .select('*, package:packages(*, provider:providers(*)), buyer:profiles(*)')
+      .select('*, package:packages(*, provider:providers(*)), buyer:profiles!package_bookings_buyer_id_fkey(*)')
       .eq('id', id)
       .single()
 

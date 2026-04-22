@@ -11,6 +11,7 @@ type BookingConfirmedProps = {
   seats: number
   totalAmount: number
   locale?: 'ar' | 'en'
+  claimUrl?: string
 }
 
 const t = {
@@ -44,6 +45,19 @@ const t = {
   },
 }
 
+const claimCopy = {
+  ar: {
+    title: 'احفظ حجزك في حسابك',
+    subtitle: 'نقرة واحدة — بدون كلمة مرور. تابع كل رحلاتك، احصل على تحديثات مباشرة، واكسب نقاطاً مع كل حجز.',
+    button: 'إنشاء حسابي ←',
+  },
+  en: {
+    title: 'Save this booking to your account',
+    subtitle: 'One click — no password needed. Track all your trips, get live updates, and earn points with every booking.',
+    button: 'Claim my account →',
+  },
+}
+
 export default function BookingConfirmed({
   bookingRef = 'BKT-000000',
   origin = 'Riyadh',
@@ -53,8 +67,10 @@ export default function BookingConfirmed({
   seats = 1,
   totalAmount = 0,
   locale = 'ar',
+  claimUrl,
 }: BookingConfirmedProps) {
   const strings = t[locale]
+  const claim = claimCopy[locale]
 
   return (
     <BaseLayout previewText={strings.preview(bookingRef)}>
@@ -126,8 +142,51 @@ export default function BookingConfirmed({
       </Section>
 
       <Text style={note}>{strings.note}</Text>
+
+      {claimUrl && (
+        <Section style={claimSection}>
+          <Text style={claimTitle}>{claim.title}</Text>
+          <Text style={claimSubtitle}>{claim.subtitle}</Text>
+          <a href={claimUrl} style={claimButton}>{claim.button}</a>
+        </Section>
+      )}
     </BaseLayout>
   )
+}
+
+const claimSection: React.CSSProperties = {
+  backgroundColor: '#f0fdf4',
+  border: '1px solid #bbf7d0',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '32px 0 0 0',
+  textAlign: 'center',
+}
+
+const claimTitle: React.CSSProperties = {
+  color: '#14532d',
+  fontSize: '18px',
+  fontWeight: 700,
+  margin: '0 0 8px 0',
+}
+
+const claimSubtitle: React.CSSProperties = {
+  color: '#166534',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0 0 16px 0',
+}
+
+const claimButton: React.CSSProperties = {
+  backgroundColor: '#16a34a',
+  borderRadius: '8px',
+  color: '#ffffff',
+  display: 'inline-block',
+  fontSize: '15px',
+  fontWeight: 600,
+  padding: '12px 28px',
+  textDecoration: 'none',
+  textAlign: 'center',
 }
 
 const title: React.CSSProperties = {

@@ -217,11 +217,15 @@ function SignupContent() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Link href={`/${locale}`} className="inline-flex items-center justify-center mb-10 group">
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center transform group-hover:scale-110 transition-all duration-300 group-hover:rotate-3">
-                  <Image src="/booktfly-logo-symbol.png" alt="BooktFly" width={40} height={40} className="object-contain" />
-                </div>
-                <span className="ms-4 text-2xl font-black tracking-tighter">BooktFly</span>
+              <Link href={`/${locale}`} className="inline-flex items-center justify-start mb-10 group">
+                <Image
+                  src="/navbar.png"
+                  alt="BooktFly"
+                  width={224}
+                  height={72}
+                  priority
+                  className="h-24 w-auto object-contain drop-shadow-[0_2px_10px_rgba(255,255,255,0.12)] transition-transform duration-300 group-hover:scale-[1.02]"
+                />
               </Link>
             </motion.div>
             
@@ -275,13 +279,15 @@ function SignupContent() {
         <div className="w-full lg:w-7/12 p-6 sm:p-12 lg:p-16 flex flex-col justify-center relative bg-card">
           <div className="max-w-md w-full mx-auto">
             <div className="text-center lg:text-start mb-8 lg:mb-10">
-              <Link href={`/${locale}`} className="lg:hidden inline-block mb-8 group">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-2.5 rounded-xl group-hover:bg-primary/20 transition-colors">
-                    <Image src="/booktfly-logo-symbol.png" alt="BooktFly" width={32} height={32} className="object-contain" />
-                  </div>
-                  <span className="text-2xl font-black tracking-tighter text-primary">BooktFly</span>
-                </div>
+              <Link href={`/${locale}`} className="lg:hidden inline-flex mb-8 group">
+                <Image
+                  src="/navbar.png"
+                  alt="BooktFly"
+                  width={224}
+                  height={72}
+                  priority
+                  className="h-20 w-auto object-contain drop-shadow-[0_2px_8px_rgba(var(--primary-rgb),0.15)] transition-transform duration-300 group-hover:scale-[1.02]"
+                />
               </Link>
               
               <motion.div

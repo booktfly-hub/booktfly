@@ -1,14 +1,13 @@
 'use client'
 
 import Image from 'next/image'
-import { Suspense, useEffect, useState, use } from 'react'
+import { useEffect, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { resolveApiErrorMessage } from '@/lib/api-error'
 import {
   BedDouble,
@@ -46,22 +45,23 @@ type RoomBookingFormData = {
   rooms_count: number
 }
 
-export default function BookRoomPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
-  return (
-    <Suspense fallback={<RoomBookingPageSkeleton />}>
-      <BookRoomContent params={params} />
-    </Suspense>
-  )
+function sanitizeGuestName(value: string) {
+  return value.replace(/[^a-zA-Z\s\-'.]/g, '')
 }
 
-function BookRoomContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default function BookRoomPage() {
+  return <BookRoomContent />
+}
+
+function BookRoomContent() {
   const t = useTranslations()
   const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { id: roomId } = use(params)
+  const params = useParams<{ id: string }>()
+  const roomId = params.id
 
   const [room, setRoom] = useState<Room | null>(null)
   const [loading, setLoading] = useState(true)
@@ -273,15 +273,13 @@ function BookRoomContent({ params }: { params: Promise<{ id: string; locale: str
                       <span className="text-destructive">*</span>
                     </label>
                     <input
-                      {...register('guest_name')}
+                      {...register('guest_name', {
+                        setValueAs: (value) => (typeof value === 'string' ? sanitizeGuestName(value) : value),
+                      })}
                       dir="ltr"
+                      autoComplete="name"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
                       placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
-                      onInput={(e) => {
-                        const el = e.currentTarget
-                        const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
-                        if (cleaned !== el.value) el.value = cleaned
-                      }}
                     />
                     {errors.guest_name && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_name.message}</p>

@@ -8,7 +8,6 @@ import {
   Sparkles,
   MapPin,
   Users,
-  CreditCard,
   Minus,
   Plus,
   AlertTriangle,
@@ -21,21 +20,13 @@ import {
   CarFront,
   Calendar,
   Clock,
-  Hash,
   Star,
-  Phone,
-  Mail,
-  User,
   CalendarDays,
-  ChevronDown,
 } from 'lucide-react'
 import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { RoomDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Calendar as CalendarUI } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format, parseISO, isValid } from 'date-fns'
 import type { Package as PackageType } from '@/types/database'
 
@@ -50,13 +41,8 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
   const [loading] = useState(false)
   const [currentImage, setCurrentImage] = useState(0)
   const [people, setPeople] = useState(1)
-  const [guestName, setGuestName] = useState('')
-  const [guestPhone, setGuestPhone] = useState('')
-  const [guestEmail, setGuestEmail] = useState('')
-  const [startDate, setStartDate] = useState(initialPkg?.start_date || '')
-  const [endDate, setEndDate] = useState(initialPkg?.end_date || '')
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+  const startDate = initialPkg?.start_date || ''
+  const endDate = initialPkg?.end_date || ''
 
   const Back = isAr ? ChevronRight : ChevronLeft
 
@@ -179,49 +165,12 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
     removed: 'bg-rose-500/10 text-rose-500 border-rose-500/20 shadow-rose-500/5',
   }
 
-  const handleBooking = async () => {
-    if (!guestName.trim()) {
-      setError(isAr ? 'الاسم مطلوب' : 'Name is required')
-      return
-    }
-    if (!startDate || !endDate) {
-      setError(isAr ? 'التواريخ مطلوبة' : 'Dates are required')
-      return
-    }
-
-    setSubmitting(true)
-    setError('')
-
-    try {
-      const res = await fetch('/api/package-bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          package_id: pkg.id,
-          number_of_people: people,
-          guest_name: guestName,
-          guest_phone: guestPhone || null,
-          guest_email: guestEmail || null,
-          start_date: startDate,
-          end_date: endDate,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || (isAr ? 'حدث خطأ' : 'An error occurred'))
-        return
-      }
-
-      if (data.booking?.id) {
-        router.push(`/${locale}/checkout/${data.booking.id}?type=package`)
-      }
-    } catch {
-      setError(isAr ? 'حدث خطأ' : 'An error occurred')
-    } finally {
-      setSubmitting(false)
-    }
+  const handleBooking = () => {
+    const nextSearch = new URLSearchParams()
+    nextSearch.set('people', String(people))
+    if (startDate) nextSearch.set('start', startDate)
+    if (endDate) nextSearch.set('end', endDate)
+    router.push(`/${locale}/packages/${pkg.id}/book?${nextSearch.toString()}`)
   }
 
   const BookingForm = () => (
@@ -257,94 +206,41 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
             </div>
           </div>
 
-          {/* Guest Info */}
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 space-y-4">
-            <h4 className="text-sm font-bold text-slate-900">{t('packages.guest_info')}</h4>
-            <div className="space-y-3">
-              <div className="relative">
-                <User className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder={t('common.name')}
-                  className="h-11 ps-10 rounded-xl border-slate-200 bg-white text-sm font-medium shadow-none"
-                />
-              </div>
-              <div className="relative">
-                <Phone className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  type="tel"
-                  value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
-                  placeholder={t('common.phone')}
-                  className="h-11 ps-10 rounded-xl border-slate-200 bg-white text-sm font-medium shadow-none"
-                />
-              </div>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  placeholder={t('common.email')}
-                  className="h-11 ps-10 rounded-xl border-slate-200 bg-white text-sm font-medium shadow-none"
-                />
-              </div>
+          {/* Dates (fixed by provider) */}
+          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-slate-500" />
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                {isAr ? 'تواريخ سفر الباقة' : 'Package Travel Dates'}
+              </span>
             </div>
-          </div>
-
-          {/* Dates */}
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('packages.start_date')}</label>
-                <Popover>
-                  <PopoverTrigger className={cn(
-                    'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium shadow-none transition-colors hover:bg-slate-50',
-                    startDate ? 'text-slate-900' : 'text-slate-400'
-                  )}>
-                    <span className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
-                      {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarUI
-                      mode="single"
-                      selected={startDate && isValid(parseISO(startDate)) ? parseISO(startDate) : undefined}
-                      onSelect={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isAr ? 'المغادرة' : 'Departure'}</label>
+                <div className={cn(
+                  'flex h-11 w-full items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold',
+                  startDate ? 'text-slate-900' : 'text-slate-400'
+                )}>
+                  <span className="truncate">
+                    {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : '—'}
+                  </span>
+                </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">{t('packages.end_date')}</label>
-                <Popover>
-                  <PopoverTrigger className={cn(
-                    'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium shadow-none transition-colors hover:bg-slate-50',
-                    endDate ? 'text-slate-900' : 'text-slate-400'
-                  )}>
-                    <span className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" />
-                      {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
-                    </span>
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarUI
-                      mode="single"
-                      selected={endDate && isValid(parseISO(endDate)) ? parseISO(endDate) : undefined}
-                      onSelect={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                      disabled={(date) => startDate && isValid(parseISO(startDate)) ? date < parseISO(startDate) : false}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isAr ? 'العودة' : 'Return'}</label>
+                <div className={cn(
+                  'flex h-11 w-full items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold',
+                  endDate ? 'text-slate-900' : 'text-slate-400'
+                )}>
+                  <span className="truncate">
+                    {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : '—'}
+                  </span>
+                </div>
               </div>
             </div>
+            <p className="text-[11px] text-slate-400">
+              {isAr ? 'تواريخ ثابتة محددة من قِبل مزود الباقة.' : 'Fixed dates set by the package provider.'}
+            </p>
           </div>
 
           {/* Price breakdown */}
@@ -359,29 +255,17 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
             </div>
           </div>
 
-          {error && (
-            <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-sm font-bold text-destructive text-center">
-              {error}
-            </div>
-          )}
-
           <button
             onClick={handleBooking}
-            disabled={submitting}
             className={cn(
               buttonVariants({ size: 'lg' }),
               'h-14 w-full rounded-2xl text-base font-bold shadow-lg shadow-primary/15 disabled:opacity-50'
             )}
           >
-            {submitting ? (
-              <span className="animate-pulse">{t('common.loading')}</span>
-            ) : (
-              <>
-                <CreditCard className="h-5 w-5" />
-                {t('packages.book_now')}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </>
-            )}
+            <span className="inline-flex items-center gap-2">
+              {t('packages.book_now')}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            </span>
           </button>
         </>
       )}
@@ -812,11 +696,9 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
           {isBookable ? (
             <button
               onClick={handleBooking}
-              disabled={submitting}
               className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold text-base active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              <CreditCard className="h-5 w-5" />
-              {submitting ? t('common.loading') : t('packages.book_now')}
+              {t('packages.book_now')}
             </button>
           ) : (
             <button disabled className="flex-1 py-3.5 rounded-xl bg-destructive/20 text-destructive font-bold text-base border border-destructive/20">
