@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { memo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Star, BadgeCheck, TrendingUp } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN } from '@/lib/utils'
@@ -11,6 +12,7 @@ import { isLastMinute } from '@/lib/last-minute'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { CountdownTimer } from '@/components/ui/countdown-timer'
 import { FavoriteButton } from '@/components/shared/favorite-button'
+import { ShareButton } from '@/components/shared/share-button'
 import { BnplBadge } from '@/components/ui/bnpl-badge'
 import { RibbonBadge, type RibbonKind } from '@/components/ui/ribbon-badge'
 import type { Trip } from '@/types'
@@ -21,7 +23,7 @@ type TripCardProps = {
   ribbon?: RibbonKind
 }
 
-export function TripCard({ trip, className, ribbon }: TripCardProps) {
+function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -57,7 +59,16 @@ export function TripCard({ trip, className, ribbon }: TripCardProps) {
 
   return (
     <div className="relative h-full">
-      <FavoriteButton itemType="trip" itemId={trip.id} className="absolute top-4 end-4 z-10" />
+      <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
+        <ShareButton
+          url={`/${locale}/trips/${trip.id}`}
+          title={`${originCity} → ${destCity}`}
+          text={isAr
+            ? `رحلة ${originCity} إلى ${destCity} بـ ${formattedPrice} على BookitFly`
+            : `${originCity} → ${destCity} from ${formattedPrice} on BookitFly`}
+        />
+        <FavoriteButton itemType="trip" itemId={trip.id} />
+      </div>
     <Link href={`/${locale}/trips/${trip.id}`} className="block group h-full focus:outline-none">
       <div
         className={cn(
@@ -217,3 +228,5 @@ export function TripCard({ trip, className, ribbon }: TripCardProps) {
     </div>
   )
 }
+
+export const TripCard = memo(TripCardComponent)

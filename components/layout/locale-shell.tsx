@@ -46,10 +46,16 @@ const DETAIL_PAGE_PATTERNS = [/\/trips\/[^/]+/, /\/rooms\/[^/]+/, /\/cars\/[^/]+
 
 export function LocaleShell({ children }: Props) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const search = searchParams.toString()
   const segments = pathname.split('/')
   const segment = segments[2]
   const hidePublicChrome = segment ? HIDDEN_CHROME_SEGMENTS.has(segment) : false
   const isDetailPage = DETAIL_PAGE_PATTERNS.some(p => p.test(pathname))
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname, search])
 
   return (
     <UserProvider>

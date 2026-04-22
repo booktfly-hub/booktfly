@@ -1,0 +1,104 @@
+- generic [active] [ref=e1]:
+  - link "تخطي إلى المحتوى الرئيسي" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - link "BooktFly" [ref=e6] [cursor=pointer]:
+        - /url: /ar
+        - img "BooktFly" [ref=e8]
+      - generic [ref=e9]:
+        - generic [ref=e11]:
+          - link "تسجيل الدخول" [ref=e12] [cursor=pointer]:
+            - /url: /ar/auth/login
+          - link "إنشاء حساب" [ref=e13] [cursor=pointer]:
+            - /url: /ar/auth/signup
+        - button "Open navigation menu" [ref=e14]:
+          - img [ref=e15]
+  - main [ref=e16]
+  - contentinfo [ref=e58]:
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - link "BooktFly BOOKTFLY MENA Travel Hub" [ref=e65] [cursor=pointer]:
+            - /url: /ar
+            - img "BooktFly" [ref=e67]
+            - generic [ref=e68]:
+              - generic [ref=e69]: BOOKTFLY
+              - generic [ref=e70]: MENA Travel Hub
+          - paragraph [ref=e71]: الوجهة الأولى لحجز رحلات الطيران الموثوقة بأسعار تنافسية في جميع أنحاء المملكة العربية السعودية والشرق الأوسط.
+          - generic [ref=e72]:
+            - link [ref=e73] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e74]
+            - link [ref=e76] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e77]
+            - link [ref=e79] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e80]
+            - link [ref=e83] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e84]
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - heading "اكتشف" [level=3] [ref=e89]
+            - generic [ref=e90]:
+              - link "تصفح الرحلات" [ref=e91] [cursor=pointer]:
+                - /url: /ar/trips
+              - link "كن مزود خدمة" [ref=e92] [cursor=pointer]:
+                - /url: /ar/become-provider
+              - link "العروض الخاصة" [ref=e93] [cursor=pointer]:
+                - /url: "#"
+          - generic [ref=e94]:
+            - heading "الشركة" [level=3] [ref=e95]
+            - generic [ref=e96]:
+              - link "من نحن" [ref=e97] [cursor=pointer]:
+                - /url: /ar/about
+              - link "مركز المساعدة" [ref=e98] [cursor=pointer]:
+                - /url: /ar/help
+              - link "تواصل معنا" [ref=e99] [cursor=pointer]:
+                - /url: /ar/help
+          - generic [ref=e100]:
+            - heading "قانوني" [level=3] [ref=e101]
+            - generic [ref=e102]:
+              - link "الشروط والأحكام" [ref=e103] [cursor=pointer]:
+                - /url: "#"
+              - link "سياسة الخصوصية" [ref=e104] [cursor=pointer]:
+                - /url: "#"
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - img [ref=e107]
+          - generic [ref=e109]:
+            - paragraph [ref=e110]: حجز آمن 100%
+            - paragraph [ref=e111]: بياناتك دائماً في أمان
+        - generic [ref=e112]:
+          - img [ref=e113]
+          - generic [ref=e115]:
+            - paragraph [ref=e116]: خيارات دفع متنوعة
+            - paragraph [ref=e117]: مدى، فيزا، ماستركارد
+        - generic [ref=e118]:
+          - img [ref=e119]
+          - generic [ref=e122]:
+            - paragraph [ref=e123]: دعم فني 24/7
+            - paragraph [ref=e124]: نحن معك في كل خطوة
+      - generic [ref=e125]:
+        - paragraph [ref=e126]: وسائل الدفع المقبولة
+        - generic [ref=e127]:
+          - generic "mada" [ref=e128]:
+            - img "mada" [ref=e129]
+          - generic "Apple Pay" [ref=e130]:
+            - img "Apple Pay" [ref=e131]
+          - generic "Visa" [ref=e132]:
+            - img "Visa" [ref=e133]
+          - generic "Mastercard" [ref=e134]:
+            - img "Mastercard" [ref=e135]
+          - generic "STC Pay" [ref=e136]:
+            - img "stc pay" [ref=e137]
+      - generic [ref=e138]:
+        - paragraph [ref=e139]: جميع الحقوق محفوظة لـ BookitFly
+        - generic [ref=e140]:
+          - generic [ref=e143]: "حالة النظام: متصل"
+          - generic [ref=e144]: BooktFly v2.0-2026
+  - button "Open Next.js Dev Tools" [ref=e150] [cursor=pointer]:
+    - img [ref=e151]
+  - alert [ref=e154]

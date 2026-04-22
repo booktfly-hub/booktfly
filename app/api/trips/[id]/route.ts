@@ -13,27 +13,17 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const supabase = await createClient()
 
-    const { data: trip, error } = await supabase
-      .from('trips')
-      .select('*, provider:providers(*)')
-      .eq('id', id)
-      .single()
+    const [tripRes, seatsRes] = await Promise.all([
+      supabase.from('trips').select('*, provider:providers(*)').eq('id', id).single(),
+      supabaseAdmin.from('trip_seat_assignments').select('seat_number').eq('trip_id', id),
+    ])
 
-    if (error || !trip) {
-      return NextResponse.json(
-        { error: 'Trip not found' },
-        { status: 404 }
-      )
+    if (tripRes.error || !tripRes.data) {
+      return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
     }
 
-    const { data: seatAssignments } = await supabaseAdmin
-      .from('trip_seat_assignments')
-      .select('seat_number')
-      .eq('trip_id', id)
-
-    const unavailableSeatNumbers = (seatAssignments || []).map((item) => item.seat_number)
-
-    return NextResponse.json({ trip: { ...trip, unavailable_seat_numbers: unavailableSeatNumbers } })
+    const unavailableSeatNumbers = (seatsRes.data || []).map((item) => item.seat_number)
+    return NextResponse.json({ trip: { ...tripRes.data, unavailable_seat_numbers: unavailableSeatNumbers } })
   } catch {
     return NextResponse.json(
       { error: 'Internal server error' },

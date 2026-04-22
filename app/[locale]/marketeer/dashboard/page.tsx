@@ -11,6 +11,14 @@ import {
 import { cn } from '@/lib/utils'
 import type { Marketeer, FlypointsTransaction } from '@/types'
 
+type TopTrip = {
+  trip_id: string
+  label_ar: string
+  label_en: string
+  bookings: number
+  revenue: number
+}
+
 type DashboardData = {
   marketeer: Marketeer
   balance: number
@@ -19,6 +27,12 @@ type DashboardData = {
   total_earned: number
   referral_count: number
   transactions: FlypointsTransaction[]
+  attributed_count: number
+  confirmed_count: number
+  conversion_rate: number
+  attributed_revenue: number
+  pending_payout: number
+  top_trips: TopTrip[]
 }
 
 export default function MarkeeteerDashboardPage() {
@@ -77,7 +91,7 @@ export default function MarkeeteerDashboardPage() {
     )
   }
 
-  const { marketeer, balance, sar_value, sar_rate, total_earned, referral_count, transactions } = data
+  const { marketeer, balance, sar_value, sar_rate, total_earned, referral_count, transactions, attributed_count, confirmed_count, conversion_rate, attributed_revenue, pending_payout, top_trips } = data
   const referralLink = typeof window !== 'undefined'
     ? `${window.location.origin}/ref/${marketeer.referral_code}`
     : `/ref/${marketeer.referral_code}`
@@ -242,6 +256,61 @@ export default function MarkeeteerDashboardPage() {
             : `Conversion rate: 1 point = ${sar_rate} SAR`}
         </p>
       </div>
+
+      {/* Conversion funnel + pending payout */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: isAr ? 'نقرات محوّلة' : 'Attributed Clicks', value: attributed_count.toString(), color: 'text-slate-700' },
+          { label: isAr ? 'حجوزات مؤكدة' : 'Confirmed Bookings', value: confirmed_count.toString(), color: 'text-emerald-600' },
+          { label: isAr ? 'معدل التحويل' : 'Conversion Rate', value: `${conversion_rate}%`, color: 'text-sky-600' },
+          { label: isAr ? 'دفعة معلّقة' : 'Pending Payout', value: `${pending_payout.toLocaleString()} ${isAr ? 'ر.س' : 'SAR'}`, color: 'text-amber-600' },
+        ].map((m) => (
+          <div key={m.label} className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{m.label}</p>
+            <p className={cn('text-2xl font-black tracking-tighter', m.color)}>{m.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Top trips */}
+      {top_trips.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm animate-fade-in-up">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+              {isAr ? 'أفضل الرحلات' : 'Top Trips'}
+            </p>
+            <p className="text-xs font-bold text-slate-400">
+              {isAr ? `إجمالي ${attributed_revenue.toLocaleString()} ر.س` : `${attributed_revenue.toLocaleString()} SAR total`}
+            </p>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {top_trips.map((t, i) => (
+              <Link
+                key={t.trip_id}
+                href={`/${locale}/trips/${t.trip_id}`}
+                className="flex items-center justify-between py-3 group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="h-7 w-7 rounded-full bg-slate-100 text-slate-600 text-xs font-black flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <p className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors truncate">
+                    {isAr ? t.label_ar : t.label_en}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="text-sm font-bold text-slate-500">
+                    {t.bookings} {isAr ? 'حجز' : 'bookings'}
+                  </span>
+                  <span className="text-sm font-black text-emerald-600">
+                    {t.revenue.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Points Breakdown */}
       {transactions.length > 0 && (() => {

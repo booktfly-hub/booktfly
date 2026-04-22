@@ -13,6 +13,7 @@ type GuestBookingProps = {
   bankIban: string
   bankHolder: string
   paymentUrl: string
+  claimUrl?: string
 }
 
 export default function GuestBooking({
@@ -26,6 +27,7 @@ export default function GuestBooking({
   bankIban = '',
   bankHolder = '',
   paymentUrl = '',
+  claimUrl,
 }: GuestBookingProps) {
   return (
     <BaseLayout previewText="Your flight booking has been created - complete payment">
@@ -133,8 +135,55 @@ export default function GuestBooking({
           Upload Transfer Receipt &rarr;
         </Button>
       </Section>
+
+      {claimUrl && (
+        <Section style={claimSection}>
+          <Text style={claimTitle}>Save this booking to your account</Text>
+          <Text style={claimSubtitle}>
+            One click — no password needed. Track all your trips, get live updates, and unlock loyalty points.
+          </Text>
+          <Button style={claimButton} href={claimUrl}>
+            Claim my account &rarr;
+          </Button>
+        </Section>
+      )}
     </BaseLayout>
   )
+}
+
+const claimSection: React.CSSProperties = {
+  backgroundColor: '#f0fdf4',
+  border: '1px solid #bbf7d0',
+  borderRadius: '12px',
+  padding: '24px',
+  margin: '32px 0 0 0',
+  textAlign: 'center',
+}
+
+const claimTitle: React.CSSProperties = {
+  color: '#14532d',
+  fontSize: '18px',
+  fontWeight: 700,
+  margin: '0 0 8px 0',
+}
+
+const claimSubtitle: React.CSSProperties = {
+  color: '#166534',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0 0 16px 0',
+}
+
+const claimButton: React.CSSProperties = {
+  backgroundColor: '#16a34a',
+  borderRadius: '8px',
+  color: '#ffffff',
+  display: 'inline-block',
+  fontSize: '15px',
+  fontWeight: 600,
+  padding: '12px 28px',
+  textDecoration: 'none',
+  textAlign: 'center',
 }
 
 const title: React.CSSProperties = {

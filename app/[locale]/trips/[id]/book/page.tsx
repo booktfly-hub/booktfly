@@ -964,24 +964,24 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
 
         {/* Sidebar: Price summary & Actions (Desktop) */}
         <div className="hidden lg:block lg:col-span-4">
-          <div className="sticky top-28 rounded-[2.5rem] bg-slate-900 p-8 shadow-2xl shadow-slate-900/20 text-white border border-slate-800 relative overflow-hidden">
+          <div className="sticky top-28 rounded-[2rem] bg-slate-900 p-6 shadow-2xl shadow-slate-900/20 text-white border border-slate-800 relative overflow-hidden">
              {/* Decorative Background */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
             <div className="relative z-10">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">{t('booking.price_summary')}</h3>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">{t('booking.price_summary')}</h3>
 
                 {/* Seats selector inside the dark card */}
-                <div className="bg-white/5 rounded-2xl p-5 border border-white/10 backdrop-blur-sm mb-8">
-                    <label className="block text-sm font-bold text-slate-300 mb-4 text-center">
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur-sm mb-5">
+                    <label className="block text-xs font-bold text-slate-300 mb-3 text-center uppercase tracking-wider">
                         {seatMapEnabled ? (isAr ? 'المقاعد المختارة' : 'Selected Seats') : t('booking.seats_count')}
                     </label>
                     {seatMapEnabled ? (
-                      <div className="rounded-xl border border-white/5 bg-black/20 p-4 text-center">
-                        <div className="text-3xl font-black">{selectedSeatNumbers.length}</div>
-                        <div className="mt-2 flex flex-wrap justify-center gap-2">
+                      <div className="rounded-xl border border-white/5 bg-black/20 p-3 text-center">
+                        <div className="text-2xl font-black leading-none">{selectedSeatNumbers.length}</div>
+                        <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                           {selectedSeatNumbers.map((seat) => (
-                            <span key={seat} className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-wider text-white">
+                            <span key={seat} className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold tracking-wider text-white">
                               {seat}
                             </span>
                           ))}
@@ -993,37 +993,37 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                               type="button"
                               onClick={() => setSeatsCount(Math.max(1, seatsCount - 1))}
                               disabled={seatsCount <= 1}
-                              className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
+                              className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
                           >
-                              <Minus className="h-5 w-5" />
+                              <Minus className="h-4 w-4" />
                           </button>
-                          <span className="text-3xl font-black w-16 text-center">{seatsCount}</span>
+                          <span className="text-2xl font-black w-14 text-center">{seatsCount}</span>
                           <button
                               type="button"
                               onClick={() => setSeatsCount(Math.min(maxBookable, seatsCount + 1))}
                               disabled={seatsCount >= maxBookable}
-                              className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
+                              className="h-10 w-10 rounded-xl flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-30 text-white"
                           >
-                              <Plus className="h-5 w-5" />
+                              <Plus className="h-4 w-4" />
                           </button>
                       </div>
                     )}
-                    <p className="text-xs font-semibold text-accent mt-3 text-center">
+                    <p className="text-[11px] font-semibold text-accent mt-2 text-center">
                         {remaining} {t('trips.seats_remaining')}
                     </p>
                 </div>
 
                 {/* Price Breakdown */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm font-medium text-slate-300">
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs font-medium text-slate-300">
                         <span>{t('trips.price_per_seat')}</span>
-                        <span className="font-mono bg-white/10 px-2 py-1 rounded">{fmt(effectivePrice)}</span>
+                        <span className="font-mono bg-white/10 px-2 py-1 rounded text-[11px]">{fmt(effectivePrice)}</span>
                     </div>
 
-                    <div className="border-t border-white/10 pt-6 mt-6">
+                    <div className="border-t border-white/10 pt-4 mt-4">
                         <div className="flex items-end justify-between">
-                            <span className="text-base font-bold text-slate-300">{t('booking.total_amount')}</span>
-                            <span className="text-4xl font-black text-primary tracking-tighter">{fmt(totalPrice)}</span>
+                            <span className="text-sm font-bold text-slate-300">{t('booking.total_amount')}</span>
+                            <span className="text-3xl font-black text-primary tracking-tighter">{fmt(totalPrice)}</span>
                         </div>
                     </div>
                 </div>
@@ -1033,9 +1033,9 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                   <button
                     type="button"
                     onClick={handleDetailsNext}
-                    className="group mt-10 w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1"
+                    className="group mt-6 w-full h-14 rounded-2xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1"
                   >
-                    <ArrowRight className="h-6 w-6 rtl:rotate-180" />
+                    <ArrowRight className="h-5 w-5 rtl:rotate-180" />
                     {isAr ? 'متابعة لاختيار المقاعد' : 'Continue to Seat Selection'}
                   </button>
                 ) : (
@@ -1043,25 +1043,25 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     type="submit"
                     form="booking-form"
                     disabled={submitting}
-                    className="group mt-10 w-full h-16 rounded-2xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="group mt-6 w-full h-14 rounded-2xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0"
                   >
                     {submitting ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
-                      <CheckCircle className="h-6 w-6" />
+                      <CheckCircle className="h-5 w-5" />
                     )}
                     {submitting ? t('common.loading') : t('booking.proceed_to_payment')}
-                    <ArrowRight className="h-5 w-5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform opacity-50" />
+                    <ArrowRight className="h-4.5 w-4.5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform opacity-50" />
                   </button>
                 )}
 
-                <p className="text-xs font-medium text-slate-500 text-center leading-relaxed mt-6">
+                <p className="text-[11px] font-medium text-slate-500 text-center leading-relaxed mt-4">
                 {t('booking.terms_agreement')}
                 </p>
 
                 {/* Trust Badges */}
-                <div className="mt-6">
-                  <TrustBadges />
+                <div className="mt-4">
+                  <TrustBadges showPayments={false} tone="dark" />
                 </div>
             </div>
           </div>

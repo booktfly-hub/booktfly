@@ -177,7 +177,7 @@ export default function NotificationDetailPage() {
   })
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6 pt-6 md:pt-8 lg:pt-10">
       <div className="flex items-center gap-3">
         <Link
           href={`/${locale}/notifications`}

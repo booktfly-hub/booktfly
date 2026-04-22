@@ -137,6 +137,7 @@ export type NotificationType =
   | 'contract_signed'
   | 'name_change_requested'
   | 'name_change_approved'
+  | 'trip_reported'
 
 export type Profile = {
   id: string
@@ -317,9 +318,36 @@ export type Trip = {
   status: TripStatus
   removed_reason: string | null
   removed_by: string | null
+  // Admin curation & moderation
+  is_featured: boolean
+  featured_until: string | null
+  featured_by: string | null
+  curated_category: CuratedCategory | null
+  report_count: number
   created_at: string
   updated_at: string
   provider?: Provider
+}
+
+export type CuratedCategory =
+  | 'last_minute'
+  | 'weekend_getaway'
+  | 'hajj_season'
+  | 'umrah_offer'
+  | 'family_friendly'
+  | 'featured'
+
+export type TripReport = {
+  id: string
+  trip_id: string
+  reporter_id: string | null
+  reporter_email: string | null
+  reason: string
+  details: string | null
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed'
+  resolved_by: string | null
+  resolved_at: string | null
+  created_at: string
 }
 
 export type FareTier = {

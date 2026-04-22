@@ -89,7 +89,7 @@ export function Navbar() {
   return (
     <div
       className={cn(
-        'z-50 flex justify-center px-4 pt-3 transition-all duration-300 sm:px-6 md:pt-4',
+        'z-50 flex justify-center px-4 pt-2 transition-all duration-300 sm:px-6 md:pt-3',
         useHeroOverlay
           ? 'fixed left-0 right-0 top-0 pointer-events-none'
           : 'sticky top-0'
@@ -103,10 +103,10 @@ export function Navbar() {
             : 'max-w-7xl rounded-2xl border-border/80 bg-surface/95 shadow-lg shadow-slate-200/60 backdrop-blur-xl'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3 px-3 py-1.5 transition-all duration-500 sm:gap-4 sm:px-4 md:px-6')}>
+        <div className={cn('flex items-center justify-between gap-3 px-3 py-1.5 transition-all duration-500 sm:gap-4 sm:px-4 md:px-6 xl:gap-5 xl:px-6 xl:py-2')}>
           {/* Logo */}
-          <Link href={`/${locale}`} className="relative flex z-5">
-            <div className={cn('relative flex h-14 w-40 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 md:h-16 md:w-48', desktopCompact && 'md:w-44')}>
+          <Link href={`/${locale}`} className="relative z-5 flex shrink-0">
+            <div className={cn('relative flex h-14 w-40 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 md:h-16 md:w-48 xl:w-44 2xl:w-48', desktopCompact && 'md:w-44')}>
               <Image 
                 src="/navbar.png"   
                 width={224} height={72}
@@ -118,7 +118,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <div className={cn('hidden md:flex items-center transition-all duration-300', desktopCompact ? 'gap-1' : 'gap-2')}>
+          <div className={cn('hidden xl:flex flex-1 min-w-0 items-center justify-center overflow-x-auto scrollbar-hide transition-all duration-300', desktopCompact ? 'gap-1' : 'gap-2')}>
             {navItems.map(({ href, label, icon: Icon, highlight }) => (
               <Link
                 key={label}
@@ -163,8 +163,8 @@ export function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex flex-nowrap items-center gap-1.5 sm:gap-6 min-w-0 shrink-0">
-            <div className="hidden sm:flex items-center gap-1">
+          <div className="flex flex-nowrap items-center gap-1.5 sm:gap-4 min-w-0 shrink-0">
+            <div className="hidden xl:flex items-center gap-1">
                <LanguageSwitcher compact={desktopCompact} className={cn(useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/15' : 'text-muted-foreground hover:bg-muted hover:text-foreground')} />
                <CurrencySwitcher className={cn(desktopCompact ? 'px-2 py-1 text-xs' : 'px-2 py-1 text-xs', useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/15' : 'text-foreground hover:bg-muted')} />
             </div>
@@ -208,11 +208,11 @@ export function Navbar() {
                         )}>
                           {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </div>
-                        <span
+                          <span
                           className={cn(
-                            'hidden overflow-hidden whitespace-nowrap text-sm font-bold transition-[max-width,opacity,margin] duration-300 lg:inline-block',
+                            'hidden overflow-hidden whitespace-nowrap text-sm font-bold transition-[max-width,opacity,margin] duration-300 xl:inline-block',
                             useHeroOverlay ? 'text-white drop-shadow-sm' : 'text-primary',
-                            desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-[120px] opacity-100'
+                            desktopCompact ? 'ms-0 max-w-0 opacity-0' : 'max-w-[140px] opacity-100'
                           )}
                           aria-hidden={desktopCompact}
                         >
@@ -333,7 +333,7 @@ export function Navbar() {
             {/* Mobile hamburger */}
             <button
               type="button"
-              className={cn('md:hidden shrink-0 self-center rounded-lg p-2 transition-colors', useHeroOverlay ? 'hover:bg-white/10' : 'hover:bg-muted')}
+              className={cn('xl:hidden shrink-0 self-center rounded-lg p-2 transition-colors', useHeroOverlay ? 'hover:bg-white/10' : 'hover:bg-muted')}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileOpen}
@@ -352,7 +352,7 @@ export function Navbar() {
         {mobileOpen && (
           <div
             id={mobileMenuId}
-            className="overflow-hidden rounded-b-lg border-t border-border bg-surface/95 backdrop-blur-xl md:hidden"
+            className="overflow-hidden rounded-b-lg border-t border-border bg-surface/95 backdrop-blur-xl xl:hidden"
           >
               <div className="p-4 space-y-1">
                 {navItems.map(({ href, label, icon: Icon, highlight }) => {

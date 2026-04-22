@@ -5,8 +5,18 @@ import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/components/ui/toaster'
 import { TRIP_STATUS_COLORS } from '@/lib/constants'
-import type { Trip } from '@/types'
-import { Trash2 } from 'lucide-react'
+import type { Trip, CuratedCategory } from '@/types'
+import { Trash2, Sparkles, Flag } from 'lucide-react'
+
+const CURATED_CATEGORIES: { value: CuratedCategory | ''; labelAr: string; labelEn: string }[] = [
+  { value: '', labelAr: 'بدون', labelEn: 'None' },
+  { value: 'last_minute', labelAr: 'لحظة أخيرة', labelEn: 'Last minute' },
+  { value: 'weekend_getaway', labelAr: 'عطلة نهاية الأسبوع', labelEn: 'Weekend getaway' },
+  { value: 'hajj_season', labelAr: 'موسم الحج', labelEn: 'Hajj season' },
+  { value: 'umrah_offer', labelAr: 'عرض عمرة', labelEn: 'Umrah offer' },
+  { value: 'family_friendly', labelAr: 'مناسب للعائلة', labelEn: 'Family friendly' },
+  { value: 'featured', labelAr: 'مميزة', labelEn: 'Featured' },
+]
 
 export default function AdminTrips() {
   const t = useTranslations()
@@ -49,6 +59,21 @@ export default function AdminTrips() {
     }
   }
 
+  const patchCurate = async (tripId: string, payload: Record<string, unknown>) => {
+    const res = await fetch(`/api/admin/trips/${tripId}/curate`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      toast({ title: locale === 'ar' ? 'فشل التحديث' : 'Update failed', variant: 'destructive' })
+      return
+    }
+    const data = await res.json()
+    setTrips((prev) => prev.map((t) => (t.id === tripId ? { ...t, ...data } : t)))
+    toast({ title: t('common.success'), variant: 'success' })
+  }
+
   const statuses = ['', 'active', 'sold_out', 'expired', 'removed', 'deactivated']
 
   return (
@@ -80,14 +105,16 @@ export default function AdminTrips() {
                 <th className="text-start p-3 font-medium">{t('common.seats')}</th>
                 <th className="text-start p-3 font-medium">{t('common.price')}</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
+                <th className="text-start p-3 font-medium">{locale === 'ar' ? 'التصنيف' : 'Category'}</th>
+                <th className="text-start p-3 font-medium">{locale === 'ar' ? 'تمييز' : 'Feature'}</th>
                 <th className="text-start p-3 font-medium">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{t('common.loading')}</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">{t('common.loading')}</td></tr>
               ) : trips.length === 0 ? (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{t('common.no_results')}</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">{t('common.no_results')}</td></tr>
               ) : (
                 trips.map((trip) => (
                   <tr key={trip.id} className="border-b hover:bg-muted/30">
@@ -102,6 +129,44 @@ export default function AdminTrips() {
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${TRIP_STATUS_COLORS[trip.status]}`}>
                         {t(`status.${trip.status}`)}
                       </span>
+                    </td>
+                    <td className="p-3">
+                      <select
+                        value={trip.curated_category ?? ''}
+                        disabled={trip.status !== 'active'}
+                        onChange={(e) => patchCurate(trip.id, { curated_category: e.target.value || null })}
+                        className="text-xs border rounded px-2 py-1 bg-white disabled:opacity-50"
+                      >
+                        {CURATED_CATEGORIES.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {locale === 'ar' ? c.labelAr : c.labelEn}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-3">
+                      {trip.status === 'active' && (
+                        <button
+                          onClick={() => patchCurate(trip.id, { is_featured: !trip.is_featured, featured_days: 14 })}
+                          className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors ${
+                            trip.is_featured
+                              ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                              : 'bg-white border-border text-muted-foreground hover:bg-muted'
+                          }`}
+                          title={trip.featured_until ? `Until ${new Date(trip.featured_until).toLocaleDateString()}` : undefined}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          {trip.is_featured
+                            ? (locale === 'ar' ? 'مميزة' : 'Featured')
+                            : (locale === 'ar' ? 'تمييز' : 'Feature')}
+                        </button>
+                      )}
+                      {trip.report_count > 0 && (
+                        <span className="ms-2 inline-flex items-center gap-1 text-xs text-destructive">
+                          <Flag className="h-3 w-3" />
+                          {trip.report_count}
+                        </span>
+                      )}
                     </td>
                     <td className="p-3">
                       {trip.status === 'active' && (

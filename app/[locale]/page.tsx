@@ -26,7 +26,9 @@ export default async function HomePage() {
       .from('trips')
       .select('*, provider:providers(company_name_ar, company_name_en, provider_type)')
       .eq('status', 'active')
-      .order('created_at', { ascending: false })
+      .eq('is_featured', true)
+      .or(`featured_until.is.null,featured_until.gt.${now}`)
+      .order('featured_until', { ascending: true, nullsFirst: false })
       .limit(6),
     supabase
       .from('trips')

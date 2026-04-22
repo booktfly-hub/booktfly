@@ -24,6 +24,7 @@ import {
   Users,
   Activity,
   Bell,
+  Flag,
   BarChart3,
   TrendingUp,
   CarFront,
@@ -62,6 +63,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'users', icon: Users, href: '/admin/users' },
       { key: 'activity_logs', icon: Activity, href: '/admin/activity-logs' },
       { key: 'alerts', icon: Bell, href: '/admin/alerts', badgeKey: 'alerts' },
+      { key: 'reports', icon: Flag, href: '/admin/reports', badgeKey: 'reports' },
     ],
   },
   {
@@ -143,6 +145,7 @@ function useBadgeCounts() {
       { count: roomBookings },
       { count: carBookings },
       { count: packageBookings },
+      { count: reports },
       alertsRes,
     ] = await Promise.all([
       supabase.from('provider_applications').select('*', { count: 'exact', head: true }).eq('status', 'pending_review'),
@@ -152,6 +155,7 @@ function useBadgeCounts() {
       supabase.from('room_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
       supabase.from('car_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
       supabase.from('package_bookings').select('*', { count: 'exact', head: true }).eq('status', 'payment_processing'),
+      supabase.from('trip_reports').select('*', { count: 'exact', head: true }).eq('status', 'open'),
       fetch('/api/admin/alerts?filter=active&page=0').then(r => r.ok ? r.json() : { total: 0 }).catch(() => ({ total: 0 })),
     ])
 
@@ -164,6 +168,7 @@ function useBadgeCounts() {
       alerts: alertsRes.total ?? 0,
       carBookings: carBookings ?? 0,
       packageBookings: packageBookings ?? 0,
+      reports: reports ?? 0,
     })
   }, [supabase])
 
@@ -336,29 +341,29 @@ export function AdminSidebar() {
         ))}
       </div>
 
-      <div className="p-4 border-t border-slate-100 space-y-3">
+      <div className="space-y-2 border-t border-slate-100 p-3">
         {user && (
-          <div className="flex items-center justify-between px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <span className="text-sm font-bold text-slate-600">
               {locale === 'ar' ? 'الإشعارات' : 'Notifications'}
             </span>
             <NotificationBell userId={user.id} />
           </div>
         )}
-        <Link
-          href={`/${locale}`}
-          onClick={closeMobile}
-          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-        >
-          <ExternalLink className="h-5 w-5 text-slate-400" />
-          {locale === 'ar' ? 'الموقع الرئيسي' : 'Main website'}
-        </Link>
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-1">
-          <LanguageSwitcher />
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <Link
+            href={`/${locale}`}
+            onClick={closeMobile}
+            className="flex min-w-0 flex-1 items-center gap-3 text-sm font-bold text-slate-600 transition-colors hover:text-slate-900"
+          >
+            <ExternalLink className="h-4.5 w-4.5 shrink-0 text-slate-400" />
+            <span className="truncate">{locale === 'ar' ? 'الموقع الرئيسي' : 'Main website'}</span>
+          </Link>
+          <LanguageSwitcher className="shrink-0 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900" />
         </div>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-2xl text-sm font-bold text-destructive hover:bg-destructive/10 transition-colors"
+          className="flex w-full items-center gap-4 rounded-2xl px-3 py-2.5 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10"
         >
           <LogOut className="h-5 w-5" />
           {locale === 'ar' ? 'تسجيل الخروج' : 'Logout'}

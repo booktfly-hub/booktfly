@@ -20,7 +20,7 @@ const schema = z.object({
     'marketeer_application',
   ]),
   target_id: z.string().uuid(),
-  signature_data_url: z.string().regex(/^data:image\/png;base64,/, 'Must be PNG data URL'),
+  signature_data_url: z.string().regex(/^data:image\/(png|jpeg|jpg);base64,/, 'Must be PNG or JPEG data URL'),
   contract_version: z.string().default('v1-2024'),
   guest_token: z.string().uuid().optional(),
 })
@@ -32,9 +32,15 @@ const BOOKING_TABLES: Record<string, { table: string; providerSelect: string }> 
   package_booking: { table: 'package_bookings', providerSelect: 'provider:providers(user_id)' },
 }
 
-function dataUrlToBuffer(dataUrl: string) {
-  const b64 = dataUrl.replace(/^data:image\/png;base64,/, '')
-  return Buffer.from(b64, 'base64')
+function parseSignatureDataUrl(dataUrl: string) {
+  const match = dataUrl.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
+  if (!match) return null
+  const ext = match[1] === 'jpg' ? 'jpeg' : match[1]
+  return {
+    ext,
+    contentType: `image/${ext}`,
+    buffer: Buffer.from(match[2], 'base64'),
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -53,9 +59,11 @@ export async function POST(request: NextRequest) {
 
     const { role, target_type, target_id, signature_data_url, contract_version, guest_token } = parsed.data
 
-    // Payload size guard: decoded PNG should be < 300 KB
-    const buffer = dataUrlToBuffer(signature_data_url)
-    if (buffer.byteLength > 300 * 1024) {
+    const parsed2 = parseSignatureDataUrl(signature_data_url)
+    if (!parsed2) return NextResponse.json({ error: 'Invalid signature format' }, { status: 400 })
+    const { ext, contentType, buffer } = parsed2
+    // Photos are larger than drawn pads; allow up to 2 MB.
+    if (buffer.byteLength > 2 * 1024 * 1024) {
       return NextResponse.json({ error: 'Signature too large' }, { status: 413 })
     }
 
@@ -72,11 +80,14 @@ export async function POST(request: NextRequest) {
       if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
 
       const isOwner = user?.id && booking.buyer_id === user.id
-      const isGuest = !user && guest_token && booking.guest_token === guest_token
-      if (!isOwner && !isGuest) {
+      const tokenMatches = guest_token && booking.guest_token === guest_token
+      // Guest bookings (no buyer_id) are authenticated by booking-ID knowledge,
+      // matching GET /api/bookings/[id] which treats the ID as a capability token.
+      const isGuestBooking = !booking.buyer_id
+      if (!isOwner && !tokenMatches && !isGuestBooking) {
         return NextResponse.json({ error: 'Not authorized for this booking' }, { status: 403 })
       }
-      folderOwner = user?.id || `guest/${guest_token}`
+      folderOwner = user?.id || (guest_token ? `guest/${guest_token}` : `guest/${booking.guest_token ?? target_id}`)
       if (role !== 'client') return NextResponse.json({ error: 'Role mismatch' }, { status: 400 })
     } else if (target_type === 'provider_application') {
       if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -104,11 +115,10 @@ export async function POST(request: NextRequest) {
       if (role !== 'marketeer') return NextResponse.json({ error: 'Role mismatch' }, { status: 400 })
     }
 
-    // Upload to signatures/{folderOwner}/{role}-{target_id}-{ts}.png
-    const path = `${folderOwner}/${role}-${target_id}-${Date.now()}.png`
+    const path = `${folderOwner}/${role}-${target_id}-${Date.now()}.${ext}`
     const { error: uploadError } = await supabaseAdmin.storage
       .from('signatures')
-      .upload(path, buffer, { contentType: 'image/png', upsert: false })
+      .upload(path, buffer, { contentType, upsert: false })
     if (uploadError) {
       return NextResponse.json({ error: 'Upload failed: ' + uploadError.message }, { status: 500 })
     }

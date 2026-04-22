@@ -70,6 +70,41 @@ export async function GET(request: NextRequest) {
 
     const sarRate = settings?.flypoints_sar_rate ?? 0.05
 
+    // Attributed bookings (direct or via UTM campaign = referral code)
+    const { data: attributed } = await supabaseAdmin
+      .from('bookings')
+      .select('id, status, total_amount, commission_amount, trip_id, created_at, trip:trips(origin_city_ar, origin_city_en, destination_city_ar, destination_city_en, origin_code, destination_code)')
+      .or(`booked_by_marketeer_id.eq.${marketeer.id},utm_campaign.eq.${marketeer.referral_code}`)
+      .order('created_at', { ascending: false })
+      .limit(500)
+
+    const rows = attributed ?? []
+    const confirmedRows = rows.filter((r) => r.status === 'confirmed' || r.status === 'completed')
+    const totalRevenue = confirmedRows.reduce((sum, r) => sum + Number(r.total_amount || 0), 0)
+    const conversionRate = rows.length > 0 ? confirmedRows.length / rows.length : 0
+
+    const tripAgg = new Map<string, { trip_id: string; label_ar: string; label_en: string; bookings: number; revenue: number }>()
+    for (const r of confirmedRows) {
+      const trip = Array.isArray(r.trip) ? r.trip[0] : r.trip
+      if (!trip || !r.trip_id) continue
+      const label_ar = `${trip.origin_city_ar || trip.origin_code || ''} → ${trip.destination_city_ar || trip.destination_code || ''}`
+      const label_en = `${trip.origin_city_en || trip.origin_code || ''} → ${trip.destination_city_en || trip.destination_code || ''}`
+      const agg = tripAgg.get(r.trip_id) ?? { trip_id: r.trip_id, label_ar, label_en, bookings: 0, revenue: 0 }
+      agg.bookings++
+      agg.revenue += Number(r.total_amount || 0)
+      tripAgg.set(r.trip_id, agg)
+    }
+    const topTrips = Array.from(tripAgg.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 5)
+
+    // Pending payout: unredeemed positive points × SAR rate
+    const { data: redeemedRow } = await supabaseAdmin
+      .from('flypoints_transactions')
+      .select('points')
+      .eq('marketeer_id', user.id)
+      .lt('points', 0)
+    const redeemedPoints = Math.abs((redeemedRow ?? []).reduce((sum, r) => sum + r.points, 0))
+    const pendingPayout = +((totalEarned - redeemedPoints) * sarRate).toFixed(2)
+
     return NextResponse.json({
       data: {
         marketeer,
@@ -79,6 +114,12 @@ export async function GET(request: NextRequest) {
         total_earned: totalEarned,
         referral_count: referralCount ?? 0,
         transactions: transactions ?? [],
+        attributed_count: rows.length,
+        confirmed_count: confirmedRows.length,
+        conversion_rate: +(conversionRate * 100).toFixed(1),
+        attributed_revenue: totalRevenue,
+        pending_payout: pendingPayout,
+        top_trips: topTrips,
       },
       error: null,
     })

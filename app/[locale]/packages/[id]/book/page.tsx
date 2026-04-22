@@ -1,11 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { Suspense, useEffect, useState, use } from 'react'
+import { useEffect, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { resolveApiErrorMessage } from '@/lib/api-error'
@@ -44,25 +44,30 @@ type PackageBookingFormData = {
   end_date: string
 }
 
-export default function BookPackagePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
-  return (
-    <Suspense fallback={<RoomBookingPageSkeleton />}>
-      <BookPackageContent params={params} />
-    </Suspense>
-  )
+function sanitizeGuestName(value: string) {
+  return value.replace(/[^a-zA-Z\s\-'.]/g, '')
 }
 
-function BookPackageContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
+export default function BookPackagePage() {
+  return <BookPackageContent />
+}
+
+function BookPackageContent() {
   const t = useTranslations()
   const te = useTranslations('errors')
   const locale = useLocale() as 'ar' | 'en'
   const isAr = locale === 'ar'
   const router = useRouter()
-  const { id: packageId } = use(params)
+  const searchParams = useSearchParams()
+  const params = useParams<{ id: string }>()
+  const packageId = params.id
 
   const [pkg, setPkg] = useState<Package | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const initialPeople = Math.max(1, parseInt(searchParams.get('people') || '1', 10) || 1)
+  const initialStartDate = searchParams.get('start') || ''
+  const initialEndDate = searchParams.get('end') || ''
 
   const Back = isAr ? ChevronRight : ChevronLeft
 
@@ -82,9 +87,9 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
       guest_name: '',
       guest_phone: '',
       guest_email: '',
-      number_of_people: 1,
-      start_date: '',
-      end_date: '',
+      number_of_people: initialPeople,
+      start_date: initialStartDate,
+      end_date: initialEndDate,
     },
   })
 
@@ -99,10 +104,10 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
         const data = await res.json()
         if (data.package) {
           setPkg(data.package)
-          if (data.package.start_date) {
+          if (!initialStartDate && data.package.start_date) {
             setValue('start_date', data.package.start_date, { shouldValidate: false })
           }
-          if (data.package.end_date) {
+          if (!initialEndDate && data.package.end_date) {
             setValue('end_date', data.package.end_date, { shouldValidate: false })
           }
         }
@@ -113,7 +118,7 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
       }
     }
     fetchPackage()
-  }, [packageId, setValue])
+  }, [initialEndDate, initialStartDate, packageId, setValue])
 
   if (loading) return <RoomBookingPageSkeleton />
 
@@ -276,15 +281,13 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
                       <span className="text-destructive">*</span>
                     </label>
                     <input
-                      {...register('guest_name')}
+                      {...register('guest_name', {
+                        setValueAs: (value) => (typeof value === 'string' ? sanitizeGuestName(value) : value),
+                      })}
                       dir="ltr"
+                      autoComplete="name"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
                       placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
-                      onInput={(e) => {
-                        const el = e.currentTarget
-                        const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
-                        if (cleaned !== el.value) el.value = cleaned
-                      }}
                     />
                     {errors.guest_name && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_name.message}</p>
@@ -374,82 +377,43 @@ function BookPackageContent({ params }: { params: Promise<{ id: string; locale: 
                     </p>
                   </div>
 
-                  {/* Start Date */}
-                  <div className="space-y-1.5 md:space-y-2">
-                    <label className={labelClass}>
-                      <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      {t('packages.start_date')}
-                      <span className="text-destructive">*</span>
-                    </label>
-                    <Popover>
-                      <PopoverTrigger
-                        className={cn(
-                          inputClass,
-                          'flex items-center justify-between text-start',
-                          !startDate && 'text-slate-400',
-                          errors.start_date && errorInputClass
-                        )}
-                      >
-                        <span>
-                          {startDate
-                            ? format(parseISO(startDate), 'PPP', { locale: enUS })
-                            : (isAr ? 'اختر تاريخ البدء' : 'Select start date')}
+                  {/* Travel Dates (fixed by provider) */}
+                  <div className="md:col-span-2">
+                    <div className="rounded-xl md:rounded-2xl bg-slate-50 border border-slate-200 p-4 md:p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-500" />
+                        <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
+                          {isAr ? 'تواريخ سفر الباقة' : 'Package Travel Dates'}
                         </span>
-                        <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={parseDateValue(startDate)}
-                          onSelect={(date) => setValue('start_date', date ? format(date, 'yyyy-MM-dd') : '', { shouldValidate: true, shouldDirty: true })}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.start_date && (
-                      <p className="text-xs font-bold text-destructive mt-1">{errors.start_date.message}</p>
-                    )}
-                  </div>
-
-                  {/* End Date */}
-                  <div className="space-y-1.5 md:space-y-2">
-                    <label className={labelClass}>
-                      <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                      {t('packages.end_date')}
-                      <span className="text-destructive">*</span>
-                    </label>
-                    <Popover>
-                      <PopoverTrigger
-                        className={cn(
-                          inputClass,
-                          'flex items-center justify-between text-start',
-                          !endDate && 'text-slate-400',
-                          errors.end_date && errorInputClass
-                        )}
-                      >
-                        <span>
-                          {endDate
-                            ? format(parseISO(endDate), 'PPP', { locale: enUS })
-                            : (isAr ? 'اختر تاريخ الانتهاء' : 'Select end date')}
-                        </span>
-                        <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={parseDateValue(endDate)}
-                          onSelect={(date) => setValue('end_date', date ? format(date, 'yyyy-MM-dd') : '', { shouldValidate: true, shouldDirty: true })}
-                          disabled={(date) => {
-                            const minDate = startDate ? parseISO(startDate) : new Date()
-                            return date <= minDate
-                          }}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {errors.end_date && (
-                      <p className="text-xs font-bold text-destructive mt-1">{errors.end_date.message}</p>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            {t('packages.start_date')}
+                          </p>
+                          <p className="text-base md:text-lg font-black text-slate-900">
+                            {startDate ? format(parseISO(startDate), 'PPP', { locale: enUS }) : '—'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            {t('packages.end_date')}
+                          </p>
+                          <p className="text-base md:text-lg font-black text-slate-900">
+                            {endDate ? format(parseISO(endDate), 'PPP', { locale: enUS }) : '—'}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-3">
+                        {isAr ? 'تواريخ السفر محددة مسبقاً من قِبل مزود الباقة ولا يمكن تعديلها.' : 'Travel dates are set by the package provider and cannot be changed.'}
+                      </p>
+                    </div>
+                    <input type="hidden" {...register('start_date')} />
+                    <input type="hidden" {...register('end_date')} />
+                    {(errors.start_date || errors.end_date) && (
+                      <p className="text-xs font-bold text-destructive mt-2">
+                        {errors.start_date?.message || errors.end_date?.message}
+                      </p>
                     )}
                   </div>
                 </div>

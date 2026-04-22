@@ -65,58 +65,62 @@ export default function AdminPackageBookings() {
     <div>
       <h1 className="text-2xl font-bold mb-6">{isAr ? 'حجوزات الباقات' : 'Package Bookings'}</h1>
 
-      <div className="flex gap-2 mb-3 flex-wrap">
-        {statuses.map((s) => (
-          <button
-            key={s}
-            onClick={() => { setStatusFilter(s); setPage(1) }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-              statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
-            }`}
-          >
-            {s ? t(`status.${s}`) : isAr ? 'الكل' : 'All'}
-          </button>
-        ))}
+      <div className="mb-3 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex min-w-max gap-2">
+          {statuses.map((s) => (
+            <button
+              key={s}
+              onClick={() => { setStatusFilter(s); setPage(1) }}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
+              }`}
+            >
+              {s ? t(`status.${s}`) : isAr ? 'الكل' : 'All'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-2 mb-6 flex-wrap items-center">
-        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          {isAr ? 'العقد:' : 'Contract:'}
-        </span>
-        {(['all', 'signed', 'unsigned'] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => { setContractFilter(f); setPage(1) }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors inline-flex items-center gap-1.5 ${
-              contractFilter === f ? 'bg-primary text-white border-primary' : 'bg-white hover:bg-muted border-border'
-            }`}
-          >
-            {f === 'all' ? (isAr ? 'الكل' : 'All') : f === 'signed' ? (isAr ? 'موقّع' : 'Signed') : (isAr ? 'غير موقّع' : 'Unsigned')}
-          </button>
-        ))}
-        {unsignedCount > 0 && contractFilter !== 'signed' && (
-          <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
-            {unsignedCount} {isAr ? 'غير موقّعة' : 'unsigned'}
+      <div className="mb-6 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex min-w-max items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            {isAr ? 'العقد:' : 'Contract:'}
           </span>
-        )}
+          {(['all', 'signed', 'unsigned'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => { setContractFilter(f); setPage(1) }}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors inline-flex items-center gap-1.5 ${
+                contractFilter === f ? 'bg-primary text-white border-primary' : 'bg-white hover:bg-muted border-border'
+              }`}
+            >
+              {f === 'all' ? (isAr ? 'الكل' : 'All') : f === 'signed' ? (isAr ? 'موقّع' : 'Signed') : (isAr ? 'غير موقّع' : 'Unsigned')}
+            </button>
+          ))}
+          {unsignedCount > 0 && contractFilter !== 'signed' && (
+            <span className="ml-2 shrink-0 whitespace-nowrap inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+              {unsignedCount} {isAr ? 'غير موقّعة' : 'unsigned'}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="min-w-[1200px] w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'اسم الضيف' : 'Guest Name'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الباقة' : 'Package'}</th>
-                <th className="text-start p-3 font-medium">{t('admin.providers')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'عدد الأشخاص' : 'People'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'التواريخ' : 'Dates'}</th>
-                <th className="text-start p-3 font-medium">{t('common.total')}</th>
-                <th className="text-start p-3 font-medium">{t('admin.commissions')}</th>
-                <th className="text-start p-3 font-medium">{t('common.status')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'العقد' : 'Contract'}</th>
-                <th className="text-start p-3 font-medium">{t('common.date')}</th>
-                <th className="text-start p-3 font-medium">{t('common.actions')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{isAr ? 'اسم الضيف' : 'Guest Name'}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{isAr ? 'الباقة' : 'Package'}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('admin.providers')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{isAr ? 'عدد الأشخاص' : 'People'}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{isAr ? 'التواريخ' : 'Dates'}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('common.total')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('admin.commissions')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('common.status')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{isAr ? 'العقد' : 'Contract'}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('common.date')}</th>
+                <th className="whitespace-nowrap text-start p-3 font-medium">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -133,22 +137,22 @@ export default function AdminPackageBookings() {
                     : '-'
                   return (
                     <tr key={b.id} className="border-b hover:bg-muted/30">
-                      <td className="p-3 font-medium">{b.guest_name}</td>
-                      <td className="p-3">{pkgName}</td>
-                      <td className="p-3">{b.provider?.company_name_ar}</td>
-                      <td className="p-3">{b.number_of_people}</td>
-                      <td className="p-3 text-xs">
+                      <td className="whitespace-nowrap p-3 font-medium">{b.guest_name}</td>
+                      <td className="whitespace-nowrap p-3">{pkgName}</td>
+                      <td className="whitespace-nowrap p-3">{b.provider?.company_name_ar}</td>
+                      <td className="whitespace-nowrap p-3">{b.number_of_people}</td>
+                      <td className="whitespace-nowrap p-3 text-xs">
                         <div>{b.start_date}</div>
                         <div className="text-muted-foreground">{b.end_date}</div>
                       </td>
-                      <td className="p-3">{b.total_amount} {isAr ? 'ر.س' : 'SAR'}</td>
-                      <td className="p-3">{b.commission_amount} {isAr ? 'ر.س' : 'SAR'}</td>
-                      <td className="p-3">
+                      <td className="whitespace-nowrap p-3">{b.total_amount} {isAr ? 'ر.س' : 'SAR'}</td>
+                      <td className="whitespace-nowrap p-3">{b.commission_amount} {isAr ? 'ر.س' : 'SAR'}</td>
+                      <td className="whitespace-nowrap p-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${BOOKING_STATUS_COLORS[b.status]}`}>
                           {t(`status.${b.status}`)}
                         </span>
                       </td>
-                      <td className="p-3">
+                      <td className="whitespace-nowrap p-3">
                         {b.contract_signed_at ? (
                           <Link
                             href={`/${locale}/contracts/print/package_booking/${b.id}`}
@@ -165,8 +169,8 @@ export default function AdminPackageBookings() {
                           </span>
                         )}
                       </td>
-                      <td className="p-3">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
-                      <td className="p-3">
+                      <td className="whitespace-nowrap p-3">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                      <td className="whitespace-nowrap p-3">
                         <Link
                           href={`/${locale}/admin/package-bookings/${b.id}`}
                           className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 font-medium text-primary transition-colors hover:bg-muted"

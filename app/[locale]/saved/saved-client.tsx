@@ -61,16 +61,17 @@ export function SavedPageClient() {
     data.packages
 
   return (
-    <div className="container max-w-5xl py-8 px-4 mx-auto">
+    <div className="container max-w-5xl pt-6 pb-8 md:pt-8 lg:pt-10 px-4 mx-auto">
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
-      <div className="flex gap-2 mb-8 border-b border-border pb-3">
+      <div className="mb-8 -mx-1 overflow-x-auto border-b border-border pb-3 px-1 scrollbar-hide">
+        <div className="flex min-w-max gap-2">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.key}
             onClick={() => setTab(tabItem.key)}
             className={cn(
-              'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium transition-colors sm:px-4 sm:text-sm',
               tab === tabItem.key
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted'
@@ -80,6 +81,7 @@ export function SavedPageClient() {
             {tabItem.label}
           </button>
         ))}
+        </div>
       </div>
 
       {loading ? (

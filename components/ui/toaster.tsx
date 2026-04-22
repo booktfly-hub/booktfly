@@ -36,7 +36,7 @@ export function Toaster() {
   }, [])
 
   return (
-    <div className="fixed start-1/2 top-24 z-[70] flex w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 md:start-auto md:end-4 md:top-auto md:bottom-4 md:w-auto md:translate-x-0">
+    <div className="fixed left-1/2 top-24 z-[70] flex w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 md:left-auto md:end-4 md:top-auto md:bottom-4 md:w-auto md:translate-x-0">
       {toasts.map((t) => (
         <div
           key={t.id}

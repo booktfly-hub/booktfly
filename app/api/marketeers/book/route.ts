@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const { data: marketeer } = await supabaseAdmin
       .from('marketeers')
-      .select('id, status, full_name')
+      .select('id, status, full_name, referral_code')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .single()
@@ -119,6 +119,9 @@ export async function POST(request: NextRequest) {
         commission_amount: commissionAmount,
         provider_payout: providerPayout,
         status: 'payment_processing',
+        utm_source: 'marketeer',
+        utm_medium: 'direct-book',
+        utm_campaign: marketeer.referral_code,
       })
       .select('id, guest_token')
       .single()
@@ -171,6 +174,7 @@ export async function POST(request: NextRequest) {
         bankIban: bankInfo?.bank_iban || 'N/A',
         bankHolder: bankInfo?.bank_account_holder_en || 'N/A',
         paymentUrl,
+        claimUrl: `${baseUrl}/en/claim/${booking.guest_token}`,
       }))
 
       await resend.emails.send({
