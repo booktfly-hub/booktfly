@@ -115,7 +115,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         })
       }
 
-      await logActivity('package_booking_transfer_confirmed', {
+      await logActivity('package_booking_confirmed', {
         userId: user?.id,
         metadata: { package_booking_id: id },
       })
