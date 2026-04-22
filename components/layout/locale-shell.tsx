@@ -44,18 +44,21 @@ function AccessDeniedToast() {
 
 const DETAIL_PAGE_PATTERNS = [/\/trips\/[^/]+/, /\/rooms\/[^/]+/, /\/cars\/[^/]+/, /\/packages\/[^/]+/]
 
-export function LocaleShell({ children }: Props) {
-  const pathname = usePathname()
+function ScrollRestorer({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams()
   const search = searchParams.toString()
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname, search])
+  return null
+}
+
+export function LocaleShell({ children }: Props) {
+  const pathname = usePathname()
   const segments = pathname.split('/')
   const segment = segments[2]
   const hidePublicChrome = segment ? HIDDEN_CHROME_SEGMENTS.has(segment) : false
   const isDetailPage = DETAIL_PAGE_PATTERNS.some(p => p.test(pathname))
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-  }, [pathname, search])
 
   return (
     <UserProvider>
@@ -73,6 +76,7 @@ export function LocaleShell({ children }: Props) {
       {!hidePublicChrome && <Footer />}
       {!hidePublicChrome && <MobileBottomNav />}
       <Suspense><AccessDeniedToast /></Suspense>
+      <Suspense><ScrollRestorer pathname={pathname} /></Suspense>
       <Toaster />
       </SavedItemsProvider>
     </UserProvider>
