@@ -1,7 +1,6 @@
-import { lkey } from '@/lib/i18n-helpers'
 'use client'
 
-import { pick } from '@/lib/i18n-helpers'
+import { lkey, pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
