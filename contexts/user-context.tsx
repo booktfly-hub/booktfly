@@ -41,9 +41,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, router, locale])
 
   useEffect(() => {
+    let mounted = true
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle()
+        if (mounted) setProfile(data)
+      }
+      if (mounted) setLoading(false)
+    })
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'INITIAL_SESSION') return
       if (event === 'PASSWORD_RECOVERY') {
         router.replace(`/${locale}/auth/update-password`)
         setLoading(false)
@@ -63,7 +76,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [supabase, router, locale])
 
   return (
