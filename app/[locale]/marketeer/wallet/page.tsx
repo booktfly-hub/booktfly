@@ -1,5 +1,7 @@
+import { lkey } from '@/lib/i18n-helpers'
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Wallet, Star, Loader2 } from 'lucide-react'
@@ -39,7 +41,7 @@ const STATUS_LABELS: Record<string, { ar: string; en: string }> = {
 }
 
 export default function MarkeeteerWalletPage() {
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const te = useTranslations('errors')
   const [walletData, setWalletData] = useState<WalletData | null>(null)
@@ -62,7 +64,7 @@ export default function MarkeeteerWalletPage() {
   async function handleWithdraw() {
     const pts = parseInt(points)
     if (!iban.trim() || isNaN(pts) || pts < 100) {
-      toast({ title: isAr ? 'أدخل IBAN صحيح و100 نقطة على الأقل' : 'Enter valid IBAN and at least 100 points', variant: 'destructive' })
+      toast({ title: pick(locale, 'أدخل IBAN صحيح و100 نقطة على الأقل', 'Enter valid IBAN and at least 100 points', 'Geçerli IBAN ve en az 100 puan girin'), variant: 'destructive' })
       return
     }
     setSubmitting(true)
@@ -77,7 +79,7 @@ export default function MarkeeteerWalletPage() {
         toast({ title: resolveApiErrorMessage(result.error, te), variant: 'destructive' })
         return
       }
-      toast({ title: isAr ? 'تم إرسال طلب السحب' : 'Withdrawal request submitted', variant: 'success' })
+      toast({ title: pick(locale, 'تم إرسال طلب السحب', 'Withdrawal request submitted', 'Çekim talebi gönderildi'), variant: 'success' })
       setShowForm(false)
       setIban('')
       setPoints('')
@@ -105,10 +107,10 @@ export default function MarkeeteerWalletPage() {
     <div className="space-y-8 animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {isAr ? 'المحفظة' : 'Wallet'}
+          {pick(locale, 'المحفظة', 'Wallet', 'Cüzdan')}
         </h1>
         <p className="text-slate-500 font-medium mt-1">
-          {isAr ? 'رصيدك وطلبات سحب الأرباح' : 'Your balance and withdrawal requests'}
+          {pick(locale, 'رصيدك وطلبات سحب الأرباح', 'Your balance and withdrawal requests', 'Bakiyeniz ve çekim talepleriniz')}
         </p>
       </div>
 
@@ -120,7 +122,7 @@ export default function MarkeeteerWalletPage() {
           </div>
           <p className="text-4xl font-black text-slate-900 tracking-tighter">{balance.toLocaleString()}</p>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">FlyPoints</p>
-          <p className="text-xs text-slate-400 mt-1">{isAr ? `1 نقطة = ${sar_rate} ر.س` : `1 point = ${sar_rate} SAR`}</p>
+          <p className="text-xs text-slate-400 mt-1">{pick(locale, `1 نقطة = ${sar_rate} ر.س`, `1 point = ${sar_rate} SAR`)}</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
           <div className="h-14 w-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-5">
@@ -128,19 +130,19 @@ export default function MarkeeteerWalletPage() {
           </div>
           <p className="text-4xl font-black text-slate-900 tracking-tighter">
             {sar_value.toLocaleString()}
-            <span className="text-xl font-bold text-slate-400 ms-2">{isAr ? 'ر.س' : 'SAR'}</span>
+            <span className="text-xl font-bold text-slate-400 ms-2">{pick(locale, 'ر.س', 'SAR', 'SAR')}</span>
           </p>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">
-            {isAr ? 'القيمة بالريال' : 'SAR Equivalent'}
+            {pick(locale, 'القيمة بالريال', 'SAR Equivalent', 'SAR Karşılığı')}
           </p>
-          <p className="text-xs text-slate-400 mt-1">{isAr ? 'من نقاطك الحالية' : 'From your current points'}</p>
+          <p className="text-xs text-slate-400 mt-1">{pick(locale, 'من نقاطك الحالية', 'From your current points', 'Mevcut puanlarınızdan')}</p>
         </div>
       </div>
 
       {/* Withdrawal form */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <h2 className="text-lg font-black text-slate-900">{isAr ? 'طلب سحب' : 'Request Withdrawal'}</h2>
+          <h2 className="text-lg font-black text-slate-900">{pick(locale, 'طلب سحب', 'Request Withdrawal', 'Çekim Talebi')}</h2>
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
@@ -148,7 +150,7 @@ export default function MarkeeteerWalletPage() {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
             >
               <Wallet className="h-4 w-4" />
-              {isAr ? 'طلب سحب' : 'Request'}
+              {pick(locale, 'طلب سحب', 'Request', 'Talep')}
             </button>
           )}
         </div>
@@ -156,7 +158,7 @@ export default function MarkeeteerWalletPage() {
         {showForm ? (
           <div className="p-6 md:p-8 space-y-5">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">{isAr ? 'رقم IBAN' : 'IBAN Number'}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">{pick(locale, 'رقم IBAN', 'IBAN Number', 'IBAN Numarası')}</label>
               <input
                 value={iban}
                 onChange={(e) => setIban(e.target.value)}
@@ -167,7 +169,7 @@ export default function MarkeeteerWalletPage() {
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
-                {isAr ? `عدد النقاط (المتاح: ${balance.toLocaleString()})` : `Points (available: ${balance.toLocaleString()})`}
+                {pick(locale, `عدد النقاط (المتاح: ${balance.toLocaleString()})`, `Points (available: ${balance.toLocaleString()})`)}
               </label>
               <input
                 value={points}
@@ -175,12 +177,12 @@ export default function MarkeeteerWalletPage() {
                 type="number"
                 min={100}
                 max={balance}
-                placeholder={isAr ? 'الحد الأدنى 100 نقطة' : 'Minimum 100 points'}
+                placeholder={pick(locale, 'الحد الأدنى 100 نقطة', 'Minimum 100 points', 'Minimum 100 puan')}
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition"
               />
               {estimatedSar && (
                 <p className="text-sm text-slate-500 mt-2">
-                  ≈ <span className="font-bold text-green-600">{estimatedSar} {isAr ? 'ر.س' : 'SAR'}</span>
+                  ≈ <span className="font-bold text-green-600">{estimatedSar} {pick(locale, 'ر.س', 'SAR', 'SAR')}</span>
                 </p>
               )}
             </div>
@@ -191,13 +193,13 @@ export default function MarkeeteerWalletPage() {
                 className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 disabled:opacity-50 transition-colors"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isAr ? 'إرسال الطلب' : 'Submit Request'}
+                {pick(locale, 'إرسال الطلب', 'Submit Request', 'Talebi Gönder')}
               </button>
               <button
                 onClick={() => { setShowForm(false); setIban(''); setPoints('') }}
                 className="px-6 py-3 rounded-2xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
               >
-                {isAr ? 'إلغاء' : 'Cancel'}
+                {pick(locale, 'إلغاء', 'Cancel', 'İptal')}
               </button>
             </div>
           </div>
@@ -205,8 +207,8 @@ export default function MarkeeteerWalletPage() {
           <div className="p-6 md:p-8">
             <p className="text-sm text-slate-500">
               {balance < 100
-                ? (isAr ? 'تحتاج إلى 100 نقطة على الأقل لطلب السحب' : 'You need at least 100 points to request a withdrawal')
-                : (isAr ? 'اضغط على "طلب سحب" لتحويل نقاطك إلى ريال سعودي' : 'Click "Request" to convert your points to SAR')}
+                ? (pick(locale, 'تحتاج إلى 100 نقطة على الأقل لطلب السحب', 'You need at least 100 points to request a withdrawal', 'Çekim talebi için en az 100 puana ihtiyacınız var'))
+                : (pick(locale, 'اضغط على "طلب سحب" لتحويل نقاطك إلى ريال سعودي', 'Click "Request" to convert your points to SAR', 'Puanlarınızı SAR\'a dönüştürmek için "Talep Et"e tıklayın'))}
             </p>
           </div>
         )}
@@ -215,7 +217,7 @@ export default function MarkeeteerWalletPage() {
       {/* Withdrawal history */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-lg font-black text-slate-900">{isAr ? 'سجل طلبات السحب' : 'Withdrawal History'}</h2>
+          <h2 className="text-lg font-black text-slate-900">{pick(locale, 'سجل طلبات السحب', 'Withdrawal History', 'Çekim Geçmişi')}</h2>
         </div>
 
         {withdrawals.length === 0 ? (
@@ -223,7 +225,7 @@ export default function MarkeeteerWalletPage() {
             <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
               <Wallet className="h-8 w-8 text-slate-300" />
             </div>
-            <p className="text-slate-500 font-medium">{isAr ? 'لا توجد طلبات سحب بعد' : 'No withdrawal requests yet'}</p>
+            <p className="text-slate-500 font-medium">{pick(locale, 'لا توجد طلبات سحب بعد', 'No withdrawal requests yet', 'Henüz çekim talebi yok')}</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -231,9 +233,9 @@ export default function MarkeeteerWalletPage() {
               <div key={w.id} className="flex items-center gap-5 p-6 hover:bg-slate-50 transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <p className="font-black text-slate-900">{w.points.toLocaleString()} <span className="font-bold text-slate-400 text-sm">{isAr ? 'نقطة' : 'pts'}</span></p>
+                    <p className="font-black text-slate-900">{w.points.toLocaleString()} <span className="font-bold text-slate-400 text-sm">{pick(locale, 'نقطة', 'pts', 'puan')}</span></p>
                     <span className="text-slate-300">·</span>
-                    <p className="font-bold text-green-600">{w.sar_amount} <span className="text-sm">{isAr ? 'ر.س' : 'SAR'}</span></p>
+                    <p className="font-bold text-green-600">{w.sar_amount} <span className="text-sm">{pick(locale, 'ر.س', 'SAR', 'SAR')}</span></p>
                   </div>
                   <p className="text-sm font-mono text-slate-400 truncate">{w.iban}</p>
                   {w.admin_comment && (
@@ -242,10 +244,10 @@ export default function MarkeeteerWalletPage() {
                 </div>
                 <div className="text-end shrink-0 space-y-1.5">
                   <span className={cn('text-xs font-bold px-3 py-1 rounded-full', STATUS_STYLES[w.status] ?? 'bg-slate-100 text-slate-600')}>
-                    {STATUS_LABELS[w.status]?.[locale] ?? w.status}
+                    {STATUS_LABELS[w.status]?.[lkey(locale)] ?? w.status}
                   </span>
                   <p className="text-xs text-slate-400">
-                    {new Date(w.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(w.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                   </p>
                 </div>
               </div>

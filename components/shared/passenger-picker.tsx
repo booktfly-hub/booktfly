@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import { useState, useRef, useEffect } from 'react'
 import { Users, Minus, Plus, ChevronDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -53,7 +54,7 @@ export function PassengerPicker({ value, onChange, locale, className }: Passenge
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const isAr = locale === 'ar'
-  const strings = t[isAr ? 'ar' : 'en']
+  const strings = t[lkey(locale)]
 
   const total = value.adults + value.children + value.infants
 

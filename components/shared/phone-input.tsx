@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ChevronDown, Search } from 'lucide-react'
@@ -49,7 +50,7 @@ export function PhoneInput({
 
   // Determine initial country from value or locale
   const initial = useMemo(() => {
-    if (value) return parseE164(value, defaultIso ?? (isAr ? 'SA' : 'SA'))
+    if (value) return parseE164(value, defaultIso ?? (pick(locale, 'SA', 'SA', 'SA')))
     const fallback = findByIso(defaultIso ?? 'SA') ?? DIAL_COUNTRIES[0]
     return { iso: fallback.iso, dial: fallback.dial, national: '' }
   }, [value, defaultIso, isAr])
@@ -134,7 +135,7 @@ export function PhoneInput({
           onClick={() => setOpen((v) => !v)}
           className={cn(
             'flex items-center gap-1 px-2.5 text-sm font-medium border-e border-input hover:bg-muted transition-colors',
-            isAr ? 'rounded-r-md' : 'rounded-l-md',
+            pick(locale, 'rounded-r-md', 'rounded-l-md', 'rounded-l-md'),
           )}
           aria-label={t('pick_country')}
           aria-expanded={open}

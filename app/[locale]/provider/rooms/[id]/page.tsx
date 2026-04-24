@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -18,12 +19,19 @@ import { format, isValid, parseISO } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import type { Room } from '@/types'
 import { NameChangePolicyCard } from '@/components/shared/name-change-policy-card'
+import dynamic from 'next/dynamic'
 import {
   Loader2,
   ImageIcon,
   X,
   CalendarIcon,
+  Phone, Coffee, Ban, CircleCheck, TriangleAlert, MapPin, Bed, Bath, Mountain, Home, ChefHat,
 } from 'lucide-react'
+
+const LocationPicker = dynamic(() => import('@/components/shared/location-picker').then(m => m.LocationPicker), {
+  ssr: false,
+  loading: () => <div className="h-[320px] rounded-lg border bg-muted/30 animate-pulse" />,
+})
 
 type FormData = z.infer<ReturnType<typeof getRoomSchema>>
 
@@ -31,7 +39,7 @@ export default function EditRoomPage() {
   const t = useTranslations('provider')
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const params = useParams()
@@ -108,6 +116,17 @@ export default function EditRoomPage() {
           name_change_allowed: r.name_change_allowed ?? false,
           name_change_fee: r.name_change_fee ?? 0,
           name_change_is_refundable: r.name_change_is_refundable ?? true,
+          latitude: r.latitude ?? undefined,
+          longitude: r.longitude ?? undefined,
+          cancellation_policy: r.cancellation_policy ?? 'free',
+          cancellation_penalty_nights: r.cancellation_penalty_nights ?? 0,
+          breakfast_included: r.breakfast_included ?? false,
+          contact_phone: r.contact_phone ?? '',
+          bedroom_count: r.bedroom_count ?? 1,
+          bathroom_count: r.bathroom_count ?? 1,
+          has_view: r.has_view ?? false,
+          has_balcony: r.has_balcony ?? false,
+          has_kitchen: r.has_kitchen ?? false,
         })
       } catch {
         router.push(`/${locale}/provider/rooms`)
@@ -209,16 +228,16 @@ export default function EditRoomPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{isAr ? 'تعديل الغرفة' : 'Edit Room'}</h1>
+      <h1 className="text-2xl font-bold">{pick(locale, 'تعديل الغرفة', 'Edit Room', 'Odayı Düzenle')}</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Room Name */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'اسم الغرفة' : 'Room Name'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'اسم الغرفة', 'Room Name', 'Oda Adı')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الاسم' : 'Name'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'الاسم', 'Name', 'Ad')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input
                 {...register('name_ar')}
@@ -231,7 +250,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الاسم' : 'Name'} ({isAr ? 'إنجليزي' : 'English'}){' '}
+                {pick(locale, 'الاسم', 'Name', 'Ad')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}){' '}
                 <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input
@@ -245,11 +264,11 @@ export default function EditRoomPage() {
 
         {/* Location */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'الموقع' : 'Location'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'الموقع', 'Location', 'Konum')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'المدينة' : 'City'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input
                 {...register('city_ar')}
@@ -262,7 +281,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'المدينة' : 'City'} ({isAr ? 'إنجليزي' : 'English'}){' '}
+                {pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}){' '}
                 <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input
@@ -273,7 +292,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'العنوان' : 'Address'} ({isAr ? 'عربي' : 'Arabic'}){' '}
+                {pick(locale, 'العنوان', 'Address', 'Adres')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}){' '}
                 <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input
@@ -284,7 +303,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'العنوان' : 'Address'} ({isAr ? 'إنجليزي' : 'English'}){' '}
+                {pick(locale, 'العنوان', 'Address', 'Adres')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}){' '}
                 <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input
@@ -298,17 +317,17 @@ export default function EditRoomPage() {
 
         {/* Category & Pricing */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'التصنيف والسعر' : 'Category & Pricing'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'التصنيف والسعر', 'Category & Pricing', 'Kategori ve Fiyatlandırma')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'التصنيف' : 'Category'} *
+                {pick(locale, 'التصنيف', 'Category', 'Kategori')} *
               </label>
               <select
                 {...register('category')}
                 className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
-                <option value="">{isAr ? 'اختر التصنيف' : 'Select category'}</option>
+                <option value="">{pick(locale, 'اختر التصنيف', 'Select category', 'Kategori seç')}</option>
                 {Object.entries(ROOM_CATEGORIES).map(([key, val]) => (
                   <option key={key} value={key}>
                     {isAr ? val.ar : val.en}
@@ -333,7 +352,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'السعر لكل ليلة' : 'Price Per Night'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
+                {pick(locale, 'السعر لكل ليلة', 'Price Per Night', 'Gecelik Fiyat')} ({currency === 'USD' ? tc('usd') : tc('sar')}) *
               </label>
               <input
                 type="number"
@@ -348,7 +367,7 @@ export default function EditRoomPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'السعة القصوى' : 'Max Capacity'} *
+                {pick(locale, 'السعة القصوى', 'Max Capacity', 'Maks Kapasite')} *
               </label>
               <input
                 type="number"
@@ -365,7 +384,7 @@ export default function EditRoomPage() {
 
         {/* Amenities */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'المرافق' : 'Amenities'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'المرافق', 'Amenities', 'Olanaklar')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {Object.entries(ROOM_AMENITIES).map(([key, val]) => (
               <label
@@ -391,7 +410,7 @@ export default function EditRoomPage() {
 
         {/* Availability */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'الحجز والتوفر' : 'Booking & Availability'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'الحجز والتوفر', 'Booking & Availability', 'Rezervasyon ve Müsaitlik')}</h2>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -400,10 +419,10 @@ export default function EditRoomPage() {
             />
             <div>
               <span className="font-medium text-sm">
-                {isAr ? 'حجز فوري' : 'Instant Book'}
+                {pick(locale, 'حجز فوري', 'Instant Book', 'Anında Rezervasyon')}
               </span>
               <p className="text-xs text-muted-foreground">
-                {isAr ? 'السماح للضيوف بالحجز بدون تحديد مواعيد' : 'Allow guests to book without specific date restrictions'}
+                {pick(locale, 'السماح للضيوف بالحجز بدون تحديد مواعيد', 'Allow guests to book without specific date restrictions', 'Misafirlerin belirli tarih kısıtlaması olmadan rezervasyon yapmasına izin ver')}
               </p>
             </div>
           </label>
@@ -412,7 +431,7 @@ export default function EditRoomPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {isAr ? 'متاح من' : 'Available From'}
+                  {pick(locale, 'متاح من', 'Available From', 'Başlangıç Tarihi')}
                 </label>
                 <input type="hidden" {...register('available_from')} />
                 <Popover>
@@ -424,7 +443,7 @@ export default function EditRoomPage() {
                   >
                     {availableFromDate && isValid(availableFromDate)
                       ? format(availableFromDate, 'd MMM yyyy', { locale: enUS })
-                      : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                      : <span>{pick(locale, 'اختر التاريخ', 'Select date', 'Tarih seç')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -444,7 +463,7 @@ export default function EditRoomPage() {
               </div>
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {isAr ? 'متاح حتى' : 'Available To'}
+                  {pick(locale, 'متاح حتى', 'Available To', 'Bitiş Tarihi')}
                 </label>
                 <input type="hidden" {...register('available_to')} />
                 <Popover>
@@ -456,7 +475,7 @@ export default function EditRoomPage() {
                   >
                     {availableToDate && isValid(availableToDate)
                       ? format(availableToDate, 'd MMM yyyy', { locale: enUS })
-                      : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                      : <span>{pick(locale, 'اختر التاريخ', 'Select date', 'Tarih seç')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -486,7 +505,7 @@ export default function EditRoomPage() {
           <h2 className="font-semibold">{tc('description')}</h2>
           <div>
             <label className="text-sm font-medium block mb-1.5">
-              {tc('description')} ({isAr ? 'عربي' : 'Arabic'}){' '}
+              {tc('description')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}){' '}
               <span className="text-muted-foreground">({tc('optional')})</span>
             </label>
             <textarea
@@ -498,7 +517,7 @@ export default function EditRoomPage() {
           </div>
           <div>
             <label className="text-sm font-medium block mb-1.5">
-              {tc('description')} ({isAr ? 'إنجليزي' : 'English'}){' '}
+              {tc('description')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}){' '}
               <span className="text-muted-foreground">({tc('optional')})</span>
             </label>
             <textarea
@@ -513,16 +532,16 @@ export default function EditRoomPage() {
         {/* Images */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">
-            {isAr ? 'صور الغرفة' : 'Room Images'}{' '}
+            {pick(locale, 'صور الغرفة', 'Room Images', 'Oda Görselleri')}{' '}
             <span className="text-muted-foreground text-sm font-normal">
-              ({isAr ? 'حتى 5 صور' : 'Up to 5 images'})
+              ({pick(locale, 'حتى 5 صور', 'Up to 5 images', '5 görsele kadar')})
             </span>
           </h2>
 
           {existingImages.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-slate-500 mb-2">
-                {isAr ? 'الصور الحالية' : 'Current Images'}
+                {pick(locale, 'الصور الحالية', 'Current Images', 'Mevcut Görseller')}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {existingImages.map((url, i) => (
@@ -544,7 +563,7 @@ export default function EditRoomPage() {
           {newImagePreviews.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-slate-500 mb-2">
-                {isAr ? 'صور جديدة' : 'New Images'}
+                {pick(locale, 'صور جديدة', 'New Images', 'Yeni Görseller')}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {newImagePreviews.map((url, i) => (
@@ -567,7 +586,7 @@ export default function EditRoomPage() {
             <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                {isAr ? 'اضغط لرفع صور' : 'Click to upload images'}
+                {pick(locale, 'اضغط لرفع صور', 'Click to upload images', 'Görselleri yüklemek için tıklayın')}
               </span>
               <input
                 type="file"
@@ -580,6 +599,147 @@ export default function EditRoomPage() {
           )}
         </div>
 
+        {/* Room structure */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h3 className="font-semibold">{pick(locale, 'تفاصيل الغرفة', 'Room structure', 'Oda yapısı')}</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-semibold block mb-1 flex items-center gap-2">
+                <Bed className="h-4 w-4" />
+                {pick(locale, 'عدد غرف النوم', 'Bedrooms', 'Yatak Odaları')}
+              </label>
+              <input
+                type="number"
+                min={1}
+                {...register('bedroom_count', { valueAsNumber: true })}
+                className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold block mb-1 flex items-center gap-2">
+                <Bath className="h-4 w-4" />
+                {pick(locale, 'عدد الحمامات', 'Bathrooms', 'Banyolar')}
+              </label>
+              <input
+                type="number"
+                min={1}
+                {...register('bathroom_count', { valueAsNumber: true })}
+                className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {([
+              { field: 'has_view', icon: Mountain, ar: 'إطلالة', en: 'View' },
+              { field: 'has_balcony', icon: Home, ar: 'بلكونة', en: 'Balcony' },
+              { field: 'has_kitchen', icon: ChefHat, ar: 'مطبخ', en: 'Kitchen' },
+            ] as const).map(opt => {
+              const Icon = opt.icon
+              const selected = !!watch(opt.field)
+              return (
+                <button
+                  key={opt.field}
+                  type="button"
+                  onClick={() => setValue(opt.field, !selected, { shouldDirty: true })}
+                  className={cn(
+                    'rounded-xl border p-3 flex items-center gap-2 transition-colors',
+                    selected ? 'border-accent bg-accent/5 text-accent' : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{isAr ? opt.ar : opt.en}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Location picker */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-accent" />
+            <h3 className="font-semibold">{pick(locale, 'الموقع على الخريطة', 'Location on map', 'Haritadaki konum')}</h3>
+          </div>
+          <LocationPicker
+            latitude={watch('latitude') ?? null}
+            longitude={watch('longitude') ?? null}
+            onChange={(lat, lng) => {
+              setValue('latitude', lat, { shouldDirty: true })
+              setValue('longitude', lng, { shouldDirty: true })
+            }}
+            isAr={isAr}
+          />
+        </div>
+
+        {/* Cancellation policy */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <h3 className="font-semibold">{pick(locale, 'سياسة الإلغاء', 'Cancellation policy', 'İptal politikası')}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {([
+              { v: 'free', icon: CircleCheck, ar: 'إلغاء مجاني', en: 'Free cancellation', color: 'text-success' },
+              { v: 'partial', icon: TriangleAlert, ar: 'إلغاء برسوم', en: 'Partial refund', color: 'text-warning' },
+              { v: 'non_refundable', icon: Ban, ar: 'غير قابل للاسترداد', en: 'Non-refundable', color: 'text-destructive' },
+            ] as const).map(opt => {
+              const Icon = opt.icon
+              const selected = watch('cancellation_policy') === opt.v
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setValue('cancellation_policy', opt.v, { shouldDirty: true })}
+                  className={cn(
+                    'rounded-xl border p-4 text-start transition-colors',
+                    selected ? 'border-accent bg-accent/5' : 'border-slate-200 hover:border-slate-300'
+                  )}
+                >
+                  <Icon className={cn('h-5 w-5 mb-2', opt.color)} />
+                  <p className="text-sm font-semibold">{isAr ? opt.ar : opt.en}</p>
+                </button>
+              )
+            })}
+          </div>
+          {watch('cancellation_policy') === 'partial' && (
+            <div>
+              <label className="text-sm font-semibold block mb-1">
+                {pick(locale, 'عدد الليالي المخصومة عند الإلغاء', 'Nights charged on cancellation', 'İptalde ücretlendirilen gece sayısı')}
+              </label>
+              <input
+                type="number"
+                min={1}
+                {...register('cancellation_penalty_nights', { valueAsNumber: true })}
+                className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Breakfast + contact phone */}
+        <div className="bg-card border rounded-xl p-6 space-y-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!watch('breakfast_included')}
+              onChange={e => setValue('breakfast_included', e.target.checked, { shouldDirty: true })}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <Coffee className="h-5 w-5 text-accent" />
+            <span className="text-sm font-semibold">{pick(locale, 'يشمل الإفطار', 'Breakfast included', 'Kahvaltı dahil')}</span>
+          </label>
+          <div>
+            <label className="text-sm font-semibold block mb-1 flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              {pick(locale, 'رقم تواصل الفندق', 'Hotel contact phone', 'Otel iletişim telefonu')}
+            </label>
+            <input
+              type="tel"
+              {...register('contact_phone')}
+              placeholder="+966..."
+              className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+              dir="ltr"
+            />
+          </div>
+        </div>
+
         {/* Name change policy */}
         <NameChangePolicyCard
           allowed={!!watch('name_change_allowed')}
@@ -588,7 +748,7 @@ export default function EditRoomPage() {
           onFeeChange={(v) => setValue('name_change_fee', v === '' ? 0 : v, { shouldDirty: true })}
           refundable={watch('name_change_is_refundable') ?? true}
           onRefundableChange={(v) => setValue('name_change_is_refundable', v, { shouldDirty: true })}
-          title={isAr ? 'سياسة تغيير اسم الضيف' : 'Guest name change policy'}
+          title={pick(locale, 'سياسة تغيير اسم الضيف', 'Guest name change policy', 'Misafir adı değişiklik politikası')}
         />
 
         {/* Submit */}
@@ -598,7 +758,7 @@ export default function EditRoomPage() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+          {pick(locale, 'حفظ التعديلات', 'Save Changes', 'Değişiklikleri Kaydet')}
         </button>
       </form>
     </div>

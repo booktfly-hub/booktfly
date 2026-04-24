@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import type { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import RoomDetailClient from './room-detail-client'
@@ -17,20 +18,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .single()
 
   if (!room) {
-    return { title: isAr ? 'غرفة غير موجودة' : 'Room Not Found' }
+    return { title: pick(locale, 'غرفة غير موجودة', 'Room Not Found', 'Oda Bulunamadı') }
   }
 
   const name = isAr ? room.name_ar : (room.name_en || room.name_ar)
   const city = isAr ? room.city_ar : (room.city_en || room.city_ar)
   const price = room.price_per_night
 
-  const title = isAr
-    ? `${name} | ${city}`
-    : `${name} | ${city}`
+  const title = pick(locale, `${name} | ${city}`, `${name} | ${city}`)
 
-  const description = isAr
-    ? `${name} في ${city} - ابتداءً من ${price} ر.س لكل ليلة`
-    : `${name} in ${city} - Starting from ${price} SAR per night`
+  const description = pick(locale, `${name} في ${city} - ابتداءً من ${price} ر.س لكل ليلة`, `${name} in ${city} - Starting from ${price} SAR per night`)
 
   return {
     title,

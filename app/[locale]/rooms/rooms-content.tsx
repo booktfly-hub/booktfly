@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { format, isValid, parseISO } from 'date-fns'
@@ -186,20 +187,20 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
 
   const hasActiveFilters = Object.entries(filters).some(([key, val]) => key !== 'sort' && val !== '')
   const activeFilterLabels = [
-    searchCity && `${isAr ? 'المدينة' : 'City'}: ${searchCity}`,
+    searchCity && `${pick(locale, 'المدينة', 'City', 'Şehir')}: ${searchCity}`,
     filters.category &&
-      `${isAr ? 'الفئة' : 'Category'}: ${
+      `${pick(locale, 'الفئة', 'Category', 'Kategori')}: ${
         isAr
           ? ROOM_CATEGORIES[filters.category as keyof typeof ROOM_CATEGORIES]?.ar
           : ROOM_CATEGORIES[filters.category as keyof typeof ROOM_CATEGORIES]?.en
       }`,
-    filters.check_in && `${isAr ? 'الوصول' : 'Check-in'}: ${filters.check_in}`,
-    filters.days && `${filters.days} ${isAr ? 'ليالي' : 'nights'}`,
-    filters.rooms_count && `${filters.rooms_count} ${isAr ? 'غرف' : 'rooms'}`,
-    filters.passengers && `${filters.passengers} ${isAr ? 'ضيوف' : 'guests'}`,
-    filters.capacity_min && `${isAr ? 'ابتداءً من' : 'Min'} ${filters.capacity_min} ${t('rooms.guests')}`,
-    filters.price_min && `${isAr ? 'السعر من' : 'Price from'} ${filters.price_min}`,
-    filters.price_max && `${isAr ? 'السعر إلى' : 'Price to'} ${filters.price_max}`,
+    filters.check_in && `${pick(locale, 'الوصول', 'Check-in', 'Giriş')}: ${filters.check_in}`,
+    filters.days && `${filters.days} ${pick(locale, 'ليالي', 'nights', 'gece')}`,
+    filters.rooms_count && `${filters.rooms_count} ${pick(locale, 'غرف', 'rooms', 'oda')}`,
+    filters.passengers && `${filters.passengers} ${pick(locale, 'ضيوف', 'guests', 'misafir')}`,
+    filters.capacity_min && `${pick(locale, 'ابتداءً من', 'Min', 'Min')} ${filters.capacity_min} ${t('rooms.guests')}`,
+    filters.price_min && `${pick(locale, 'السعر من', 'Price from', 'Fiyat başlangıç')} ${filters.price_min}`,
+    filters.price_max && `${pick(locale, 'السعر إلى', 'Price to', 'Fiyat bitiş')} ${filters.price_max}`,
   ].filter(Boolean) as string[]
 
   return (
@@ -413,11 +414,11 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
           <div>
             <p className="text-sm font-bold text-slate-900">
               {rooms.length > 0
-                ? isAr ? `${rooms.length} نتيجة معروضة` : `${rooms.length} result${rooms.length === 1 ? '' : 's'} shown`
-                : isAr ? 'لا توجد نتائج حالياً' : 'No results right now'}
+                ? pick(locale, `${rooms.length} نتيجة معروضة`, `${rooms.length} result${rooms.length === 1 ? '' : 's'} shown`)
+                : pick(locale, 'لا توجد نتائج حالياً', 'No results right now', 'Şu anda sonuç yok')}
             </p>
             <p className="text-xs font-medium text-slate-500">
-              {isAr ? 'حدّث الفلاتر أو وسّع البحث للعثور على خيارات أكثر' : 'Adjust filters or widen the search to find more options'}
+              {pick(locale, 'حدّث الفلاتر أو وسّع البحث للعثور على خيارات أكثر', 'Adjust filters or widen the search to find more options', 'Daha fazla seçenek bulmak için filtreleri ayarlayın veya aramayı genişletin')}
             </p>
           </div>
           {activeFilterLabels.length > 0 && (

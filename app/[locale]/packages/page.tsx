@@ -20,6 +20,9 @@ export default async function PackagesPage({
   const priceMin = str('price_min')
   const priceMax = str('price_max')
   const sort = str('sort') || 'newest'
+  const startDate = str('start_date')
+  const endDate = str('end_date')
+  const travelers = str('travelers')
 
   const supabase = await createClient()
 
@@ -38,6 +41,8 @@ export default async function PackagesPage({
   if (includesCar) query = query.eq('includes_car', true)
   if (priceMin) query = query.gte('total_price', parseFloat(priceMin))
   if (priceMax) query = query.lte('total_price', parseFloat(priceMax))
+  if (startDate) query = query.or(`start_date.is.null,start_date.gte.${startDate}`)
+  if (endDate) query = query.or(`end_date.is.null,end_date.lte.${endDate}`)
 
   switch (sort) {
     case 'price_asc': query = query.order('total_price', { ascending: true }); break
@@ -61,6 +66,9 @@ export default async function PackagesPage({
         price_min: priceMin,
         price_max: priceMax,
         sort,
+        start_date: startDate,
+        end_date: endDate,
+        travelers,
       }}
     />
   )

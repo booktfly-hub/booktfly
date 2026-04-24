@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Calendar } from '@/components/ui/calendar'
@@ -39,14 +40,14 @@ export function HijriDatePicker({
   const t = useTranslations('hijri')
   const isAr = locale === 'ar'
 
-  const [mode, setMode] = useState<Mode>(defaultMode ?? (isAr ? 'hijri' : 'gregorian'))
+  const [mode, setMode] = useState<Mode>(defaultMode ?? (locale === 'ar' ? 'hijri' : 'gregorian'))
 
   const hijriValue = useMemo(() => (value ? gregorianToHijri(value) : null), [value])
   const [hYear, setHYear] = useState<number>(hijriValue?.year ?? 1420)
   const [hMonth, setHMonth] = useState<number>(hijriValue?.month ?? 1)
   const [hDay, setHDay] = useState<number>(hijriValue?.day ?? 1)
 
-  const monthNames = hijriMonths(isAr ? 'ar' : 'en')
+  const monthNames = hijriMonths(lkey(locale))
 
   const yearOptions = useMemo(() => {
     const current = hYear || 1420
@@ -114,7 +115,7 @@ export function HijriDatePicker({
           />
           {value && (
             <p className="text-[11px] text-muted-foreground">
-              {t('hijri_label')}: {formatHijri(gregorianToHijri(value), isAr ? 'ar' : 'en')}
+              {t('hijri_label')}: {formatHijri(gregorianToHijri(value), lkey(locale))}
             </p>
           )}
         </>
@@ -156,7 +157,7 @@ export function HijriDatePicker({
 
           {currentHijri && (
             <p className="col-span-3 text-[11px] text-muted-foreground mt-1">
-              {t('gregorian_label')}: {value?.toLocaleDateString(isAr ? 'ar-SA' : 'en-GB')}
+              {t('gregorian_label')}: {value?.toLocaleDateString(pick(locale, 'ar-SA', 'en-GB', 'tr-TR'))}
             </p>
           )}
         </div>

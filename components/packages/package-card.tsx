@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from 'next-intl'
@@ -28,16 +29,16 @@ export function PackageCard({ pkg, locale: localeProp, ribbon }: PackageCardProp
   const savings = hasDiscount ? pkg.original_price! - pkg.total_price : 0
   const roomBasisLabel = pkg.room_basis
     ? ({
-        single: isAr ? 'فردية' : 'Single',
-        double: isAr ? 'مزدوجة' : 'Double',
-        triple: isAr ? 'ثلاثية' : 'Triple',
-        quad: isAr ? 'رباعية' : 'Quad',
+        single: pick(locale, 'فردية', 'Single', 'Tek'),
+        double: pick(locale, 'مزدوجة', 'Double', 'Çift'),
+        triple: pick(locale, 'ثلاثية', 'Triple', 'Üçlü'),
+        quad: pick(locale, 'رباعية', 'Quad', 'Dörtlü'),
       }[pkg.room_basis] || pkg.room_basis)
     : null
 
   const formatPrice = (amount: number) => {
-    const formatted = amount.toLocaleString(isAr ? 'ar-SA' : 'en-SA')
-    return `${formatted} ${isAr ? 'ر.س' : 'SAR'}`
+    const formatted = amount.toLocaleString(pick(locale, 'ar-SA', 'en-SA', 'tr-TR'))
+    return `${formatted} ${pick(locale, 'ر.س', 'SAR', 'SAR')}`
   }
 
   const formatDate = (dateStr: string) => {
@@ -81,7 +82,7 @@ export function PackageCard({ pkg, locale: localeProp, ribbon }: PackageCardProp
           <div className="absolute top-3 end-3">
             <span className="inline-flex items-center rounded-md border border-border bg-surface/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-foreground shadow-sm backdrop-blur-sm">
               <Users className="h-3 w-3 me-1" />
-              {availableSpots} {isAr ? 'متاح' : 'left'}
+              {availableSpots} {pick(locale, 'متاح', 'left', 'kaldı')}
             </span>
           </div>
         </div>
@@ -103,19 +104,19 @@ export function PackageCard({ pkg, locale: localeProp, ribbon }: PackageCardProp
             {pkg.includes_flight && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 <Plane className="h-3.5 w-3.5" />
-                {isAr ? 'رحلة' : 'Flight'}
+                {pick(locale, 'رحلة', 'Flight', 'Uçuş')}
               </span>
             )}
             {pkg.includes_hotel && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 <BedDouble className="h-3.5 w-3.5" />
-                {isAr ? 'فندق' : 'Hotel'}
+                {pick(locale, 'فندق', 'Hotel', 'Otel')}
               </span>
             )}
             {pkg.includes_car && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                 <CarFront className="h-3.5 w-3.5" />
-                {isAr ? 'سيارة' : 'Car'}
+                {pick(locale, 'سيارة', 'Car', 'Araç')}
               </span>
             )}
           </div>
@@ -136,7 +137,7 @@ export function PackageCard({ pkg, locale: localeProp, ribbon }: PackageCardProp
               {pkg.duration_days && (
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  {pkg.duration_days} {isAr ? 'أيام' : 'Days'}
+                  {pkg.duration_days} {pick(locale, 'أيام', 'Days', 'Gün')}
                 </span>
               )}
               {roomBasisLabel && (
@@ -161,13 +162,11 @@ export function PackageCard({ pkg, locale: localeProp, ribbon }: PackageCardProp
               <span className={cn('text-2xl font-black leading-none', hasDiscount ? 'text-accent' : 'text-foreground')}>
                 {formatPrice(pkg.total_price)}
               </span>
-              <span className="text-xs text-muted-foreground">/ {isAr ? 'للشخص' : 'person'}</span>
+              <span className="text-xs text-muted-foreground">/ {pick(locale, 'للشخص', 'person', 'kişi')}</span>
             </div>
             {savings > 0 && (
               <span className="mt-1 text-xs font-bold text-success">
-                {isAr
-                  ? `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة`
-                  : `Save ${savings.toLocaleString('en-SA')} SAR with the package`}
+                {pick(locale, `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة`, `Save ${savings.toLocaleString('en-SA')} SAR with the package`)}
               </span>
             )}
             <BnplBadge price={pkg.total_price} currency="SAR" className="mt-1.5" />

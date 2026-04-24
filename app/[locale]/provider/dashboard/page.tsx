@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { getTranslations, getLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { getProvider } from '@/lib/supabase/provider'
@@ -92,14 +93,14 @@ export default async function ProviderDashboardPage() {
       <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">{t('dashboard')}</h1>
-            <p className="text-slate-500 font-medium mt-1">{isAr ? 'مرحباً بعودتك إلى لوحة التحكم' : 'Welcome back to your dashboard'}</p>
+            <p className="text-slate-500 font-medium mt-1">{pick(locale, 'مرحباً بعودتك إلى لوحة التحكم', 'Welcome back to your dashboard', 'Panelinize tekrar hoş geldiniz')}</p>
           </div>
           <Link
             href={`/${locale}/provider/trips/new`}
             className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors shadow-sm hover:shadow-md"
            >
             <Plane className="h-4 w-4" />
-            {isAr ? 'رحلة جديدة' : 'New Trip'}
+            {pick(locale, 'رحلة جديدة', 'New Trip', 'Yeni Gezi')}
           </Link>
       </div>
 

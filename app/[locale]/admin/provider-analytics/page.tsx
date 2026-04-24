@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -265,7 +266,7 @@ export default function ProviderAnalyticsPage() {
   const topByBookings = [...providers].sort((a, b) => b.totalBookings - a.totalBookings).slice(0, 5)
   const topByOccupancy = [...providers].sort((a, b) => b.occupancy - a.occupancy).slice(0, 5)
 
-  const cur = isAr ? 'ر.س' : 'SAR'
+  const cur = pick(locale, 'ر.س', 'SAR', 'SAR')
 
   function handleSort(field: SortField) {
     if (sortField === field) {
@@ -282,7 +283,7 @@ export default function ProviderAnalyticsPage() {
   }
 
   function formatDate(d: string) {
-    return new Date(d).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+    return new Date(d).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -293,12 +294,12 @@ export default function ProviderAnalyticsPage() {
     if (status === 'active')
       return (
         <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-          {isAr ? 'نشط' : 'Active'}
+          {pick(locale, 'نشط', 'Active', 'Aktif')}
         </span>
       )
     return (
       <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
-        {isAr ? 'معلق' : 'Suspended'}
+        {pick(locale, 'معلق', 'Suspended', 'Askıya Alındı')}
       </span>
     )
   }
@@ -307,12 +308,12 @@ export default function ProviderAnalyticsPage() {
     if (type === 'travel_agency')
       return (
         <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-          {isAr ? 'وكالة سفر' : 'Travel Agency'}
+          {pick(locale, 'وكالة سفر', 'Travel Agency', 'Seyahat Acentesi')}
         </span>
       )
     return (
       <span className="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700">
-        {isAr ? 'حج وعمرة' : 'Hajj & Umrah'}
+        {pick(locale, 'حج وعمرة', 'Hajj & Umrah', 'Hac ve Umre')}
       </span>
     )
   }
@@ -370,7 +371,7 @@ export default function ProviderAnalyticsPage() {
           </div>
         ))}
         {items.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">{isAr ? 'لا توجد بيانات' : 'No data'}</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{pick(locale, 'لا توجد بيانات', 'No data', 'Veri yok')}</p>
         )}
       </div>
     )
@@ -403,47 +404,47 @@ export default function ProviderAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{isAr ? 'تحليلات مزودي الخدمة' : 'Provider Analytics'}</h1>
+      <h1 className="text-2xl font-bold">{pick(locale, 'تحليلات مزودي الخدمة', 'Provider Analytics', 'Tedarikçi Analitiği')}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
           {
-            label: isAr ? 'إجمالي المزودين' : 'Total Providers',
+            label: pick(locale, 'إجمالي المزودين', 'Total Providers', 'Toplam Tedarikçi'),
             value: totalProviders,
             icon: Users,
             iconColor: 'text-blue-600',
             bgColor: 'bg-blue-50',
           },
           {
-            label: isAr ? 'المزودون النشطون' : 'Active Providers',
+            label: pick(locale, 'المزودون النشطون', 'Active Providers', 'Aktif Tedarikçiler'),
             value: activeProviders,
             icon: UserCheck,
             iconColor: 'text-emerald-600',
             bgColor: 'bg-emerald-50',
           },
           {
-            label: isAr ? 'المزودون المعلقون' : 'Suspended Providers',
+            label: pick(locale, 'المزودون المعلقون', 'Suspended Providers', 'Askıya Alınan Tedarikçiler'),
             value: suspendedProviders,
             icon: UserX,
             iconColor: 'text-red-600',
             bgColor: 'bg-red-50',
           },
           {
-            label: isAr ? 'مزودون جدد هذا الشهر' : 'New This Month',
+            label: pick(locale, 'مزودون جدد هذا الشهر', 'New This Month', 'Bu Ay Yeni'),
             value: newThisMonth,
             icon: UserPlus,
             iconColor: 'text-violet-600',
             bgColor: 'bg-violet-50',
           },
           {
-            label: isAr ? 'متوسط الإيراد لكل مزود' : 'Avg Revenue/Provider',
+            label: pick(locale, 'متوسط الإيراد لكل مزود', 'Avg Revenue/Provider', 'Ortalama Gelir/Tedarikçi'),
             value: `${avgRevenue.toLocaleString()} ${cur}`,
             icon: DollarSign,
             iconColor: 'text-amber-600',
             bgColor: 'bg-amber-50',
           },
           {
-            label: isAr ? 'إجمالي مدفوعات المزودين' : 'Total Payouts',
+            label: pick(locale, 'إجمالي مدفوعات المزودين', 'Total Payouts', 'Toplam Ödeme'),
             value: `${totalPayouts.toLocaleString()} ${cur}`,
             icon: Wallet,
             iconColor: 'text-teal-600',
@@ -462,7 +463,7 @@ export default function ProviderAnalyticsPage() {
 
       <div className="bg-white rounded-2xl border overflow-hidden">
         <div className="p-4 border-b space-y-4">
-          <h2 className="text-lg font-semibold">{isAr ? 'أداء المزودين' : 'Provider Performance'}</h2>
+          <h2 className="text-lg font-semibold">{pick(locale, 'أداء المزودين', 'Provider Performance', 'Tedarikçi Performansı')}</h2>
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
@@ -473,7 +474,7 @@ export default function ProviderAnalyticsPage() {
                   setSearch(e.target.value)
                   setPage(1)
                 }}
-                placeholder={isAr ? 'بحث باسم الشركة...' : 'Search by company name...'}
+                placeholder={pick(locale, 'بحث باسم الشركة...', 'Search by company name...', 'Şirket adına göre ara...')}
                 className="w-full ps-9 pe-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -485,9 +486,9 @@ export default function ProviderAnalyticsPage() {
               }}
               className="border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="all">{isAr ? 'جميع الحالات' : 'All Statuses'}</option>
-              <option value="active">{isAr ? 'نشط' : 'Active'}</option>
-              <option value="suspended">{isAr ? 'معلق' : 'Suspended'}</option>
+              <option value="all">{pick(locale, 'جميع الحالات', 'All Statuses', 'Tüm Durumlar')}</option>
+              <option value="active">{pick(locale, 'نشط', 'Active', 'Aktif')}</option>
+              <option value="suspended">{pick(locale, 'معلق', 'Suspended', 'Askıya Alındı')}</option>
             </select>
             <select
               value={typeFilter}
@@ -497,9 +498,9 @@ export default function ProviderAnalyticsPage() {
               }}
               className="border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="all">{isAr ? 'جميع الأنواع' : 'All Types'}</option>
-              <option value="travel_agency">{isAr ? 'وكالة سفر' : 'Travel Agency'}</option>
-              <option value="hajj_umrah">{isAr ? 'حج وعمرة' : 'Hajj & Umrah'}</option>
+              <option value="all">{pick(locale, 'جميع الأنواع', 'All Types', 'Tüm Türler')}</option>
+              <option value="travel_agency">{pick(locale, 'وكالة سفر', 'Travel Agency', 'Seyahat Acentesi')}</option>
+              <option value="hajj_umrah">{pick(locale, 'حج وعمرة', 'Hajj & Umrah', 'Hac ve Umre')}</option>
             </select>
           </div>
         </div>
@@ -508,26 +509,26 @@ export default function ProviderAnalyticsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'المزود' : 'Provider'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'النوع' : 'Type'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الحالة' : 'Status'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المزود', 'Provider', 'Tedarikçi')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'النوع', 'Type', 'Tür')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الحالة', 'Status', 'Durum')}</th>
                 <th
                   className="text-start p-3 font-medium cursor-pointer select-none hover:text-primary"
                   onClick={() => handleSort('created_at')}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {isAr ? 'تاريخ الانضمام' : 'Joined'}
+                    {pick(locale, 'تاريخ الانضمام', 'Joined', 'Katıldı')}
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </span>
                 </th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الرحلات' : 'Trips'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'نشطة' : 'Active'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الرحلات', 'Trips', 'Geziler')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'نشطة', 'Active', 'Aktif')}</th>
                 <th
                   className="text-start p-3 font-medium cursor-pointer select-none hover:text-primary"
                   onClick={() => handleSort('totalBookings')}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {isAr ? 'الحجوزات' : 'Bookings'}
+                    {pick(locale, 'الحجوزات', 'Bookings', 'Rezervasyonlar')}
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </span>
                 </th>
@@ -536,21 +537,21 @@ export default function ProviderAnalyticsPage() {
                   onClick={() => handleSort('revenue')}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {isAr ? 'الإيرادات' : 'Revenue'}
+                    {pick(locale, 'الإيرادات', 'Revenue', 'Gelir')}
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </span>
                 </th>
-                <th className="text-start p-3 font-medium">{isAr ? 'العمولة' : 'Commission'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'العمولة', 'Commission', 'Komisyon')}</th>
                 <th
                   className="text-start p-3 font-medium cursor-pointer select-none hover:text-primary"
                   onClick={() => handleSort('occupancy')}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {isAr ? 'الإشغال' : 'Occupancy'}
+                    {pick(locale, 'الإشغال', 'Occupancy', 'Doluluk')}
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </span>
                 </th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المحفظة' : 'Wallet'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المحفظة', 'Wallet', 'Cüzdan')}</th>
                 <th className="p-3 w-10" />
               </tr>
             </thead>
@@ -558,7 +559,7 @@ export default function ProviderAnalyticsPage() {
               <tbody>
                 <tr>
                   <td colSpan={12} className="text-center py-12 text-muted-foreground">
-                    {isAr ? 'لا توجد نتائج' : 'No results found'}
+                    {pick(locale, 'لا توجد نتائج', 'No results found', 'Sonuç bulunamadı')}
                   </td>
                 </tr>
               </tbody>
@@ -616,28 +617,28 @@ export default function ProviderAnalyticsPage() {
                             <div className="bg-white rounded-xl border p-4">
                               <Plane className="h-4 w-4 text-blue-500 mb-1" />
                               <p className="text-lg font-bold">{p.tripsCount}</p>
-                              <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الرحلات' : 'Total Trips'}</p>
+                              <p className="text-xs text-muted-foreground">{pick(locale, 'إجمالي الرحلات', 'Total Trips', 'Toplam Gezi')}</p>
                             </div>
                             <div className="bg-white rounded-xl border p-4">
                               <Calendar className="h-4 w-4 text-emerald-500 mb-1" />
                               <p className="text-lg font-bold">{p.totalBookings}</p>
-                              <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الحجوزات' : 'Total Bookings'}</p>
+                              <p className="text-xs text-muted-foreground">{pick(locale, 'إجمالي الحجوزات', 'Total Bookings', 'Toplam Rezervasyon')}</p>
                             </div>
                             <div className="bg-white rounded-xl border p-4">
                               <DollarSign className="h-4 w-4 text-amber-500 mb-1" />
                               <p className="text-lg font-bold">{p.revenue.toLocaleString()} {cur}</p>
-                              <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الإيرادات' : 'Total Revenue'}</p>
+                              <p className="text-xs text-muted-foreground">{pick(locale, 'إجمالي الإيرادات', 'Total Revenue', 'Toplam Gelir')}</p>
                             </div>
                             <div className="bg-white rounded-xl border p-4">
                               <TrendingUp className="h-4 w-4 text-violet-500 mb-1" />
                               <p className="text-lg font-bold">{p.occupancy}%</p>
-                              <p className="text-xs text-muted-foreground">{isAr ? 'متوسط الإشغال' : 'Avg Occupancy'}</p>
+                              <p className="text-xs text-muted-foreground">{pick(locale, 'متوسط الإشغال', 'Avg Occupancy', 'Ortalama Doluluk')}</p>
                             </div>
                           </div>
 
                           {p.trips.length > 0 && (
                             <div>
-                              <h4 className="font-semibold text-sm mb-3">{isAr ? 'الرحلات' : 'Trips'}</h4>
+                              <h4 className="font-semibold text-sm mb-3">{pick(locale, 'الرحلات', 'Trips', 'Geziler')}</h4>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {p.trips.map((trip) => (
                                   <div key={trip.id} className="flex items-center justify-between bg-white rounded-lg border p-3 text-sm">
@@ -649,7 +650,7 @@ export default function ProviderAnalyticsPage() {
                                     </div>
                                     <div className="flex items-center gap-4 text-muted-foreground">
                                       <span className="tabular-nums">
-                                        {trip.booked_seats}/{trip.total_seats} {isAr ? 'مقعد' : 'seats'}
+                                        {trip.booked_seats}/{trip.total_seats} {pick(locale, 'مقعد', 'seats', 'koltuk')}
                                       </span>
                                       <span>{formatDate(trip.created_at)}</span>
                                     </div>
@@ -661,7 +662,7 @@ export default function ProviderAnalyticsPage() {
 
                           {(p.bookings.length > 0 || p.roomBookings.length > 0) && (
                             <div>
-                              <h4 className="font-semibold text-sm mb-3">{isAr ? 'سجل الحجوزات' : 'Booking History'}</h4>
+                              <h4 className="font-semibold text-sm mb-3">{pick(locale, 'سجل الحجوزات', 'Booking History', 'Rezervasyon Geçmişi')}</h4>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {[...p.bookings, ...p.roomBookings]
                                   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -682,7 +683,7 @@ export default function ProviderAnalyticsPage() {
 
                           {p.trips.length === 0 && p.bookings.length === 0 && p.roomBookings.length === 0 && (
                             <p className="text-sm text-muted-foreground text-center py-4">
-                              {isAr ? 'لا يوجد نشاط بعد' : 'No activity yet'}
+                              {pick(locale, 'لا يوجد نشاط بعد', 'No activity yet', 'Henüz etkinlik yok')}
                             </p>
                           )}
                         </div>
@@ -697,9 +698,7 @@ export default function ProviderAnalyticsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t">
             <p className="text-sm text-muted-foreground">
-              {isAr
-                ? `عرض ${(page - 1) * perPage + 1}-${Math.min(page * perPage, filtered.length)} من ${filtered.length}`
-                : `Showing ${(page - 1) * perPage + 1}-${Math.min(page * perPage, filtered.length)} of ${filtered.length}`}
+              {pick(locale, `عرض ${(page - 1) * perPage + 1}-${Math.min(page * perPage, filtered.length)} من ${filtered.length}`, `Showing ${(page - 1) * perPage + 1}-${Math.min(page * perPage, filtered.length)} of ${filtered.length}`)}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -728,7 +727,7 @@ export default function ProviderAnalyticsPage() {
         <div className="bg-white rounded-2xl border p-5">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="h-5 w-5 text-amber-500" />
-            <h3 className="font-semibold">{isAr ? 'الأعلى إيرادات' : 'Top by Revenue'}</h3>
+            <h3 className="font-semibold">{pick(locale, 'الأعلى إيرادات', 'Top by Revenue', 'Gelire Göre En İyi')}</h3>
           </div>
           <HorizontalBar
             items={topByRevenue.map((p) => ({ name: providerName(p), value: p.revenue }))}
@@ -738,7 +737,7 @@ export default function ProviderAnalyticsPage() {
         <div className="bg-white rounded-2xl border p-5">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="h-5 w-5 text-blue-500" />
-            <h3 className="font-semibold">{isAr ? 'الأعلى حجوزات' : 'Top by Bookings'}</h3>
+            <h3 className="font-semibold">{pick(locale, 'الأعلى حجوزات', 'Top by Bookings', 'Rezervasyona Göre En İyi')}</h3>
           </div>
           <HorizontalBar
             items={topByBookings.map((p) => ({ name: providerName(p), value: p.totalBookings }))}
@@ -748,7 +747,7 @@ export default function ProviderAnalyticsPage() {
         <div className="bg-white rounded-2xl border p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-5 w-5 text-emerald-500" />
-            <h3 className="font-semibold">{isAr ? 'الأعلى إشغالاً' : 'Top by Occupancy'}</h3>
+            <h3 className="font-semibold">{pick(locale, 'الأعلى إشغالاً', 'Top by Occupancy', 'Doluluğa Göre En İyi')}</h3>
           </div>
           <HorizontalBar
             items={topByOccupancy.map((p) => ({ name: providerName(p), value: p.occupancy }))}
@@ -760,7 +759,7 @@ export default function ProviderAnalyticsPage() {
       <div className="bg-white rounded-2xl border p-5">
         <div className="flex items-center gap-2 mb-4">
           <Building2 className="h-5 w-5 text-violet-500" />
-          <h3 className="font-semibold">{isAr ? 'توزيع أنواع المزودين' : 'Provider Type Distribution'}</h3>
+          <h3 className="font-semibold">{pick(locale, 'توزيع أنواع المزودين', 'Provider Type Distribution', 'Tedarikçi Türü Dağılımı')}</h3>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -789,13 +788,13 @@ export default function ProviderAnalyticsPage() {
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-blue-500" />
             <span>
-              {isAr ? 'وكالات السفر' : 'Travel Agencies'} ({travelAgencyCount}) - {travelAgencyPct}%
+              {pick(locale, 'وكالات السفر', 'Travel Agencies', 'Seyahat Acenteleri')} ({travelAgencyCount}) - {travelAgencyPct}%
             </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-purple-500" />
             <span>
-              {isAr ? 'حج وعمرة' : 'Hajj & Umrah'} ({hajjUmrahCount}) - {hajjUmrahPct}%
+              {pick(locale, 'حج وعمرة', 'Hajj & Umrah', 'Hac ve Umre')} ({hajjUmrahCount}) - {hajjUmrahPct}%
             </span>
           </div>
         </div>

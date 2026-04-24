@@ -35,7 +35,7 @@ export default function ApplyMarkeeteerPage() {
   const t = useTranslations('become_marketeer')
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)

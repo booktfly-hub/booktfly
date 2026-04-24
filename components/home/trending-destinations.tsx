@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
@@ -56,11 +57,11 @@ export function TrendingDestinations({ locale }: TrendingDestinationsProps) {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full mb-4 border border-primary/10">
               <span className="text-sm font-bold text-primary uppercase tracking-widest">
-                {isAr ? 'اكتشف العالم' : 'Discover the World'}
+                {pick(locale, 'اكتشف العالم', 'Discover the World', 'Dünyayı Keşfet')}
               </span>
             </div>
             <h2 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight">
-              {isAr ? 'وجهات سياحية رائجة' : 'Trending Destinations'}
+              {pick(locale, 'وجهات سياحية رائجة', 'Trending Destinations', 'Popüler Varış Noktaları')}
             </h2>
           </div>
           
@@ -69,7 +70,7 @@ export function TrendingDestinations({ locale }: TrendingDestinationsProps) {
               href={`/${locale}/trips`}
               className="group flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-1"
             >
-              {isAr ? 'عرض كل الوجهات' : 'View All Destinations'}
+              {pick(locale, 'عرض كل الوجهات', 'View All Destinations', 'Tüm Varış Noktalarını Görüntüle')}
               <Arrow className="h-5 w-5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
             </Link>
           </div>

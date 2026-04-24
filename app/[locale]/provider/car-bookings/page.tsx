@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -56,10 +57,10 @@ export default function ProviderCarBookingsPage() {
     <div className="space-y-8 max-w-7xl mx-auto animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-          {isAr ? 'حجوزات السيارات' : 'Car Bookings'}
+          {pick(locale, 'حجوزات السيارات', 'Car Bookings', 'Araç Rezervasyonları')}
         </h1>
         <p className="text-slate-500 font-medium">
-          {isAr ? 'إدارة حجوزات سياراتك' : 'Manage your car bookings'}
+          {pick(locale, 'إدارة حجوزات سياراتك', 'Manage your car bookings', 'Araç rezervasyonlarınızı yönetin')}
         </p>
       </div>
 
@@ -95,10 +96,10 @@ export default function ProviderCarBookingsPage() {
             <CarFront className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد حجوزات بعد' : 'No bookings yet'}
+            {pick(locale, 'لا توجد حجوزات بعد', 'No bookings yet', 'Henüz rezervasyon yok')}
           </p>
           <p className="text-slate-500">
-            {isAr ? 'ستظهر حجوزات سياراتك هنا' : 'Your car bookings will appear here'}
+            {pick(locale, 'ستظهر حجوزات سياراتك هنا', 'Your car bookings will appear here', 'Araç rezervasyonlarınız burada görünecek')}
           </p>
         </div>
       ) : (
@@ -107,23 +108,21 @@ export default function ProviderCarBookingsPage() {
             <table className="w-full text-sm text-left rtl:text-right">
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'الضيف' : 'Guest'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'السيارة' : 'Car'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'الاستلام' : 'Pickup'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'الأيام' : 'Days'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'الضيف', 'Guest', 'Misafir')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'السيارة', 'Car', 'Araç')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'الاستلام', 'Pickup', 'Alım')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'الأيام', 'Days', 'Gün')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('total')}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'حصتك' : 'Your Payout'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'حصتك', 'Your Payout', 'Ödemeniz')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('status')}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'العقد' : 'Contract'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'العقد', 'Contract', 'Sözleşme')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('date')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {bookings.map((b) => {
                   const carName = b.car
-                    ? isAr
-                      ? `${b.car.brand_ar} ${b.car.model_ar}`
-                      : `${b.car.brand_en || b.car.brand_ar} ${b.car.model_en || b.car.model_ar}`
+                    ? pick(locale, `${b.car.brand_ar} ${b.car.model_ar}`, `${b.car.brand_en || b.car.brand_ar} ${b.car.model_en || b.car.model_ar}`)
                     : '-'
                   return (
                     <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
@@ -131,8 +130,8 @@ export default function ProviderCarBookingsPage() {
                       <td className="p-5 text-slate-700">{carName}</td>
                       <td className="p-5 text-slate-700">{b.pickup_date}</td>
                       <td className="p-5 text-slate-700">{b.number_of_days}</td>
-                      <td className="p-5 font-bold text-slate-900">{b.total_amount} {isAr ? 'ر.س' : 'SAR'}</td>
-                      <td className="p-5 font-bold text-emerald-600">{b.provider_payout} {isAr ? 'ر.س' : 'SAR'}</td>
+                      <td className="p-5 font-bold text-slate-900">{b.total_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
+                      <td className="p-5 font-bold text-emerald-600">{b.provider_payout} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
                       <td className="p-5">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${BOOKING_STATUS_COLORS[b.status]}`}>
                           {t(`status.${b.status}`)}
@@ -141,7 +140,7 @@ export default function ProviderCarBookingsPage() {
                       <td className="p-5">
                         <ContractPill signedAt={b.contract_signed_at} targetType="car_booking" bookingId={b.id} />
                       </td>
-                      <td className="p-5 text-slate-500">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                      <td className="p-5 text-slate-500">{new Date(b.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</td>
                     </tr>
                   )
                 })}

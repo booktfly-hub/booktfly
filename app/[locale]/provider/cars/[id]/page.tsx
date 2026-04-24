@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -37,7 +38,7 @@ import {
 export default function EditCarPage() {
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
@@ -114,7 +115,7 @@ export default function EditCarPage() {
       try {
         const res = await fetch(`/api/cars/${id}`)
         if (!res.ok) {
-          toast({ title: isAr ? 'السيارة غير موجودة' : 'Car not found', variant: 'destructive' })
+          toast({ title: pick(locale, 'السيارة غير موجودة', 'Car not found', 'Araç bulunamadı'), variant: 'destructive' })
           router.push(`/${locale}/provider/cars`)
           return
         }
@@ -156,6 +157,7 @@ export default function EditCarPage() {
           name_change_allowed: data.name_change_allowed ?? false,
           name_change_fee: data.name_change_fee ?? 0,
           name_change_is_refundable: data.name_change_is_refundable ?? true,
+          contact_phone: data.contact_phone || '',
         })
       } catch {
         toast({ title: tc('error'), variant: 'destructive' })
@@ -302,7 +304,7 @@ export default function EditCarPage() {
           <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-muted transition-colors">
             <BackArrow className="h-5 w-5" />
           </button>
-          <h1 className="text-2xl font-bold">{isAr ? 'تعديل السيارة' : 'Edit Car'}</h1>
+          <h1 className="text-2xl font-bold">{pick(locale, 'تعديل السيارة', 'Edit Car', 'Aracı Düzenle')}</h1>
         </div>
         {(car.status === 'active' || car.status === 'deactivated') && (
           <button
@@ -318,8 +320,8 @@ export default function EditCarPage() {
           >
             {toggling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
             {car.status === 'active'
-              ? (isAr ? 'تعطيل' : 'Deactivate')
-              : (isAr ? 'تفعيل' : 'Reactivate')}
+              ? (pick(locale, 'تعطيل', 'Deactivate', 'Devre Dışı Bırak'))
+              : (pick(locale, 'تفعيل', 'Reactivate', 'Yeniden Etkinleştir'))}
           </button>
         )}
       </div>
@@ -327,11 +329,11 @@ export default function EditCarPage() {
       <form onSubmit={handleSubmit(onSubmit, onValidationError)} className="space-y-6">
         {/* Brand & Model */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'الماركة والموديل' : 'Brand & Model'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'الماركة والموديل', 'Brand & Model', 'Marka ve Model')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الماركة' : 'Brand'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'الماركة', 'Brand', 'Marka')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input
                 {...register('brand_ar')}
@@ -342,13 +344,13 @@ export default function EditCarPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الماركة' : 'Brand'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'الماركة', 'Brand', 'Marka')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input {...register('brand_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الموديل' : 'Model'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'الموديل', 'Model', 'Model')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input
                 {...register('model_ar')}
@@ -359,7 +361,7 @@ export default function EditCarPage() {
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الموديل' : 'Model'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'الموديل', 'Model', 'Model')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input {...register('model_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
@@ -368,19 +370,19 @@ export default function EditCarPage() {
 
         {/* Location & Year */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'الموقع والسنة' : 'Location & Year'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'الموقع والسنة', 'Location & Year', 'Konum ve Yıl')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'المدينة' : 'City'} ({isAr ? 'عربي' : 'Arabic'}) *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *</label>
               <input {...register('city_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.city_ar && <p className="text-destructive text-sm mt-1">{errors.city_ar.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'المدينة' : 'City'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span></label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span></label>
               <input {...register('city_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'سنة الصنع' : 'Year'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'سنة الصنع', 'Year', 'Yıl')} *</label>
               <input type="number" min={2000} max={2030} {...register('year', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.year && <p className="text-destructive text-sm mt-1">{errors.year.message}</p>}
             </div>
@@ -391,7 +393,7 @@ export default function EditCarPage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            {isAr ? 'موقع الاستلام' : 'Pickup Location'}
+            {pick(locale, 'موقع الاستلام', 'Pickup Location', 'Alım Konumu')}
           </h2>
           <button
             type="button"
@@ -407,26 +409,26 @@ export default function EditCarPage() {
             )}
           >
             {locating ? (
-              <><Loader2 className="h-4 w-4 animate-spin" />{isAr ? 'جاري تحديد الموقع...' : 'Locating...'}</>
+              <><Loader2 className="h-4 w-4 animate-spin" />{pick(locale, 'جاري تحديد الموقع...', 'Locating...', 'Konum bulunuyor...')}</>
             ) : locationStatus === 'success' ? (
-              <><Check className="h-4 w-4" />{isAr ? 'تم تحديد الموقع بنجاح' : 'Location detected successfully'}</>
+              <><Check className="h-4 w-4" />{pick(locale, 'تم تحديد الموقع بنجاح', 'Location detected successfully', 'Konum başarıyla tespit edildi')}</>
             ) : (
-              <><LocateFixed className="h-4 w-4" />{isAr ? 'تحديد موقعي الحالي' : 'Get Current Location'}</>
+              <><LocateFixed className="h-4 w-4" />{pick(locale, 'تحديد موقعي الحالي', 'Get Current Location', 'Mevcut Konumu Al')}</>
             )}
           </button>
           {locationStatus === 'error' && (
-            <p className="text-destructive text-sm">{isAr ? 'تعذر تحديد الموقع' : 'Could not detect location'}</p>
+            <p className="text-destructive text-sm">{pick(locale, 'تعذر تحديد الموقع', 'Could not detect location', 'Konum tespit edilemedi')}</p>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'موقع الاستلام' : 'Pickup Location'} ({isAr ? 'عربي' : 'Arabic'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'موقع الاستلام', 'Pickup Location', 'Alım Konumu')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
-              <input {...register('pickup_location_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder={isAr ? 'مثال: مطار الملك خالد، مخرج 15' : 'e.g. King Khalid Airport, Exit 15'} />
+              <input {...register('pickup_location_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder={pick(locale, 'مثال: مطار الملك خالد، مخرج 15', 'e.g. King Khalid Airport, Exit 15', 'örn. Kral Halid Havalimanı, Çıkış 15')} />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'موقع الاستلام' : 'Pickup Location'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'موقع الاستلام', 'Pickup Location', 'Alım Konumu')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input {...register('pickup_location_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g. King Khalid Airport, Exit 15" />
             </div>
@@ -449,11 +451,11 @@ export default function EditCarPage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <Building className="h-4 w-4 text-primary" />
-            {isAr ? 'نوع الاستلام والإرجاع' : 'Pickup & Return Type'}
+            {pick(locale, 'نوع الاستلام والإرجاع', 'Pickup & Return Type', 'Alım ve İade Türü')}
           </h2>
 
           <div>
-            <label className="text-sm font-medium block mb-2">{isAr ? 'نوع الاستلام' : 'Pickup Type'} *</label>
+            <label className="text-sm font-medium block mb-2">{pick(locale, 'نوع الاستلام', 'Pickup Type', 'Alım Türü')} *</label>
             <div className="grid grid-cols-2 gap-3">
               {(['airport', 'branch'] as const).map((type) => (
                 <label
@@ -467,7 +469,7 @@ export default function EditCarPage() {
                 >
                   <input type="radio" {...register('pickup_type')} value={type} className="sr-only" />
                   {type === 'airport' ? <Plane className="h-5 w-5" /> : <Building className="h-5 w-5" />}
-                  <span className="text-sm">{type === 'airport' ? (isAr ? 'توصيل للمطار' : 'Airport Delivery') : (isAr ? 'فرع الشركة' : 'Company Branch')}</span>
+                  <span className="text-sm">{type === 'airport' ? (pick(locale, 'توصيل للمطار', 'Airport Delivery', 'Havalimanı Teslimi')) : (pick(locale, 'فرع الشركة', 'Company Branch', 'Şirket Şubesi'))}</span>
                 </label>
               ))}
             </div>
@@ -476,18 +478,18 @@ export default function EditCarPage() {
           {pickupType === 'branch' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفرع' : 'Branch Name'} ({isAr ? 'عربي' : 'Arabic'})</label>
-                <input {...register('pickup_branch_name_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder={isAr ? 'مثال: فرع الرياض - حي العليا' : 'e.g. Riyadh Branch - Olaya'} />
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم الفرع', 'Branch Name', 'Şube Adı')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
+                <input {...register('pickup_branch_name_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder={pick(locale, 'مثال: فرع الرياض - حي العليا', 'e.g. Riyadh Branch - Olaya', 'örn. Riyad Şubesi - Olaya')} />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفرع' : 'Branch Name'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم الفرع', 'Branch Name', 'Şube Adı')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                 <input {...register('pickup_branch_name_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="e.g. Riyadh Branch - Olaya" />
               </div>
             </div>
           )}
 
           <div>
-            <label className="text-sm font-medium block mb-2">{isAr ? 'نوع الإرجاع' : 'Return Type'}</label>
+            <label className="text-sm font-medium block mb-2">{pick(locale, 'نوع الإرجاع', 'Return Type', 'İade Türü')}</label>
             <div className="grid grid-cols-3 gap-3">
               {(['same_location', 'airport', 'branch'] as const).map((type) => (
                 <label
@@ -500,7 +502,7 @@ export default function EditCarPage() {
                   )}
                 >
                   <input type="radio" {...register('return_type')} value={type} className="sr-only" />
-                  <span>{type === 'same_location' ? (isAr ? 'نفس الموقع' : 'Same Location') : type === 'airport' ? (isAr ? 'المطار' : 'Airport') : (isAr ? 'فرع مختلف' : 'Different Branch')}</span>
+                  <span>{type === 'same_location' ? (pick(locale, 'نفس الموقع', 'Same Location', 'Aynı Konum')) : type === 'airport' ? (pick(locale, 'المطار', 'Airport', 'Havalimanı')) : (pick(locale, 'فرع مختلف', 'Different Branch', 'Farklı Şube'))}</span>
                 </label>
               ))}
             </div>
@@ -509,11 +511,11 @@ export default function EditCarPage() {
           {returnType === 'branch' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم فرع الإرجاع' : 'Return Branch Name'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم فرع الإرجاع', 'Return Branch Name', 'İade Şube Adı')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                 <input {...register('return_branch_name_ar')} dir="rtl" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم فرع الإرجاع' : 'Return Branch Name'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم فرع الإرجاع', 'Return Branch Name', 'İade Şube Adı')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                 <input {...register('return_branch_name_en')} dir="ltr" className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               </div>
             </div>
@@ -524,23 +526,23 @@ export default function EditCarPage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            {isAr ? 'ساعات الاستلام والإرجاع' : 'Pickup & Return Hours'}
+            {pick(locale, 'ساعات الاستلام والإرجاع', 'Pickup & Return Hours', 'Alım ve İade Saatleri')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الاستلام من' : 'Pickup From'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الاستلام من', 'Pickup From', 'Alım Yeri')}</label>
               <input type="time" {...register('pickup_hour_from')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الاستلام حتى' : 'Pickup To'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الاستلام حتى', 'Pickup To', 'Alım Nereye')}</label>
               <input type="time" {...register('pickup_hour_to')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الإرجاع من' : 'Return From'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الإرجاع من', 'Return From', 'İade Yeri')}</label>
               <input type="time" {...register('return_hour_from')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الإرجاع حتى' : 'Return To'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الإرجاع حتى', 'Return To', 'İade Nereye')}</label>
               <input type="time" {...register('return_hour_to')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
             </div>
           </div>
@@ -548,12 +550,12 @@ export default function EditCarPage() {
 
         {/* Category, Specs & Pricing */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'المواصفات والسعر' : 'Specs & Pricing'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'المواصفات والسعر', 'Specs & Pricing', 'Özellikler ve Fiyatlandırma')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الفئة' : 'Category'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الفئة', 'Category', 'Kategori')} *</label>
               <select {...register('category')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                <option value="">{isAr ? 'اختر الفئة' : 'Select category'}</option>
+                <option value="">{pick(locale, 'اختر الفئة', 'Select category', 'Kategori seç')}</option>
                 {Object.entries(CAR_CATEGORIES).map(([key, val]) => (
                   <option key={key} value={key}>{isAr ? val.ar : val.en}</option>
                 ))}
@@ -561,7 +563,7 @@ export default function EditCarPage() {
               {errors.category && <p className="text-destructive text-sm mt-1">{errors.category.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'ناقل الحركة' : 'Transmission'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'ناقل الحركة', 'Transmission', 'Şanzıman')} *</label>
               <select {...register('transmission')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 {Object.entries(TRANSMISSION_TYPES).map(([key, val]) => (
                   <option key={key} value={key}>{isAr ? val.ar : val.en}</option>
@@ -569,7 +571,7 @@ export default function EditCarPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'نوع الوقود' : 'Fuel Type'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'نوع الوقود', 'Fuel Type', 'Yakıt Türü')} *</label>
               <select {...register('fuel_type')} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 {Object.entries(FUEL_TYPES).map(([key, val]) => (
                   <option key={key} value={key}>{isAr ? val.ar : val.en}</option>
@@ -577,7 +579,7 @@ export default function EditCarPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد المقاعد' : 'Seats'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'عدد المقاعد', 'Seats', 'Koltuklar')} *</label>
               <input type="number" min={2} max={50} {...register('seats_count', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.seats_count && <p className="text-destructive text-sm mt-1">{errors.seats_count.message}</p>}
             </div>
@@ -589,7 +591,7 @@ export default function EditCarPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'السعر لكل يوم' : 'Price Per Day'} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'السعر لكل يوم', 'Price Per Day', 'Günlük Fiyat')} ({currency === 'USD' ? tc('usd') : tc('sar')}) *</label>
               <input type="number" min={1} step={0.01} {...register('price_per_day', { valueAsNumber: true })} className="w-full border rounded-lg px-4 py-2.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
               {errors.price_per_day && <p className="text-destructive text-sm mt-1">{errors.price_per_day.message}</p>}
             </div>
@@ -598,7 +600,7 @@ export default function EditCarPage() {
 
         {/* Features */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'المميزات' : 'Features'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'المميزات', 'Features', 'Özellikler')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {Object.entries(CAR_FEATURES).map(([key, val]) => (
               <label
@@ -624,23 +626,23 @@ export default function EditCarPage() {
 
         {/* Availability */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'الحجز والتوفر' : 'Booking & Availability'}</h2>
+          <h2 className="font-semibold">{pick(locale, 'الحجز والتوفر', 'Booking & Availability', 'Rezervasyon ve Müsaitlik')}</h2>
           <label className="flex items-center gap-3 cursor-pointer">
             <input type="checkbox" {...register('instant_book')} className="h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary" />
             <div>
-              <span className="font-medium text-sm">{isAr ? 'حجز فوري' : 'Instant Book'}</span>
-              <p className="text-xs text-muted-foreground">{isAr ? 'السماح بالحجز بدون تحديد مواعيد' : 'Allow booking without specific date restrictions'}</p>
+              <span className="font-medium text-sm">{pick(locale, 'حجز فوري', 'Instant Book', 'Anında Rezervasyon')}</span>
+              <p className="text-xs text-muted-foreground">{pick(locale, 'السماح بالحجز بدون تحديد مواعيد', 'Allow booking without specific date restrictions', 'Belirli tarih kısıtlaması olmadan rezervasyona izin ver')}</p>
             </div>
           </label>
 
           {!instantBook && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'متاح من' : 'Available From'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'متاح من', 'Available From', 'Başlangıç Tarihi')}</label>
                 <input type="hidden" {...register('available_from')} />
                 <Popover>
                   <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50', availableFromDate && isValid(availableFromDate) ? 'text-slate-900' : 'text-slate-500')}>
-                    {availableFromDate && isValid(availableFromDate) ? format(availableFromDate, 'PPP', { locale: enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                    {availableFromDate && isValid(availableFromDate) ? format(availableFromDate, 'PPP', { locale: enUS }) : <span>{pick(locale, 'اختر التاريخ', 'Select date', 'Tarih seç')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -649,11 +651,11 @@ export default function EditCarPage() {
                 </Popover>
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'متاح حتى' : 'Available To'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'متاح حتى', 'Available To', 'Bitiş Tarihi')}</label>
                 <input type="hidden" {...register('available_to')} />
                 <Popover>
                   <PopoverTrigger className={cn('flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm transition-colors hover:bg-slate-50', availableToDate && isValid(availableToDate) ? 'text-slate-900' : 'text-slate-500')}>
-                    {availableToDate && isValid(availableToDate) ? format(availableToDate, 'PPP', { locale: enUS }) : <span>{isAr ? 'اختر التاريخ' : 'Select date'}</span>}
+                    {availableToDate && isValid(availableToDate) ? format(availableToDate, 'PPP', { locale: enUS }) : <span>{pick(locale, 'اختر التاريخ', 'Select date', 'Tarih seç')}</span>}
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -668,8 +670,8 @@ export default function EditCarPage() {
         {/* Images */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">
-            {isAr ? 'صور السيارة' : 'Car Images'}{' '}
-            <span className="text-muted-foreground text-sm font-normal">({isAr ? 'حتى 5 صور' : 'Up to 5 images'})</span>
+            {pick(locale, 'صور السيارة', 'Car Images', 'Araç Görselleri')}{' '}
+            <span className="text-muted-foreground text-sm font-normal">({pick(locale, 'حتى 5 صور', 'Up to 5 images', '5 görsele kadar')})</span>
           </h2>
           {(existingImages.length > 0 || newImagePreviews.length > 0) && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -694,7 +696,7 @@ export default function EditCarPage() {
           {totalImages < 5 && (
             <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{isAr ? 'اضغط لرفع صور' : 'Click to upload images'}</span>
+              <span className="text-sm text-muted-foreground">{pick(locale, 'اضغط لرفع صور', 'Click to upload images', 'Görselleri yüklemek için tıklayın')}</span>
               <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => handleImageAdd(e.target.files)} />
             </label>
           )}
@@ -702,12 +704,26 @@ export default function EditCarPage() {
 
         {Object.keys(errors).length > 0 && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 space-y-1">
-            <p className="text-destructive font-semibold text-sm">{isAr ? 'يرجى تصحيح الأخطاء التالية:' : 'Please fix the following errors:'}</p>
+            <p className="text-destructive font-semibold text-sm">{pick(locale, 'يرجى تصحيح الأخطاء التالية:', 'Please fix the following errors:', 'Lütfen aşağıdaki hataları düzeltin:')}</p>
             {Object.entries(errors).map(([key, err]) => (
               <p key={key} className="text-destructive text-sm">• {(err as { message?: string })?.message || key}</p>
             ))}
           </div>
         )}
+
+        {/* Contact phone */}
+        <div className="bg-card border rounded-xl p-6">
+          <label className="text-sm font-semibold block mb-2">
+            {pick(locale, 'رقم تواصل مكتب التأجير', 'Rental office contact phone', 'Kiralama ofisi iletişim telefonu')}
+          </label>
+          <input
+            type="tel"
+            {...register('contact_phone')}
+            placeholder="+966..."
+            className="w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+            dir="ltr"
+          />
+        </div>
 
         <NameChangePolicyCard
           allowed={!!watch('name_change_allowed')}
@@ -716,7 +732,7 @@ export default function EditCarPage() {
           onFeeChange={(v) => setValue('name_change_fee', v === '' ? 0 : v, { shouldDirty: true })}
           refundable={watch('name_change_is_refundable') ?? true}
           onRefundableChange={(v) => setValue('name_change_is_refundable', v, { shouldDirty: true })}
-          title={isAr ? 'سياسة تغيير اسم السائق' : 'Driver name change policy'}
+          title={pick(locale, 'سياسة تغيير اسم السائق', 'Driver name change policy', 'Sürücü adı değişiklik politikası')}
         />
 
         <button
@@ -725,7 +741,7 @@ export default function EditCarPage() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isAr ? 'حفظ التعديلات' : 'Save Changes'}
+          {pick(locale, 'حفظ التعديلات', 'Save Changes', 'Değişiklikleri Kaydet')}
         </button>
       </form>
     </div>

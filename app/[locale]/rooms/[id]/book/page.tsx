@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
@@ -56,7 +57,7 @@ export default function BookRoomPage() {
 function BookRoomContent() {
   const t = useTranslations()
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -207,7 +208,7 @@ function BookRoomContent() {
 
         <div className="mb-8 md:mb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{t('room_booking.title')}</h1>
-          <p className="text-sm md:text-lg text-slate-500 font-medium">{isAr ? 'أدخل بيانات الحجز لإتمام العملية' : 'Enter booking details to complete your reservation'}</p>
+          <p className="text-sm md:text-lg text-slate-500 font-medium">{pick(locale, 'أدخل بيانات الحجز لإتمام العملية', 'Enter booking details to complete your reservation', 'Rezervasyonunuzu tamamlamak için rezervasyon ayrıntılarını girin')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
@@ -256,10 +257,10 @@ function BookRoomContent() {
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-black text-slate-900">
-                      {isAr ? 'بيانات الضيف' : 'Guest Information'}
+                      {pick(locale, 'بيانات الضيف', 'Guest Information', 'Misafir Bilgileri')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'الاسم ومعلومات التواصل' : 'Name and contact information'}
+                      {pick(locale, 'الاسم ومعلومات التواصل', 'Name and contact information', 'Ad ve iletişim bilgileri')}
                     </p>
                   </div>
                 </div>
@@ -279,7 +280,7 @@ function BookRoomContent() {
                       dir="ltr"
                       autoComplete="name"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
-                      placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
+                      placeholder={pick(locale, 'اسم الضيف بالإنجليزية', 'Full guest name (English)', 'Misafirin tam adı (İngilizce)')}
                     />
                     {errors.guest_name && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_name.message}</p>
@@ -337,10 +338,10 @@ function BookRoomContent() {
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-black text-slate-900">
-                      {isAr ? 'تفاصيل الحجز' : 'Booking Details'}
+                      {pick(locale, 'تفاصيل الحجز', 'Booking Details', 'Rezervasyon Ayrıntıları')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'التاريخ وعدد الليالي والغرف والأشخاص' : 'Date, nights, rooms and guest count'}
+                      {pick(locale, 'التاريخ وعدد الليالي والغرف والأشخاص', 'Date, nights, rooms and guest count', 'Tarih, gece, oda ve misafir sayısı')}
                     </p>
                   </div>
                 </div>
@@ -365,7 +366,7 @@ function BookRoomContent() {
                         <span>
                           {checkInDate
                             ? format(parseISO(checkInDate), 'PPP', { locale: enUS })
-                            : (isAr ? 'اختر تاريخ الدخول' : 'Select check-in date')}
+                            : (pick(locale, 'اختر تاريخ الدخول', 'Select check-in date', 'Giriş tarihi seç'))}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                       </PopoverTrigger>

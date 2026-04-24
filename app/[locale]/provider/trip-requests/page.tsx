@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -142,22 +143,22 @@ export default function ProviderTripRequestsPage() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                     <div>
-                      <span className="text-slate-500">{isAr ? 'التاريخ' : 'Date'}: </span>
+                      <span className="text-slate-500">{pick(locale, 'التاريخ', 'Date', 'Tarih')}: </span>
                       <span className="font-medium text-slate-900">{req.departure_date}</span>
                     </div>
                     {req.return_date && (
                       <div>
-                        <span className="text-slate-500">{isAr ? 'العودة' : 'Return'}: </span>
+                        <span className="text-slate-500">{pick(locale, 'العودة', 'Return', 'Dönüş')}: </span>
                         <span className="font-medium text-slate-900">{req.return_date}</span>
                       </div>
                     )}
                     <div>
-                      <span className="text-slate-500">{isAr ? 'المقاعد' : 'Seats'}: </span>
+                      <span className="text-slate-500">{pick(locale, 'المقاعد', 'Seats', 'Koltuklar')}: </span>
                       <span className="font-medium text-slate-900">{req.seats_needed}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500">{isAr ? 'الدرجة' : 'Class'}: </span>
-                      <span className="font-medium text-slate-900">{CABIN_CLASSES[req.cabin_class as keyof typeof CABIN_CLASSES]?.[isAr ? 'ar' : 'en'] || req.cabin_class}</span>
+                      <span className="text-slate-500">{pick(locale, 'الدرجة', 'Class', 'Sınıf')}: </span>
+                      <span className="font-medium text-slate-900">{CABIN_CLASSES[req.cabin_class as keyof typeof CABIN_CLASSES]?.[lkey(locale)] || req.cabin_class}</span>
                     </div>
                   </div>
                   {req.notes && (
@@ -170,7 +171,7 @@ export default function ProviderTripRequestsPage() {
                     <div className="text-center">
                       <p className="text-xs font-bold text-slate-500 mb-1">{t('your_offer')}</p>
                       <span className={cn('px-3 py-1 rounded-full text-xs font-bold', TRIP_REQUEST_OFFER_STATUS_COLORS[req.my_offer.status])}>
-                        {req.my_offer.price_per_seat.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}
+                        {req.my_offer.price_per_seat.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                       </span>
                     </div>
                   ) : (
@@ -203,7 +204,7 @@ export default function ProviderTripRequestsPage() {
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{t('price_per_seat')} ({isAr ? 'ر.س' : 'SAR'})</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{t('price_per_seat')} ({pick(locale, 'ر.س', 'SAR', 'SAR')})</Label>
                       <Input
                         type="number"
                         min={1}
@@ -212,7 +213,7 @@ export default function ProviderTripRequestsPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{t('provider_notes')} <span className="font-normal normal-case text-muted-foreground">({isAr ? 'اختياري' : 'optional'})</span></Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{t('provider_notes')} <span className="font-normal normal-case text-muted-foreground">({pick(locale, 'اختياري', 'optional', 'isteğe bağlı')})</span></Label>
                       <Textarea
                         rows={1}
                         value={offerForms[req.id].notes}
@@ -223,7 +224,7 @@ export default function ProviderTripRequestsPage() {
                   </div>
                   {offerForms[req.id].price && (
                     <p className="mt-2 text-sm text-slate-600">
-                      {t('total_price')}: <span className="font-bold text-sky-600">{(Number(offerForms[req.id].price) * req.seats_needed).toLocaleString()} {isAr ? 'ر.س' : 'SAR'}</span>
+                      {t('total_price')}: <span className="font-bold text-sky-600">{(Number(offerForms[req.id].price) * req.seats_needed).toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}</span>
                     </p>
                   )}
                   <div className="mt-3 flex gap-2">
@@ -241,7 +242,7 @@ export default function ProviderTripRequestsPage() {
                       onClick={() => toggleOfferForm(req.id)}
                       className="rounded-lg text-xs font-bold px-4"
                     >
-                      {isAr ? 'إلغاء' : 'Cancel'}
+                      {pick(locale, 'إلغاء', 'Cancel', 'İptal')}
                     </Button>
                   </div>
                 </div>

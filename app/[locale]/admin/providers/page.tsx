@@ -1,4 +1,5 @@
 'use client'
+import { lkey } from '@/lib/i18n-helpers'
 
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -74,7 +75,7 @@ export default function AdminProviders() {
                 providers.map((p) => (
                   <tr key={p.id} className="border-b hover:bg-muted/30">
                     <td className="p-3 font-medium">{p.company_name_ar}</td>
-                    <td className="p-3">{PROVIDER_TYPES[p.provider_type][locale as 'ar' | 'en']}</td>
+                    <td className="p-3">{PROVIDER_TYPES[p.provider_type][lkey(locale)]}</td>
                     <td className="p-3">{p.contact_email}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${

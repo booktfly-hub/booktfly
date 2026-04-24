@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { resolveApiErrorMessage } from '@/lib/api-error'
@@ -57,7 +58,7 @@ export default function MarketeerCustomersPage() {
 
   async function handleAdd() {
     if (!formData.name && !formData.email) {
-      toast({ title: isAr ? 'الاسم أو البريد مطلوب' : 'Name or email is required', variant: 'destructive' })
+      toast({ title: pick(locale, 'الاسم أو البريد مطلوب', 'Name or email is required', 'Ad veya e-posta gereklidir'), variant: 'destructive' })
       return
     }
     setSubmitting(true)
@@ -107,7 +108,7 @@ export default function MarketeerCustomersPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        toast({ title: `${isAr ? 'تم استيراد' : 'Imported'} ${data.imported} ${isAr ? 'عميل' : 'customers'}`, variant: 'success' })
+        toast({ title: `${pick(locale, 'تم استيراد', 'Imported', 'İçe Aktarıldı')} ${data.imported} ${pick(locale, 'عميل', 'customers', 'müşteri')}`, variant: 'success' })
         fetchCustomers()
       } else {
         toast({ title: resolveApiErrorMessage(data.error, te), variant: 'destructive' })
@@ -128,9 +129,9 @@ export default function MarketeerCustomersPage() {
       referral: 'bg-emerald-50 text-emerald-600',
     }
     const labels: Record<string, string> = {
-      manual: isAr ? 'يدوي' : 'Manual',
-      excel: isAr ? 'استيراد' : 'Import',
-      referral: isAr ? 'إحالة' : 'Referral',
+      manual: pick(locale, 'يدوي', 'Manual', 'Manuel'),
+      excel: pick(locale, 'استيراد', 'Import', 'İçe Aktar'),
+      referral: pick(locale, 'إحالة', 'Referral', 'Referans'),
     }
     return (
       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${colors[source] || 'bg-slate-100 text-slate-600'}`}>
@@ -144,7 +145,7 @@ export default function MarketeerCustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{t('title')}</h1>
-          <p className="text-slate-500 font-medium">{isAr ? 'إدارة قائمة عملائك' : 'Manage your customer list'}</p>
+          <p className="text-slate-500 font-medium">{pick(locale, 'إدارة قائمة عملائك', 'Manage your customer list', 'Müşteri listenizi yönetin')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -160,7 +161,7 @@ export default function MarketeerCustomersPage() {
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-2xl text-sm font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
           >
             {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {importing ? (isAr ? 'جاري الاستيراد...' : 'Importing...') : t('import_csv')}
+            {importing ? (pick(locale, 'جاري الاستيراد...', 'Importing...', 'İçe aktarılıyor...')) : t('import_csv')}
           </button>
           <input
             ref={fileInputRef}
@@ -180,9 +181,9 @@ export default function MarketeerCustomersPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('total'), count: customers.length, color: 'bg-slate-900 text-white' },
-          { label: isAr ? 'يدوي' : 'Manual', count: manualCount, color: 'bg-white border border-slate-200 text-slate-900' },
-          { label: isAr ? 'استيراد' : 'Imported', count: excelCount, color: 'bg-white border border-slate-200 text-blue-600' },
-          { label: isAr ? 'إحالة' : 'Referral', count: referralCount, color: 'bg-white border border-slate-200 text-emerald-600' },
+          { label: pick(locale, 'يدوي', 'Manual', 'Manuel'), count: manualCount, color: 'bg-white border border-slate-200 text-slate-900' },
+          { label: pick(locale, 'استيراد', 'Imported', 'İçe Aktarıldı'), count: excelCount, color: 'bg-white border border-slate-200 text-blue-600' },
+          { label: pick(locale, 'إحالة', 'Referral', 'Referans'), count: referralCount, color: 'bg-white border border-slate-200 text-emerald-600' },
         ].map((stat) => (
           <div key={stat.label} className={`rounded-2xl p-5 ${stat.color} shadow-sm`}>
             <p className="text-2xl font-black">{stat.count}</p>
@@ -235,7 +236,7 @@ export default function MarketeerCustomersPage() {
             className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all disabled:opacity-50"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isAr ? 'إضافة' : 'Add'}
+            {pick(locale, 'إضافة', 'Add', 'Ekle')}
           </button>
         </div>
       )}
@@ -274,7 +275,7 @@ export default function MarketeerCustomersPage() {
                     <td className="p-5 text-slate-700" dir="ltr">{c.email || '-'}</td>
                     <td className="p-5 text-slate-700" dir="ltr">{c.phone || '-'}</td>
                     <td className="p-5">{sourceBadge(c.source)}</td>
-                    <td className="p-5 text-slate-500">{new Date(c.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                    <td className="p-5 text-slate-500">{new Date(c.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</td>
                     <td className="p-5 text-end">
                       <button
                         onClick={() => handleDelete(c.id)}

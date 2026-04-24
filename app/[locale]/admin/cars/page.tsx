@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -60,7 +61,7 @@ export default function AdminCars() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'إدارة السيارات' : 'Cars Management'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'إدارة السيارات', 'Cars Management', 'Araç Yönetimi')}</h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {statuses.map((s) => (
@@ -71,7 +72,7 @@ export default function AdminCars() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? t(`status.${s}`) : isAr ? 'الكل' : 'All'}
+            {s ? t(`status.${s}`) : pick(locale, 'الكل', 'All', 'Tümü')}
           </button>
         ))}
       </div>
@@ -81,9 +82,9 @@ export default function AdminCars() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'السيارة' : 'Car'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المدينة' : 'City'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الفئة' : 'Category'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'السيارة', 'Car', 'Araç')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المدينة', 'City', 'Şehir')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الفئة', 'Category', 'Kategori')}</th>
                 <th className="text-start p-3 font-medium">{t('admin.providers')}</th>
                 <th className="text-start p-3 font-medium">{t('common.price')}</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
@@ -97,9 +98,7 @@ export default function AdminCars() {
                 <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{t('common.no_results')}</td></tr>
               ) : (
                 cars.map((car) => {
-                  const carName = isAr
-                    ? `${car.brand_ar} ${car.model_ar}`
-                    : `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`
+                  const carName = pick(locale, `${car.brand_ar} ${car.model_ar}`, `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`)
                   return (
                     <tr key={car.id} className="border-b hover:bg-muted/30">
                       <td className="p-3 font-medium">
@@ -107,9 +106,9 @@ export default function AdminCars() {
                         <span className="text-xs text-muted-foreground ms-2">{car.year}</span>
                       </td>
                       <td className="p-3">{isAr ? car.city_ar : (car.city_en || car.city_ar)}</td>
-                      <td className="p-3">{CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]?.[isAr ? 'ar' : 'en'] || car.category}</td>
+                      <td className="p-3">{CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]?.[lkey(locale)] || car.category}</td>
                       <td className="p-3">{(car.provider as any)?.company_name_ar}</td>
-                      <td className="p-3">{car.price_per_day} {isAr ? 'ر.س' : 'SAR'}/{isAr ? 'يوم' : 'day'}</td>
+                      <td className="p-3">{car.price_per_day} {pick(locale, 'ر.س', 'SAR', 'SAR')}/{pick(locale, 'يوم', 'day', 'gün')}</td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${CAR_STATUS_COLORS[car.status]}`}>
                           {t(`status.${car.status}`)}
@@ -123,7 +122,7 @@ export default function AdminCars() {
                                 <input
                                   value={removeReason}
                                   onChange={(e) => setRemoveReason(e.target.value)}
-                                  placeholder={isAr ? 'سبب الإزالة' : 'Remove reason'}
+                                  placeholder={pick(locale, 'سبب الإزالة', 'Remove reason', 'Kaldırma nedeni')}
                                   className="p-1.5 text-xs border rounded w-32"
                                 />
                                 <button onClick={() => handleRemove(car.id)} className="text-xs text-destructive hover:underline">
@@ -139,7 +138,7 @@ export default function AdminCars() {
                                 className="inline-flex items-center gap-1 text-destructive hover:underline text-xs"
                               >
                                 <Trash2 className="h-3 w-3" />
-                                {isAr ? 'إزالة' : 'Remove'}
+                                {pick(locale, 'إزالة', 'Remove', 'Kaldır')}
                               </button>
                             )}
                           </>
@@ -161,7 +160,7 @@ export default function AdminCars() {
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'السابق' : 'Previous'}
+            {pick(locale, 'السابق', 'Previous', 'Önceki')}
           </button>
           <span className="text-sm text-muted-foreground">
             {page} / {totalPages}
@@ -171,7 +170,7 @@ export default function AdminCars() {
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'التالي' : 'Next'}
+            {pick(locale, 'التالي', 'Next', 'İleri')}
           </button>
         </div>
       )}

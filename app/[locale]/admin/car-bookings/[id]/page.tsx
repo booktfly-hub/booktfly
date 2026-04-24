@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -40,18 +41,16 @@ export default function AdminCarBookingDetail() {
   if (!booking) return <div className="p-8 text-muted-foreground">{t('errors.not_found')}</div>
 
   const carName = booking.car
-    ? isAr
-      ? `${booking.car.brand_ar} ${booking.car.model_ar}`
-      : `${booking.car.brand_en || booking.car.brand_ar} ${booking.car.model_en || booking.car.model_ar}`
+    ? pick(locale, `${booking.car.brand_ar} ${booking.car.model_ar}`, `${booking.car.brand_en || booking.car.brand_ar} ${booking.car.model_en || booking.car.model_ar}`)
     : '-'
 
   const statusTimeline = [
-    { key: 'created_at', label: isAr ? 'تاريخ الحجز' : 'Booking Date', value: booking.created_at },
-    { key: 'paid_at', label: isAr ? 'تاريخ الدفع' : 'Paid At', value: booking.paid_at },
-    { key: 'transfer_confirmed_at', label: isAr ? 'تأكيد التحويل' : 'Transfer Confirmed', value: booking.transfer_confirmed_at },
-    { key: 'payment_reviewed_at', label: isAr ? 'مراجعة الدفع' : 'Payment Reviewed', value: booking.payment_reviewed_at },
-    { key: 'refunded_at', label: isAr ? 'تاريخ الاسترداد' : 'Refunded At', value: booking.refunded_at },
-    { key: 'cancelled_at', label: isAr ? 'تاريخ الإلغاء' : 'Cancelled At', value: booking.cancelled_at },
+    { key: 'created_at', label: pick(locale, 'تاريخ الحجز', 'Booking Date', 'Rezervasyon Tarihi'), value: booking.created_at },
+    { key: 'paid_at', label: pick(locale, 'تاريخ الدفع', 'Paid At', 'Ödeme Tarihi'), value: booking.paid_at },
+    { key: 'transfer_confirmed_at', label: pick(locale, 'تأكيد التحويل', 'Transfer Confirmed', 'Transfer Onaylandı'), value: booking.transfer_confirmed_at },
+    { key: 'payment_reviewed_at', label: pick(locale, 'مراجعة الدفع', 'Payment Reviewed', 'Ödeme İncelendi'), value: booking.payment_reviewed_at },
+    { key: 'refunded_at', label: pick(locale, 'تاريخ الاسترداد', 'Refunded At', 'İade Tarihi'), value: booking.refunded_at },
+    { key: 'cancelled_at', label: pick(locale, 'تاريخ الإلغاء', 'Cancelled At', 'İptal Tarihi'), value: booking.cancelled_at },
   ].filter((item) => item.value)
 
   return (
@@ -65,7 +64,7 @@ export default function AdminCarBookingDetail() {
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold">{isAr ? 'تفاصيل حجز السيارة' : 'Car Booking Detail'}</h1>
+              <h1 className="text-xl font-bold">{pick(locale, 'تفاصيل حجز السيارة', 'Car Booking Detail', 'Araç Rezervasyon Detayı')}</h1>
               <p className="text-sm text-muted-foreground">#{shortId(booking.id)}</p>
             </div>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${BOOKING_STATUS_COLORS[booking.status]}`}>
@@ -75,19 +74,19 @@ export default function AdminCarBookingDetail() {
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'معلومات السيارة' : 'Car Info'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'معلومات السيارة', 'Car Info', 'Araç Bilgisi')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'السيارة' : 'Car'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'السيارة', 'Car', 'Araç')}</p>
               <p className="font-medium">{carName}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'المدينة' : 'City'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'المدينة', 'City', 'Şehir')}</p>
               <p className="font-medium">{isAr ? booking.car?.city_ar : (booking.car?.city_en || booking.car?.city_ar)}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'الفئة' : 'Category'}</p>
-              <p className="font-medium">{CAR_CATEGORIES[booking.car?.category as keyof typeof CAR_CATEGORIES]?.[isAr ? 'ar' : 'en'] || booking.car?.category}</p>
+              <p className="text-muted-foreground">{pick(locale, 'الفئة', 'Category', 'Kategori')}</p>
+              <p className="font-medium">{CAR_CATEGORIES[booking.car?.category as keyof typeof CAR_CATEGORIES]?.[lkey(locale)] || booking.car?.category}</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t('admin.providers')}</p>
@@ -111,21 +110,21 @@ export default function AdminCarBookingDetail() {
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'معلومات الضيف' : 'Guest Info'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'معلومات الضيف', 'Guest Info', 'Misafir Bilgisi')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'اسم الضيف' : 'Guest Name'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'اسم الضيف', 'Guest Name', 'Misafir Adı')}</p>
               <p className="font-medium">{booking.guest_name}</p>
             </div>
             {booking.guest_phone && (
               <div>
-                <p className="text-muted-foreground">{isAr ? 'رقم الهاتف' : 'Phone'}</p>
+                <p className="text-muted-foreground">{pick(locale, 'رقم الهاتف', 'Phone', 'Telefon')}</p>
                 <p className="font-medium" dir="ltr">{booking.guest_phone}</p>
               </div>
             )}
             {booking.guest_email && (
               <div>
-                <p className="text-muted-foreground">{isAr ? 'البريد الإلكتروني' : 'Email'}</p>
+                <p className="text-muted-foreground">{pick(locale, 'البريد الإلكتروني', 'Email', 'E-posta')}</p>
                 <p className="font-medium">{booking.guest_email}</p>
               </div>
             )}
@@ -133,55 +132,55 @@ export default function AdminCarBookingDetail() {
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'تفاصيل الحجز' : 'Booking Details'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'تفاصيل الحجز', 'Booking Details', 'Rezervasyon Ayrıntıları')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'تاريخ الاستلام' : 'Pickup Date'}</p>
-              <p className="font-medium">{new Date(booking.pickup_date).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</p>
+              <p className="text-muted-foreground">{pick(locale, 'تاريخ الاستلام', 'Pickup Date', 'Alım Tarihi')}</p>
+              <p className="font-medium">{new Date(booking.pickup_date).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'تاريخ الإرجاع' : 'Return Date'}</p>
-              <p className="font-medium">{new Date(booking.return_date).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</p>
+              <p className="text-muted-foreground">{pick(locale, 'تاريخ الإرجاع', 'Return Date', 'Dönüş Tarihi')}</p>
+              <p className="font-medium">{new Date(booking.return_date).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'عدد الأيام' : 'Number of Days'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'عدد الأيام', 'Number of Days', 'Gün Sayısı')}</p>
               <p className="font-medium">{booking.number_of_days}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'تفاصيل الدفع' : 'Payment Details'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'تفاصيل الدفع', 'Payment Details', 'Ödeme Ayrıntıları')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'سعر اليوم' : 'Price Per Day'}</p>
-              <p className="font-medium">{booking.price_per_day} {isAr ? 'ر.س' : 'SAR'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'سعر اليوم', 'Price Per Day', 'Günlük Fiyat')}</p>
+              <p className="font-medium">{booking.price_per_day} {pick(locale, 'ر.س', 'SAR', 'SAR')}</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t('booking.total_amount')}</p>
-              <p className="font-bold text-lg">{booking.total_amount} {isAr ? 'ر.س' : 'SAR'}</p>
+              <p className="font-bold text-lg">{booking.total_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')}</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t('admin.commissions')}</p>
-              <p className="font-medium">{booking.commission_amount} {isAr ? 'ر.س' : 'SAR'} ({booking.commission_rate}%)</p>
+              <p className="font-medium">{booking.commission_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')} ({booking.commission_rate}%)</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t('admin.payouts')}</p>
-              <p className="font-medium">{booking.provider_payout} {isAr ? 'ر.س' : 'SAR'}</p>
+              <p className="font-medium">{booking.provider_payout} {pick(locale, 'ر.س', 'SAR', 'SAR')}</p>
             </div>
           </div>
         </div>
 
         {booking.transfer_receipt_url && (
           <div className="bg-white rounded-xl border p-6">
-            <h3 className="font-semibold mb-3">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
+            <h3 className="font-semibold mb-3">{pick(locale, 'إيصال التحويل', 'Transfer Receipt', 'Transfer Makbuzu')}</h3>
             <div className="relative w-full h-80">
               <Image src={booking.transfer_receipt_url} alt="Transfer receipt" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain rounded-lg border" />
             </div>
             {booking.transfer_confirmed_at && (
               <p className="text-xs text-muted-foreground mt-2">
-                {isAr ? 'تم التأكيد بتاريخ: ' : 'Confirmed at: '}
-                {new Date(booking.transfer_confirmed_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                {pick(locale, 'تم التأكيد بتاريخ: ', 'Confirmed at: ', 'Onay tarihi: ')}
+                {new Date(booking.transfer_confirmed_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
               </p>
             )}
           </div>
@@ -190,12 +189,12 @@ export default function AdminCarBookingDetail() {
         {booking.status === 'payment_processing' && (
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-semibold mb-3 flex items-center gap-2 text-warning">
-              {isAr ? 'مراجعة التحويل البنكي' : 'Review Bank Transfer'}
+              {pick(locale, 'مراجعة التحويل البنكي', 'Review Bank Transfer', 'Banka Transferini İncele')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
               {booking.transfer_confirmed_at
-                ? (isAr ? 'المستخدم أكد إتمام التحويل. يرجى التحقق والموافقة.' : 'User confirmed the transfer. Please verify and approve.')
-                : (isAr ? 'بانتظار تأكيد التحويل من المستخدم' : 'Waiting for user to confirm transfer')}
+                ? (pick(locale, 'المستخدم أكد إتمام التحويل. يرجى التحقق والموافقة.', 'User confirmed the transfer. Please verify and approve.', 'Kullanıcı transferi onayladı. Lütfen doğrulayın ve onaylayın.'))
+                : (pick(locale, 'بانتظار تأكيد التحويل من المستخدم', 'Waiting for user to confirm transfer', 'Kullanıcının transferi onaylaması bekleniyor'))}
             </p>
             <div className="flex flex-col gap-3">
               <div className="flex gap-3">
@@ -219,14 +218,14 @@ export default function AdminCarBookingDetail() {
                   className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-success text-white text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors"
                 >
                   <Check className="h-4 w-4" />
-                  {isAr ? 'تأكيد الدفع' : 'Approve Payment'}
+                  {pick(locale, 'تأكيد الدفع', 'Approve Payment', 'Ödemeyi Onayla')}
                 </button>
               </div>
               <div className="flex gap-2">
                 <input
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder={isAr ? 'سبب الرفض...' : 'Rejection reason...'}
+                  placeholder={pick(locale, 'سبب الرفض...', 'Rejection reason...', 'Red nedeni...')}
                   className="flex-1 border rounded-lg px-3 py-2 text-sm"
                 />
                 <button
@@ -249,7 +248,7 @@ export default function AdminCarBookingDetail() {
                   className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
                 >
                   <X className="h-4 w-4" />
-                  {isAr ? 'رفض الدفع' : 'Reject Payment'}
+                  {pick(locale, 'رفض الدفع', 'Reject Payment', 'Ödemeyi Reddet')}
                 </button>
               </div>
             </div>
@@ -258,7 +257,7 @@ export default function AdminCarBookingDetail() {
 
         {booking.payment_rejection_reason && (
           <div className="bg-destructive/5 rounded-xl border border-destructive/20 p-4">
-            <p className="text-xs text-muted-foreground mb-1">{isAr ? 'سبب رفض الدفع' : 'Payment Rejection Reason'}</p>
+            <p className="text-xs text-muted-foreground mb-1">{pick(locale, 'سبب رفض الدفع', 'Payment Rejection Reason', 'Ödeme Red Nedeni')}</p>
             <p className="text-sm font-medium text-destructive">{booking.payment_rejection_reason}</p>
           </div>
         )}
@@ -267,10 +266,10 @@ export default function AdminCarBookingDetail() {
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-semibold mb-3 flex items-center gap-2 text-warning">
               <XCircle className="h-5 w-5" />
-              {isAr ? 'طلب إلغاء من المستخدم' : 'User Cancellation Request'}
+              {pick(locale, 'طلب إلغاء من المستخدم', 'User Cancellation Request', 'Kullanıcı İptal Talebi')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {isAr ? 'المستخدم يطلب إلغاء هذا الحجز. يرجى الموافقة أو الرفض.' : 'The user has requested to cancel this booking. Please approve or reject.'}
+              {pick(locale, 'المستخدم يطلب إلغاء هذا الحجز. يرجى الموافقة أو الرفض.', 'The user has requested to cancel this booking. Please approve or reject.', 'Kullanıcı bu rezervasyonu iptal etmeyi talep etti. Lütfen onaylayın veya reddedin.')}
             </p>
             <div className="flex gap-3">
               <button
@@ -325,10 +324,10 @@ export default function AdminCarBookingDetail() {
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              {isAr ? 'استرداد الحجز' : 'Refund Booking'}
+              {pick(locale, 'استرداد الحجز', 'Refund Booking', 'Rezervasyonu İade Et')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {isAr ? 'سيتم استرداد المبلغ وخصمه من محفظة مزود الخدمة' : 'The amount will be refunded and deducted from the provider wallet'}
+              {pick(locale, 'سيتم استرداد المبلغ وخصمه من محفظة مزود الخدمة', 'The amount will be refunded and deducted from the provider wallet', 'Tutar iade edilecek ve tedarikçi cüzdanından düşülecektir')}
             </p>
             <button
               onClick={async () => {
@@ -355,14 +354,14 @@ export default function AdminCarBookingDetail() {
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              {isAr ? 'سجل الحالة' : 'Status Timeline'}
+              {pick(locale, 'سجل الحالة', 'Status Timeline', 'Durum Zaman Çizelgesi')}
             </h3>
             <div className="space-y-3">
               {statusTimeline.map((item) => (
                 <div key={item.key} className="flex items-center gap-3 text-sm">
                   <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
                   <span className="text-muted-foreground w-32">{item.label}</span>
-                  <span className="font-medium">{new Date(item.value).toLocaleString(isAr ? 'ar-SA' : 'en-US')}</span>
+                  <span className="font-medium">{new Date(item.value).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</span>
                 </div>
               ))}
             </div>
@@ -371,7 +370,7 @@ export default function AdminCarBookingDetail() {
 
         {booking.admin_notes && (
           <div className="bg-muted/30 rounded-xl border p-6">
-            <h3 className="font-semibold mb-2">{isAr ? 'ملاحظات الإدارة' : 'Admin Notes'}</h3>
+            <h3 className="font-semibold mb-2">{pick(locale, 'ملاحظات الإدارة', 'Admin Notes', 'Yönetici Notları')}</h3>
             <p className="text-sm text-muted-foreground">{booking.admin_notes}</p>
           </div>
         )}

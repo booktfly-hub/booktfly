@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
@@ -159,7 +160,7 @@ export default async function PrintContractPage({ params }: RouteParams) {
   })
 
   return (
-    <div dir={isAr ? 'rtl' : 'ltr'} className="min-h-screen bg-slate-100 py-10">
+    <div dir={pick(locale, 'rtl', 'ltr', 'ltr')} className="min-h-screen bg-slate-100 py-10">
       <style>{`
         @media print {
           @page { size: A4; margin: 18mm; }
@@ -175,17 +176,17 @@ export default async function PrintContractPage({ params }: RouteParams) {
           <div>
             <h1 className="text-lg font-bold">{isAr ? contextTitle.ar : contextTitle.en}</h1>
             <p className="text-xs text-muted-foreground">
-              {isAr ? 'اطبع هذه الصفحة أو احفظها كملف PDF.' : 'Print this page or save as PDF.'}
+              {pick(locale, 'اطبع هذه الصفحة أو احفظها كملف PDF.', 'Print this page or save as PDF.', 'Bu sayfayı yazdırın veya PDF olarak kaydedin.')}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <a
-              href={`/${isAr ? 'en' : 'ar'}/contracts/print/${target_type}/${id}`}
+              href={`/${pick(locale, 'en', 'ar', 'tr')}/contracts/print/${target_type}/${id}`}
               className="rounded-lg border px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
             >
-              {isAr ? 'EN' : 'AR'}
+              {pick(locale, 'EN', 'AR', 'AR')}
             </a>
-            <PrintButton label={isAr ? 'طباعة / حفظ PDF' : 'Print / Save as PDF'} />
+            <PrintButton label={pick(locale, 'طباعة / حفظ PDF', 'Print / Save as PDF', 'Yazdır / PDF Olarak Kaydet')} />
           </div>
         </div>
 
@@ -196,11 +197,11 @@ export default async function PrintContractPage({ params }: RouteParams) {
               {isAr ? contractBody.title_ar : contractBody.title_en}
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
-              {isAr ? 'الإصدار' : 'Version'} {contractBody.version}
-              {signedAt ? (isAr ? ` · تم التوقيع ${new Date(signedAt).toLocaleString('ar-SA')}` : ` · Signed ${new Date(signedAt).toLocaleString('en-US')}`) : ''}
+              {pick(locale, 'الإصدار', 'Version', 'Sürüm')} {contractBody.version}
+              {signedAt ? (pick(locale, ` · تم التوقيع ${new Date(signedAt).toLocaleString('ar-SA')}`, ` · Signed ${new Date(signedAt).toLocaleString('en-US')}`)) : ''}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {isAr ? 'رقم المرجع' : 'Reference'}: <span className="font-mono">{id}</span>
+              {pick(locale, 'رقم المرجع', 'Reference', 'Referans')}: <span className="font-mono">{id}</span>
             </p>
           </header>
 
@@ -211,35 +212,35 @@ export default async function PrintContractPage({ params }: RouteParams) {
           <section className="mt-10 grid grid-cols-2 gap-8 border-t pt-6">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                {isAr ? 'توقيع الطرف الأول' : 'First Party Signature'}
+                {pick(locale, 'توقيع الطرف الأول', 'First Party Signature', 'Birinci Taraf İmzası')}
               </p>
               <div className="border-b border-slate-300 pb-1 h-20 flex items-end text-xs text-slate-400">
-                {isAr ? 'Booktfly للسياحة والسفر' : 'Booktfly Tourism & Travel'}
+                {pick(locale, 'Booktfly للسياحة والسفر', 'Booktfly Tourism & Travel', 'Booktfly Turizm ve Seyahat')}
               </div>
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                {isAr ? 'توقيع الطرف الثاني' : 'Second Party Signature'}
+                {pick(locale, 'توقيع الطرف الثاني', 'Second Party Signature', 'İkinci Taraf İmzası')}
               </p>
               {sigUrl && signedAt ? (
                 <div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={sigUrl} alt="Signature" className="max-h-20 object-contain" />
                   <div className="mt-1 border-t pt-1 text-xs text-muted-foreground">
-                    {new Date(signedAt).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(signedAt).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                     {contractVersion ? ` · ${contractVersion}` : ''}
                   </div>
                 </div>
               ) : (
                 <div className="border-b border-slate-300 pb-1 h-20 flex items-end text-xs text-slate-400">
-                  {isAr ? '(لم يُوقَّع بعد)' : '(not yet signed)'}
+                  {pick(locale, '(لم يُوقَّع بعد)', '(not yet signed)', '(henüz imzalanmadı)')}
                 </div>
               )}
             </div>
           </section>
 
           <footer className="mt-10 pt-4 border-t text-center text-[10px] text-slate-400">
-            {isAr ? 'هذا العقد ملزم قانونياً وفق أنظمة المملكة العربية السعودية.' : 'This contract is legally binding under Saudi Arabian law.'}
+            {pick(locale, 'هذا العقد ملزم قانونياً وفق أنظمة المملكة العربية السعودية.', 'This contract is legally binding under Saudi Arabian law.', 'Bu sözleşme Suudi Arabistan yasaları kapsamında yasal olarak bağlayıcıdır.')}
           </footer>
         </div>
       </div>

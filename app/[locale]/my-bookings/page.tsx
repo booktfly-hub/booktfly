@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -115,16 +116,16 @@ export default function MyBookingsPage() {
               : ''
             const departureDate = trip
               ? new Date(trip.departure_at).toLocaleDateString(
-                  isAr ? 'ar-SA' : 'en-US',
+                  pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
                   { year: 'numeric', month: 'short', day: 'numeric' }
                 )
               : ''
             const roomName = room ? (isAr ? room.name_ar : (room.name_en || room.name_ar)) : ''
             const roomCity = room ? (isAr ? room.city_ar : capitalizeFirst(room.city_en || room.city_ar)) : ''
-            const carName = car ? (isAr ? `${car.brand_ar} ${car.model_ar}` : `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`) : ''
+            const carName = car ? (pick(locale, `${car.brand_ar} ${car.model_ar}`, `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`)) : ''
             const carCity = car ? (isAr ? car.city_ar : capitalizeFirst(car.city_en || car.city_ar)) : ''
             const createdDate = new Date(item.created_at).toLocaleDateString(
-              isAr ? 'ar-SA' : 'en-US',
+              pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
               { year: 'numeric', month: 'short', day: 'numeric' }
             )
 
@@ -141,7 +142,7 @@ export default function MyBookingsPage() {
                         #{shortId(item.id)}
                       </span>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-600">
-                        {isPackage ? (isAr ? 'باقة' : 'Package') : isCar ? (isAr ? 'سيارة' : 'Car') : isRoom ? (isAr ? 'غرفة' : 'Room') : (isAr ? 'رحلة' : 'Flight')}
+                        {isPackage ? (pick(locale, 'باقة', 'Package', 'Paket')) : isCar ? (pick(locale, 'سيارة', 'Car', 'Araç')) : isRoom ? (pick(locale, 'غرفة', 'Room', 'Oda')) : (pick(locale, 'رحلة', 'Flight', 'Uçuş'))}
                       </span>
                       <span>{createdDate}</span>
                     </div>
@@ -188,7 +189,7 @@ export default function MyBookingsPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
-                          {roomBooking.number_of_days} {isAr ? 'ليالٍ' : 'nights'}
+                          {roomBooking.number_of_days} {pick(locale, 'ليالٍ', 'nights', 'gece')}
                         </span>
                         <span>{roomCity}</span>
                       </div>
@@ -209,7 +210,7 @@ export default function MyBookingsPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
-                          {carBooking.number_of_days} {isAr ? 'يوم' : 'days'}
+                          {carBooking.number_of_days} {pick(locale, 'يوم', 'days', 'gün')}
                         </span>
                         <span>{carCity}</span>
                       </div>
@@ -233,7 +234,7 @@ export default function MyBookingsPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-3.5 w-3.5" />
-                          {packageBooking.number_of_people} {isAr ? 'أشخاص' : 'people'}
+                          {packageBooking.number_of_people} {pick(locale, 'أشخاص', 'people', 'kişi')}
                         </span>
                       </div>
                     </>
@@ -250,19 +251,19 @@ export default function MyBookingsPage() {
                       {roomBooking && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <Users className="h-3.5 w-3.5" />
-                          {roomBooking.number_of_people} {isAr ? 'ضيف' : 'guest(s)'}
+                          {roomBooking.number_of_people} {pick(locale, 'ضيف', 'guest(s)', 'misafir')}
                         </span>
                       )}
                       {carBooking && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <Clock className="h-3.5 w-3.5" />
-                          {carBooking.number_of_days} {isAr ? 'يوم' : 'day(s)'}
+                          {carBooking.number_of_days} {pick(locale, 'يوم', 'day(s)', 'gün')}
                         </span>
                       )}
                       {packageBooking && (
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <Users className="h-3.5 w-3.5" />
-                          {packageBooking.number_of_people} {isAr ? 'أشخاص' : 'people'}
+                          {packageBooking.number_of_people} {pick(locale, 'أشخاص', 'people', 'kişi')}
                         </span>
                       )}
                     </div>

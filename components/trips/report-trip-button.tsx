@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useLocale } from 'next-intl'
 import { Flag, Loader2, X } from 'lucide-react'
@@ -39,10 +40,10 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
         }),
       })
       if (!res.ok) {
-        toast({ title: isAr ? 'فشل إرسال البلاغ' : 'Failed to submit report', variant: 'destructive' })
+        toast({ title: pick(locale, 'فشل إرسال البلاغ', 'Failed to submit report', 'Rapor gönderilemedi'), variant: 'destructive' })
         return
       }
-      toast({ title: isAr ? 'تم استلام بلاغك، شكراً' : 'Report submitted. Thank you.', variant: 'success' })
+      toast({ title: pick(locale, 'تم استلام بلاغك، شكراً', 'Report submitted. Thank you.', 'Rapor gönderildi. Teşekkürler.'), variant: 'success' })
       setOpen(false)
       setDetails('')
       setEmail('')
@@ -62,7 +63,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
         )}
       >
         <Flag className="h-3.5 w-3.5" />
-        {isAr ? 'الإبلاغ عن هذه الرحلة' : 'Report this trip'}
+        {pick(locale, 'الإبلاغ عن هذه الرحلة', 'Report this trip', 'Bu geziyi bildir')}
       </button>
 
       {open && (
@@ -74,7 +75,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
             <div className="flex items-center justify-between p-5 border-b">
               <div className="flex items-center gap-2">
                 <Flag className="h-5 w-5 text-destructive" />
-                <h3 className="text-lg font-bold">{isAr ? 'الإبلاغ عن رحلة' : 'Report this trip'}</h3>
+                <h3 className="text-lg font-bold">{pick(locale, 'الإبلاغ عن رحلة', 'Report this trip', 'Bu geziyi bildir')}</h3>
               </div>
               <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-muted">
                 <X className="h-4 w-4" />
@@ -83,7 +84,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
             <div className="p-5 space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  {isAr ? 'السبب' : 'Reason'}
+                  {pick(locale, 'السبب', 'Reason', 'Neden')}
                 </label>
                 <select
                   value={reason}
@@ -99,20 +100,20 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  {isAr ? 'تفاصيل (اختياري)' : 'Details (optional)'}
+                  {pick(locale, 'تفاصيل (اختياري)', 'Details (optional)', 'Ayrıntılar (isteğe bağlı)')}
                 </label>
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   rows={3}
                   maxLength={1000}
-                  placeholder={isAr ? 'ما الذي تريد إخبارنا به؟' : 'Tell us what happened...'}
+                  placeholder={pick(locale, 'ما الذي تريد إخبارنا به؟', 'Tell us what happened...', 'Ne olduğunu anlatın...')}
                   className="w-full px-3 py-2 border border-border rounded-lg bg-white text-sm resize-none"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  {isAr ? 'بريدك (اختياري)' : 'Your email (optional)'}
+                  {pick(locale, 'بريدك (اختياري)', 'Your email (optional)', 'E-postanız (isteğe bağlı)')}
                 </label>
                 <input
                   type="email"
@@ -122,7 +123,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
                   className="w-full h-11 px-3 border border-border rounded-lg bg-white text-sm"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {isAr ? 'لنتواصل معك إذا احتجنا تفاصيل إضافية' : 'So we can follow up if needed'}
+                  {pick(locale, 'لنتواصل معك إذا احتجنا تفاصيل إضافية', 'So we can follow up if needed', 'Gerekirse takip edebilmemiz için')}
                 </p>
               </div>
             </div>
@@ -131,7 +132,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
                 onClick={() => setOpen(false)}
                 className="h-10 px-4 rounded-lg text-sm font-semibold hover:bg-muted"
               >
-                {isAr ? 'إلغاء' : 'Cancel'}
+                {pick(locale, 'إلغاء', 'Cancel', 'İptal')}
               </button>
               <button
                 onClick={submit}
@@ -139,7 +140,7 @@ export function ReportTripButton({ tripId, className }: { tripId: string; classN
                 className="inline-flex items-center gap-2 h-10 px-5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:brightness-95 disabled:opacity-50"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isAr ? 'إرسال البلاغ' : 'Submit report'}
+                {pick(locale, 'إرسال البلاغ', 'Submit report', 'Raporu gönder')}
               </button>
             </div>
           </div>

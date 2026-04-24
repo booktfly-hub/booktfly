@@ -25,6 +25,7 @@ import {
   Activity,
   Bell,
   Flag,
+  Mail,
   BarChart3,
   TrendingUp,
   CarFront,
@@ -61,6 +62,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: 'group_monitoring',
     items: [
       { key: 'users', icon: Users, href: '/admin/users' },
+      { key: 'email_leads', icon: Mail, href: '/admin/email-leads' },
       { key: 'activity_logs', icon: Activity, href: '/admin/activity-logs' },
       { key: 'alerts', icon: Bell, href: '/admin/alerts', badgeKey: 'alerts' },
       { key: 'reports', icon: Flag, href: '/admin/reports', badgeKey: 'reports' },

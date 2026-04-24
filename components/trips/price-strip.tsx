@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -140,10 +141,10 @@ export function PriceStrip({
                 )}
               >
                 <span className="text-[10px] font-semibold uppercase opacity-80">
-                  {d.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { weekday: 'short' })}
+                  {d.toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { weekday: 'short' })}
                 </span>
                 <span className="text-sm font-bold leading-tight mt-0.5">
-                  {d.getDate()} {d.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short' })}
+                  {d.getDate()} {d.toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { month: 'short' })}
                 </span>
                 {price != null ? (
                   <span

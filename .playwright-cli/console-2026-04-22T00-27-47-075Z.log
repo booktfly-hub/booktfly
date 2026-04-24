@@ -85,3 +85,9 @@ Read more: https://nextjs.org/docs/app/api-reference/components/image#loading @ 
 [ 1306994ms] [LOG] [Fast Refresh] done in 1014ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
 [ 1307106ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
 [ 1308024ms] [LOG] [Fast Refresh] done in 1018ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1421239ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1421528ms] [LOG] [Fast Refresh] done in 391ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1421631ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1421890ms] [LOG] [Fast Refresh] done in 361ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1421992ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297
+[ 1422276ms] [LOG] [Fast Refresh] done in 385ms @ http://localhost:3000/_next/static/chunks/a191e_next_dist_0da38164._.js:2297

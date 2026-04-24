@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { Heart } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -35,8 +36,8 @@ export function FavoriteButton({ itemType, itemId, className }: FavoriteButtonPr
     await toggle(itemType, itemId)
     toast({
       title: wasAlreadySaved
-        ? (isAr ? 'تمت الإزالة من المحفوظات' : 'Removed from saved')
-        : (isAr ? 'تم الحفظ!' : 'Saved!'),
+        ? (pick(locale, 'تمت الإزالة من المحفوظات', 'Removed from saved', 'Kaydedilenlerden kaldırıldı'))
+        : (pick(locale, 'تم الحفظ!', 'Saved!', 'Kaydedildi!')),
     })
   }
 
@@ -50,7 +51,7 @@ export function FavoriteButton({ itemType, itemId, className }: FavoriteButtonPr
         'hover:scale-110 active:scale-95 transition-transform duration-150',
         className
       )}
-      aria-label={isSaved ? (isAr ? 'إزالة من المحفوظات' : 'Remove from saved') : (isAr ? 'حفظ' : 'Save')}
+      aria-label={isSaved ? (pick(locale, 'إزالة من المحفوظات', 'Remove from saved', 'Kaydedilenlerden kaldır')) : (pick(locale, 'حفظ', 'Save', 'Kaydet'))}
     >
       <Heart
         className={cn(

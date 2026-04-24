@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
 import { Plane, Clock, Calendar, Briefcase, ArrowRight, ArrowLeft, BadgeCheck } from 'lucide-react'
@@ -45,13 +46,13 @@ export function FlightDetailSheet({
   const destCountry = getCountryCode(trip.destination_code, trip.destination_city_en || trip.destination_city_ar)
 
   const dep = new Date(trip.departure_at)
-  const depDate = dep.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+  const depDate = dep.toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), {
     weekday: 'long', month: 'short', day: 'numeric', year: 'numeric',
   })
-  const depTime = dep.toLocaleTimeString(isAr ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+  const depTime = dep.toLocaleTimeString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={t('trips.flight_details', { default: isAr ? 'تفاصيل الرحلة' : 'Flight details' })} className={className}>
+    <BottomSheet open={open} onClose={onClose} title={t('trips.flight_details', { default: pick(locale, 'تفاصيل الرحلة', 'Flight details', 'Uçuş ayrıntıları') })} className={className}>
       <div className="space-y-4">
         {/* Header — airline */}
         <div className="flex items-center gap-3">
@@ -90,7 +91,7 @@ export function FlightDetailSheet({
 
             <div className="flex flex-col items-center text-muted-foreground">
               <Arrow className="h-4 w-4" />
-              <span className="text-[10px] mt-1 font-semibold">{t('trips.direct', { default: isAr ? 'مباشرة' : 'Direct' })}</span>
+              <span className="text-[10px] mt-1 font-semibold">{t('trips.direct', { default: pick(locale, 'مباشرة', 'Direct', 'Doğrudan') })}</span>
             </div>
 
             <div className="min-w-0 text-end">
@@ -108,30 +109,30 @@ export function FlightDetailSheet({
 
         {/* Baggage / includes */}
         <div className="rounded-xl border border-border p-3 bg-card space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground">{isAr ? 'ما يشمله السعر' : 'What’s included'}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{pick(locale, 'ما يشمله السعر', 'What’s included', 'Neler dahil')}</p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {trip.cabin_baggage_kg != null && (
               <div className="flex items-center gap-1.5">
                 <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
-                <span>{isAr ? `${trip.cabin_baggage_kg} كجم حقيبة يد` : `${trip.cabin_baggage_kg} kg cabin`}</span>
+                <span>{pick(locale, `${trip.cabin_baggage_kg} كجم حقيبة يد`, `${trip.cabin_baggage_kg} kg cabin`)}</span>
               </div>
             )}
             {trip.checked_baggage_kg != null && trip.checked_baggage_kg > 0 && (
               <div className="flex items-center gap-1.5">
                 <Briefcase className="h-3.5 w-3.5 text-emerald-600" />
-                <span>{isAr ? `${trip.checked_baggage_kg} كجم حقيبة سفر` : `${trip.checked_baggage_kg} kg checked`}</span>
+                <span>{pick(locale, `${trip.checked_baggage_kg} كجم حقيبة سفر`, `${trip.checked_baggage_kg} kg checked`)}</span>
               </div>
             )}
             {trip.meal_included && (
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 text-emerald-600" />
-                <span>{isAr ? 'وجبة' : 'Meal'}</span>
+                <span>{pick(locale, 'وجبة', 'Meal', 'Yemek')}</span>
               </div>
             )}
             {trip.seat_selection_included && (
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 text-emerald-600" />
-                <span>{isAr ? 'اختيار مقعد' : 'Seat choice'}</span>
+                <span>{pick(locale, 'اختيار مقعد', 'Seat choice', 'Koltuk seçimi')}</span>
               </div>
             )}
           </div>
@@ -150,7 +151,7 @@ export function FlightDetailSheet({
         <div className="sticky bottom-0 -mx-4 -mb-4 px-4 py-3 border-t bg-background shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase text-muted-foreground font-bold">{t('common.per_seat', { default: isAr ? 'للشخص' : 'Per seat' })}</p>
+              <p className="text-[10px] uppercase text-muted-foreground font-bold">{t('common.per_seat', { default: pick(locale, 'للشخص', 'Per seat', 'Koltuk başına') })}</p>
               <p className={cn('text-xl font-black leading-none')}>{formattedPrice}</p>
               <BnplBadge price={trip.price_per_seat} currency={trip.currency} className="mt-1" />
             </div>

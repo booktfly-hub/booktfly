@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
@@ -70,7 +71,7 @@ export function BecomeMarketeerPageClient({
   const isAr = locale === 'ar'
   const shouldReduceMotion = useReducedMotion()
   const [targetSar, setTargetSar] = useState('1000')
-  const numberFormatter = new Intl.NumberFormat(isAr ? 'ar-SA' : 'en-US')
+  const numberFormatter = new Intl.NumberFormat(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))
 
   const earningEvents = isAr
     ? [
@@ -153,12 +154,8 @@ export function BecomeMarketeerPageClient({
         'Earn from direct conversions and from users who sign up first then come back to book.',
         'Track balance, transactions, and expected withdrawal value in one clear dashboard.',
       ]
-  const economyIntro = isAr
-    ? 'هذه ليست نقاطاً تجميلية. كل حدث مهم في رحلة العميل له وزن واضح داخل البرنامج, من أول تسجيل إلى البيع المتكرر والمكافآت الأسبوعية.'
-    : 'These are not vanity points. Every meaningful customer action carries a defined reward, from the first signup to repeat sales and weekly performance bonuses.'
-  const deductionsIntro = isAr
-    ? 'الخصومات موجودة لحماية جودة التجربة وحفظ ثقة العملاء. الأداء الجيد والاستجابة السريعة يبقيان رصيدك في اتجاه صاعد.'
-    : 'Deductions exist to protect customer trust and booking quality. Strong service and fast follow-up keep your balance moving upward.'
+  const economyIntro = pick(locale, 'هذه ليست نقاطاً تجميلية. كل حدث مهم في رحلة العميل له وزن واضح داخل البرنامج, من أول تسجيل إلى البيع المتكرر والمكافآت الأسبوعية.', 'These are not vanity points. Every meaningful customer action carries a defined reward, from the first signup to repeat sales and weekly performance bonuses.', 'Bunlar boş puanlar değildir. İlk kayıttan tekrar satışlara ve haftalık performans bonuslarına kadar her anlamlı müşteri eyleminin tanımlı bir ödülü vardır.')
+  const deductionsIntro = pick(locale, 'الخصومات موجودة لحماية جودة التجربة وحفظ ثقة العملاء. الأداء الجيد والاستجابة السريعة يبقيان رصيدك في اتجاه صاعد.', 'Deductions exist to protect customer trust and booking quality. Strong service and fast follow-up keep your balance moving upward.', 'Kesintiler müşteri güvenini ve rezervasyon kalitesini korumak için vardır. Güçlü hizmet ve hızlı takip bakiyenizi yukarı taşır.')
   const calculatorNotes = isAr
     ? [
         '1,000 ر.س تحتاج إلى 20,000 نقطة.',
@@ -207,7 +204,7 @@ export function BecomeMarketeerPageClient({
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-500 opacity-75" />
                     <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-violet-500" />
                   </span>
-                  <span>{isAr ? 'برنامج FlyPoints' : 'FlyPoints Program'}</span>
+                  <span>{pick(locale, 'برنامج FlyPoints', 'FlyPoints Program', 'FlyPoints Programı')}</span>
                 </Badge>
               </motion.div>
 
@@ -298,14 +295,14 @@ export function BecomeMarketeerPageClient({
                   <div className="flex items-center justify-between rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3">
                     <div>
                       <p className="text-xs font-bold uppercase tracking-[0.24em] text-violet-700">
-                        {isAr ? 'نموذج الدخل' : 'Income preview'}
+                        {pick(locale, 'نموذج الدخل', 'Income preview', 'Gelir önizlemesi')}
                       </p>
                       <p className="mt-1 text-sm font-medium text-slate-500">
-                        {isAr ? 'مثال حقيقي لمسوق يروّج لعروض عمرة وسكن' : 'A realistic example for a marketer promoting Umrah trips and stays'}
+                        {pick(locale, 'مثال حقيقي لمسوق يروّج لعروض عمرة وسكن', 'A realistic example for a marketer promoting Umrah trips and stays', 'Umre gezileri ve konaklamalarını tanıtan bir pazarlamacı için gerçekçi bir örnek')}
                       </p>
                     </div>
                     <div className="rounded-full bg-violet-950 px-4 py-2 text-sm font-black text-white">
-                      {isAr ? '2400 نقطة' : '2400 pts'}
+                      {pick(locale, '2400 نقطة', '2400 pts', '2400 puan')}
                     </div>
                   </div>
 
@@ -331,10 +328,10 @@ export function BecomeMarketeerPageClient({
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <CardTitle className="text-xl font-black">
-                            {isAr ? 'لوحة الأداء السريعة' : 'Quick performance view'}
+                            {pick(locale, 'لوحة الأداء السريعة', 'Quick performance view', 'Hızlı performans görünümü')}
                           </CardTitle>
                           <CardDescription className="mt-1 text-violet-100">
-                            {isAr ? 'رصيد أسبوع واحد من مزيج مبيعات وإحالات ومكافآت' : 'One-week balance from a mix of sales, referrals, and bonuses'}
+                            {pick(locale, 'رصيد أسبوع واحد من مزيج مبيعات وإحالات ومكافآت', 'One-week balance from a mix of sales, referrals, and bonuses', 'Satış, referans ve bonus karışımından bir haftalık bakiye')}
                           </CardDescription>
                         </div>
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
@@ -358,10 +355,10 @@ export function BecomeMarketeerPageClient({
                       <div className="mt-5 rounded-2xl bg-white px-5 py-4 text-slate-950">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-semibold text-slate-500">
-                            {isAr ? 'القيمة التقريبية' : 'Estimated value'}
+                            {pick(locale, 'القيمة التقريبية', 'Estimated value', 'Tahmini değer')}
                           </span>
                           <span className="text-3xl font-black tracking-tight text-violet-950">
-                            {isAr ? '120 ر.س' : '120 SAR'}
+                            {pick(locale, '120 ر.س', '120 SAR', '120 SAR')}
                           </span>
                         </div>
                       </div>
@@ -378,10 +375,10 @@ export function BecomeMarketeerPageClient({
         <div className="mx-auto max-w-7xl rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm sm:p-10">
           <div className="mb-12 text-center">
             <Badge className="border-violet-200 bg-violet-50 px-4 py-1.5 text-violet-800">
-              {isAr ? 'اقتصاد النقاط' : 'Points Economy'}
+              {pick(locale, 'اقتصاد النقاط', 'Points Economy', 'Puan Ekonomisi')}
             </Badge>
             <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              {isAr ? 'كل عملية لها قيمة واضحة وقابلة للتحويل' : 'Every action maps to clear, cashable value'}
+              {pick(locale, 'كل عملية لها قيمة واضحة وقابلة للتحويل', 'Every action maps to clear, cashable value', 'Her eylem net, nakde çevrilebilir bir değere karşılık gelir')}
             </h2>
             <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
               {economyIntro}
@@ -423,14 +420,14 @@ export function BecomeMarketeerPageClient({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-2xl font-black tracking-tight text-slate-950">
-                  {isAr ? 'الخصومات' : 'Deductions'}
+                  {pick(locale, 'الخصومات', 'Deductions', 'Kesintiler')}
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   {deductionsIntro}
                 </p>
               </div>
               <Badge variant="destructive" className="w-fit px-4 py-1.5 text-sm">
-                {isAr ? 'قواعد حماية الجودة' : 'Quality safeguards'}
+                {pick(locale, 'قواعد حماية الجودة', 'Quality safeguards', 'Kalite güvenceleri')}
               </Badge>
             </div>
 
@@ -463,7 +460,7 @@ export function BecomeMarketeerPageClient({
               {howItWorks}
             </Badge>
             <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              {isAr ? 'مسار واضح من التسجيل إلى السحب' : 'A clear path from onboarding to payout'}
+              {pick(locale, 'مسار واضح من التسجيل إلى السحب', 'A clear path from onboarding to payout', 'Kayıttan ödemeye net bir yol')}
             </h2>
           </div>
 
@@ -489,7 +486,7 @@ export function BecomeMarketeerPageClient({
                   <Card className="w-[calc(100%-4rem)] rounded-[1.5rem] border-slate-200 bg-white transition-[border-color,box-shadow] hover:border-violet-200 hover:shadow-md hover:shadow-slate-200/50">
                     <CardContent className="p-6">
                       <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-violet-700">
-                        {isAr ? `الخطوة ${index + 1}` : `Step ${index + 1}`}
+                        {pick(locale, `الخطوة ${index + 1}`, `Step ${index + 1}`)}
                       </p>
                       <p className="text-sm leading-7 text-slate-600 sm:text-base">{step}</p>
                     </CardContent>
@@ -511,15 +508,13 @@ export function BecomeMarketeerPageClient({
           <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div>
               <Badge className="border-white/10 bg-white/5 px-4 py-1.5 text-white">
-                {isAr ? 'قيمة FlyPoints' : 'FlyPoints Value'}
+                {pick(locale, 'قيمة FlyPoints', 'FlyPoints Value', 'FlyPoints Değeri')}
               </Badge>
               <h2 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">
-                {isAr ? '1 نقطة = 0.05 ر.س' : '1 point = 0.05 SAR'}
+                {pick(locale, '1 نقطة = 0.05 ر.س', '1 point = 0.05 SAR', '1 puan = 0.05 SAR')}
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-violet-100 sm:text-lg">
-                {isAr
-                  ? 'كل نقطة لها قيمة مالية واضحة داخل البرنامج. خطط لحملتك التالية وفق هدف مالي حقيقي, ثم اعرف كم نقطة تحتاج للوصول إليه.'
-                  : 'Each point has a real monetary value inside the program. Plan your next campaign around an actual earnings target, then calculate how many points you need to reach it.'}
+                {pick(locale, 'كل نقطة لها قيمة مالية واضحة داخل البرنامج. خطط لحملتك التالية وفق هدف مالي حقيقي, ثم اعرف كم نقطة تحتاج للوصول إليه.', 'Each point has a real monetary value inside the program. Plan your next campaign around an actual earnings target, then calculate how many points you need to reach it.', 'Her puanın program içinde gerçek bir parasal değeri vardır. Bir sonraki kampanyanızı gerçek bir kazanç hedefine göre planlayın, ardından ulaşmak için kaç puana ihtiyacınız olduğunu hesaplayın.')}
               </p>
               <Separator className="my-6 bg-white/15" />
               <div className="flex flex-wrap gap-3 text-sm text-violet-100">
@@ -534,16 +529,16 @@ export function BecomeMarketeerPageClient({
             <Card className="rounded-[1.5rem] border-white/10 bg-white text-slate-950 shadow-xl shadow-black/10">
               <CardHeader className="p-7 pb-4">
                 <CardTitle className="text-2xl font-black">
-                  {isAr ? 'حاسبة الريال السعودي' : 'SAR calculator'}
+                  {pick(locale, 'حاسبة الريال السعودي', 'SAR calculator', 'SAR hesaplayıcı')}
                 </CardTitle>
                 <CardDescription className="text-sm leading-6 text-slate-600">
-                  {isAr ? 'أدخل المبلغ المستهدف بالريال لنحسب عدد النقاط المطلوبة.' : 'Enter your target amount in SAR to calculate the points required.'}
+                  {pick(locale, 'أدخل المبلغ المستهدف بالريال لنحسب عدد النقاط المطلوبة.', 'Enter your target amount in SAR to calculate the points required.', 'Gereken puanı hesaplamak için hedef tutarınızı SAR olarak girin.')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-5 p-7 pt-0">
                 <div>
                   <label htmlFor="target-sar" className="mb-2 block text-sm font-semibold text-slate-700">
-                    {isAr ? 'المبلغ المستهدف (ر.س)' : 'Target amount (SAR)'}
+                    {pick(locale, 'المبلغ المستهدف (ر.س)', 'Target amount (SAR)', 'Hedef tutar (SAR)')}
                   </label>
                   <Input
                     id="target-sar"
@@ -561,15 +556,13 @@ export function BecomeMarketeerPageClient({
 
                 <div className="rounded-[1.25rem] bg-violet-50 p-5 ring-1 ring-violet-100">
                   <p className="text-sm font-semibold text-violet-700">
-                    {isAr ? 'النقاط المطلوبة' : 'Points needed'}
+                    {pick(locale, 'النقاط المطلوبة', 'Points needed', 'Gerekli puan')}
                   </p>
                   <p className="mt-2 text-4xl font-black tracking-tight text-violet-950">
                     {numberFormatter.format(pointsNeeded)}
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
-                    {isAr
-                      ? `للوصول إلى ${numberFormatter.format(Math.max(parsedTarget || 0, 0))} ر.س`
-                      : `To reach ${numberFormatter.format(Math.max(parsedTarget || 0, 0))} SAR`}
+                    {pick(locale, `للوصول إلى ${numberFormatter.format(Math.max(parsedTarget || 0, 0))} ر.س`, `To reach ${numberFormatter.format(Math.max(parsedTarget || 0, 0))} SAR`)}
                   </p>
                 </div>
               </CardContent>
@@ -588,12 +581,10 @@ export function BecomeMarketeerPageClient({
                 <TrendingUp className="h-8 w-8 text-violet-700" />
               </div>
               <h2 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-                {isAr ? 'حوّل جمهورك إلى قناة مبيعات مستمرة لرحلات BookitFly' : 'Turn your audience into a recurring sales channel for BookitFly'}
+                {pick(locale, 'حوّل جمهورك إلى قناة مبيعات مستمرة لرحلات BookitFly', 'Turn your audience into a recurring sales channel for BookitFly', 'Kitlenizi BookitFly için sürekli bir satış kanalına dönüştürün')}
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                {isAr
-                  ? 'سواء كنت تدير مجتمعاً على واتساب, حساب محتوى على سناب أو تيليجرام, أو شبكة عملاء متكررين, يمنحك البرنامج طريقة منظمة لبيع الرحلات والغرف ومتابعة العائد من كل رابط.'
-                  : 'Whether you run a WhatsApp community, a Snapchat or Telegram audience, or a repeat-customer network, the program gives you a structured way to sell trips and rooms and track the return from every referral link.'}
+                {pick(locale, 'سواء كنت تدير مجتمعاً على واتساب, حساب محتوى على سناب أو تيليجرام, أو شبكة عملاء متكررين, يمنحك البرنامج طريقة منظمة لبيع الرحلات والغرف ومتابعة العائد من كل رابط.', 'Whether you run a WhatsApp community, a Snapchat or Telegram audience, or a repeat-customer network, the program gives you a structured way to sell trips and rooms and track the return from every referral link.', 'Bir WhatsApp topluluğunu, Snapchat veya Telegram kitlesini ya da sürekli müşteri ağını yönetiyor olmanız fark etmeksizin, program size gezi ve oda satmanın ve her referans bağlantısından gelen getiriyi takip etmenin yapılandırılmış bir yolunu sunar.')}
               </p>
               <Link
                 href={`/${locale}/become-marketeer/apply`}

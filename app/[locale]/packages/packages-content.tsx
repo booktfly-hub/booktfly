@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import {
@@ -13,6 +14,9 @@ import {
   BedDouble,
   CarFront,
   Sparkles,
+  Calendar,
+  Users,
+  ArrowRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PackageCard } from '@/components/packages/package-card'
@@ -35,6 +39,9 @@ type Filters = {
   price_min: string
   price_max: string
   sort: string
+  start_date: string
+  end_date: string
+  travelers: string
 }
 
 const emptyFilters: Filters = {
@@ -45,6 +52,9 @@ const emptyFilters: Filters = {
   price_min: '',
   price_max: '',
   sort: 'newest',
+  start_date: '',
+  end_date: '',
+  travelers: '',
 }
 
 interface PackagesContentProps {
@@ -90,6 +100,9 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
         if (filters.price_min) params.set('price_min', filters.price_min)
         if (filters.price_max) params.set('price_max', filters.price_max)
         if (filters.sort) params.set('sort', filters.sort)
+        if (filters.start_date) params.set('start_date', filters.start_date)
+        if (filters.end_date) params.set('end_date', filters.end_date)
+        if (filters.travelers) params.set('travelers', filters.travelers)
 
         const res = await fetch(`/api/packages?${params.toString()}`)
         const data = await res.json()
@@ -107,7 +120,7 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
         setLoadingMore(false)
       }
     },
-    [searchDestination, filters.includes_flight, filters.includes_hotel, filters.includes_car, filters.price_min, filters.price_max, filters.sort]
+    [searchDestination, filters.includes_flight, filters.includes_hotel, filters.includes_car, filters.price_min, filters.price_max, filters.sort, filters.start_date, filters.end_date, filters.travelers]
   )
 
   const handleSearch = useCallback(() => {
@@ -123,6 +136,9 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
     price_min: initialFilters.price_min,
     price_max: initialFilters.price_max,
     sort: initialFilters.sort,
+    start_date: initialFilters.start_date,
+    end_date: initialFilters.end_date,
+    travelers: initialFilters.travelers,
   })
 
   useEffect(() => {
@@ -133,7 +149,10 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
       prev.includes_car !== filters.includes_car ||
       prev.price_min !== filters.price_min ||
       prev.price_max !== filters.price_max ||
-      prev.sort !== filters.sort
+      prev.sort !== filters.sort ||
+      prev.start_date !== filters.start_date ||
+      prev.end_date !== filters.end_date ||
+      prev.travelers !== filters.travelers
     if (changed) {
       filterDepsRef.current = {
         includes_flight: filters.includes_flight,
@@ -142,11 +161,14 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
         price_min: filters.price_min,
         price_max: filters.price_max,
         sort: filters.sort,
+        start_date: filters.start_date,
+        end_date: filters.end_date,
+        travelers: filters.travelers,
       }
       setPage(1)
       fetchPackages(1)
     }
-  }, [filters.includes_flight, filters.includes_hotel, filters.includes_car, filters.price_min, filters.price_max, filters.sort, fetchPackages])
+  }, [filters.includes_flight, filters.includes_hotel, filters.includes_car, filters.price_min, filters.price_max, filters.sort, filters.start_date, filters.end_date, filters.travelers, fetchPackages])
 
   const handleLoadMore = () => {
     const nextPage = page + 1
@@ -168,12 +190,12 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
   )
 
   const activeFilterLabels = [
-    searchDestination && `${isAr ? 'الوجهة' : 'Destination'}: ${searchDestination}`,
-    filters.includes_flight && (isAr ? 'رحلة طيران' : 'Flight'),
-    filters.includes_hotel && (isAr ? 'فندق' : 'Hotel'),
-    filters.includes_car && (isAr ? 'سيارة' : 'Car'),
-    filters.price_min && `${isAr ? 'السعر من' : 'Price from'} ${filters.price_min}`,
-    filters.price_max && `${isAr ? 'السعر إلى' : 'Price to'} ${filters.price_max}`,
+    searchDestination && `${pick(locale, 'الوجهة', 'Destination', 'Varış')}: ${searchDestination}`,
+    filters.includes_flight && (pick(locale, 'رحلة طيران', 'Flight', 'Uçuş')),
+    filters.includes_hotel && (pick(locale, 'فندق', 'Hotel', 'Otel')),
+    filters.includes_car && (pick(locale, 'سيارة', 'Car', 'Araç')),
+    filters.price_min && `${pick(locale, 'السعر من', 'Price from', 'Fiyat başlangıç')} ${filters.price_min}`,
+    filters.price_max && `${pick(locale, 'السعر إلى', 'Price to', 'Fiyat bitiş')} ${filters.price_max}`,
   ].filter(Boolean) as string[]
 
   return (
@@ -185,6 +207,32 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
         image="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=2400&q=85"
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+        {/* Search context banner */}
+        {(filters.start_date || filters.end_date || filters.travelers) && (
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground bg-muted/50 rounded-2xl px-4 py-3 mb-6 relative z-20">
+            {filters.start_date && (
+              <span className="flex items-center gap-1.5 font-medium">
+                <Calendar className="h-4 w-4" />
+                {filters.start_date}
+              </span>
+            )}
+            {filters.start_date && filters.end_date && (
+              <ArrowRight className="h-4 w-4" />
+            )}
+            {filters.end_date && (
+              <span className="flex items-center gap-1.5 font-medium">
+                {!filters.start_date && <Calendar className="h-4 w-4" />}
+                {filters.end_date}
+              </span>
+            )}
+            {filters.travelers && (
+              <span className="flex items-center gap-1.5 font-medium">
+                <Users className="h-4 w-4" />
+                {filters.travelers} {pick(locale, 'مسافر', 'travelers', 'yolcu')}
+              </span>
+            )}
+          </div>
+        )}
         {/* Search Bar */}
         <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
         <div className="space-y-3 mb-4">
@@ -197,7 +245,7 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
             value={filters.destination}
             onChange={(e) => updateFilter('destination', e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder={isAr ? 'ابحث عن وجهة...' : 'Search destination...'}
+            placeholder={pick(locale, 'ابحث عن وجهة...', 'Search destination...', 'Varış noktası ara...')}
             className="h-12 md:h-14 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100"
           />
         </div>
@@ -256,18 +304,18 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
                 <span className="flex items-center gap-2 truncate">
                   <ArrowUpDown className="h-4 w-4 text-slate-400" />
                   {filters.sort === 'price_asc'
-                    ? isAr ? 'السعر: الأقل' : 'Price: Low to High'
+                    ? pick(locale, 'السعر: الأقل', 'Price: Low to High', 'Fiyat: Düşükten Yükseğe')
                     : filters.sort === 'price_desc'
-                    ? isAr ? 'السعر: الأعلى' : 'Price: High to Low'
-                    : isAr ? 'الأحدث' : 'Newest'}
+                    ? pick(locale, 'السعر: الأعلى', 'Price: High to Low', 'Fiyat: Yüksekten Düşüğe')
+                    : pick(locale, 'الأحدث', 'Newest', 'En Yeni')}
                 </span>
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2" align="start">
                 <div className="grid gap-1">
-                  <Button variant={filters.sort === 'newest' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'newest')}>{isAr ? 'الأحدث' : 'Newest'}</Button>
-                  <Button variant={filters.sort === 'price_asc' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'price_asc')}>{isAr ? 'السعر: الأقل' : 'Price: Low to High'}</Button>
-                  <Button variant={filters.sort === 'price_desc' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'price_desc')}>{isAr ? 'السعر: الأعلى' : 'Price: High to Low'}</Button>
+                  <Button variant={filters.sort === 'newest' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'newest')}>{pick(locale, 'الأحدث', 'Newest', 'En Yeni')}</Button>
+                  <Button variant={filters.sort === 'price_asc' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'price_asc')}>{pick(locale, 'السعر: الأقل', 'Price: Low to High', 'Fiyat: Düşükten Yükseğe')}</Button>
+                  <Button variant={filters.sort === 'price_desc' ? 'secondary' : 'ghost'} className="h-10 justify-start rounded-xl" onClick={() => updateFilter('sort', 'price_desc')}>{pick(locale, 'السعر: الأعلى', 'Price: High to Low', 'Fiyat: Yüksekten Düşüğe')}</Button>
                 </div>
               </PopoverContent>
             </Popover>
@@ -317,11 +365,11 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
           <div>
             <p className="text-sm font-bold text-slate-900">
               {packages.length > 0
-                ? isAr ? `${packages.length} نتيجة معروضة` : `${packages.length} result${packages.length === 1 ? '' : 's'} shown`
-                : isAr ? 'لا توجد نتائج حالياً' : 'No results right now'}
+                ? pick(locale, `${packages.length} نتيجة معروضة`, `${packages.length} result${packages.length === 1 ? '' : 's'} shown`)
+                : pick(locale, 'لا توجد نتائج حالياً', 'No results right now', 'Şu anda sonuç yok')}
             </p>
             <p className="text-xs font-medium text-slate-500">
-              {isAr ? 'حدّث الفلاتر أو وسّع البحث للعثور على خيارات أكثر' : 'Adjust filters or widen the search to find more options'}
+              {pick(locale, 'حدّث الفلاتر أو وسّع البحث للعثور على خيارات أكثر', 'Adjust filters or widen the search to find more options', 'Daha fazla seçenek bulmak için filtreleri ayarlayın veya aramayı genişletin')}
             </p>
           </div>
           {activeFilterLabels.length > 0 && (

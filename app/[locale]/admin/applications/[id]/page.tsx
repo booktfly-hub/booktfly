@@ -1,4 +1,5 @@
 'use client'
+import { lkey } from '@/lib/i18n-helpers'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -126,7 +127,7 @@ export default function AdminApplicationDetail() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">{t('common.type')}</p>
-            <p className="font-medium">{PROVIDER_TYPES[app.provider_type][locale as 'ar' | 'en']}</p>
+            <p className="font-medium">{PROVIDER_TYPES[app.provider_type][lkey(locale)]}</p>
           </div>
           <div>
             <p className="text-muted-foreground">{t('common.email')}</p>

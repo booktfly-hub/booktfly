@@ -22,7 +22,7 @@ type UpdatePasswordFormData = z.infer<ReturnType<typeof getUpdatePasswordSchema>
 export default function UpdatePasswordPage() {
   const t = useTranslations('auth')
   const tCommon = useTranslations('common')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)

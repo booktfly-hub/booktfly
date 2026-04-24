@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { resolveApiErrorMessage } from '@/lib/api-error'
@@ -96,7 +97,7 @@ export function WalletSection({ providerIban }: Props) {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-4">
             <Wallet className="h-5 w-5 text-primary" />
-            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'رصيد المحفظة' : 'Wallet Balance'}</span>
+            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{pick(locale, 'رصيد المحفظة', 'Wallet Balance', 'Cüzdan Bakiyesi')}</span>
           </div>
           <p className="text-4xl md:text-5xl font-black tracking-tighter mb-6">{formatPrice(balance)}</p>
           <div className="flex gap-3">
@@ -106,13 +107,13 @@ export function WalletSection({ providerIban }: Props) {
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
               >
                 <Banknote className="h-4 w-4" />
-                {isAr ? 'طلب سحب' : 'Request Withdrawal'}
+                {pick(locale, 'طلب سحب', 'Request Withdrawal', 'Çekim Talebi')}
               </button>
             )}
             {hasPendingWithdrawal && (
               <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-warning/20 text-warning text-sm font-bold">
                 <Loader2 className="h-4 w-4" />
-                {isAr ? 'طلب سحب قيد المراجعة' : 'Withdrawal pending review'}
+                {pick(locale, 'طلب سحب قيد المراجعة', 'Withdrawal pending review', 'Çekim inceleme bekliyor')}
               </span>
             )}
           </div>
@@ -123,7 +124,7 @@ export function WalletSection({ providerIban }: Props) {
                 type="number"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder={isAr ? 'المبلغ' : 'Amount'}
+                placeholder={pick(locale, 'المبلغ', 'Amount', 'Tutar')}
                 max={balance}
                 min={1}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -133,7 +134,7 @@ export function WalletSection({ providerIban }: Props) {
                 disabled={submitting}
                 className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (isAr ? 'تأكيد' : 'Confirm')}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (pick(locale, 'تأكيد', 'Confirm', 'Onayla'))}
               </button>
               <button
                 onClick={() => { setShowWithdrawForm(false); setWithdrawAmount('') }}
@@ -150,13 +151,13 @@ export function WalletSection({ providerIban }: Props) {
       {withdrawals.length > 0 && (
         <div className="bg-card border rounded-xl">
           <div className="p-5 border-b">
-            <h2 className="font-semibold">{isAr ? 'طلبات السحب' : 'Withdrawal Requests'}</h2>
+            <h2 className="font-semibold">{pick(locale, 'طلبات السحب', 'Withdrawal Requests', 'Çekim Talepleri')}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="text-start p-3 font-medium">{isAr ? 'المبلغ' : 'Amount'}</th>
+                  <th className="text-start p-3 font-medium">{pick(locale, 'المبلغ', 'Amount', 'Tutar')}</th>
                   <th className="text-start p-3 font-medium">IBAN</th>
                   <th className="text-start p-3 font-medium">{tc('status')}</th>
                   <th className="text-start p-3 font-medium">{tc('date')}</th>
@@ -169,14 +170,14 @@ export function WalletSection({ providerIban }: Props) {
                     <td className="p-3 font-mono text-xs">{w.provider_iban}</td>
                     <td className="p-3">
                       <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', WITHDRAWAL_STATUS_COLORS[w.status] || '')}>
-                        {w.status === 'pending' ? (isAr ? 'قيد المراجعة' : 'Pending')
-                          : w.status === 'completed' ? (isAr ? 'مكتمل' : 'Completed')
-                          : w.status === 'rejected' ? (isAr ? 'مرفوض' : 'Rejected')
+                        {w.status === 'pending' ? (pick(locale, 'قيد المراجعة', 'Pending', 'Beklemede'))
+                          : w.status === 'completed' ? (pick(locale, 'مكتمل', 'Completed', 'Tamamlandı'))
+                          : w.status === 'rejected' ? (pick(locale, 'مرفوض', 'Rejected', 'Reddedildi'))
                           : w.status}
                       </span>
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">
-                      {new Date(w.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                      {new Date(w.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                     </td>
                   </tr>
                 ))}
@@ -190,7 +191,7 @@ export function WalletSection({ providerIban }: Props) {
       {transactions.length > 0 && (
         <div className="bg-card border rounded-xl">
           <div className="p-5 border-b">
-            <h2 className="font-semibold">{isAr ? 'سجل المعاملات' : 'Transaction History'}</h2>
+            <h2 className="font-semibold">{pick(locale, 'سجل المعاملات', 'Transaction History', 'İşlem Geçmişi')}</h2>
           </div>
           <div className="divide-y">
             {transactions.map((tx) => (
@@ -207,14 +208,14 @@ export function WalletSection({ providerIban }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{isAr ? tx.description_ar : tx.description_en}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(tx.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(tx.created_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                   </p>
                 </div>
                 <div className="text-end shrink-0">
                   <p className={cn('font-bold', tx.type === 'credit' ? 'text-success' : 'text-destructive')}>
                     {tx.type === 'credit' ? '+' : '-'}{formatPrice(tx.amount)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{isAr ? 'الرصيد: ' : 'Bal: '}{formatPrice(tx.balance_after)}</p>
+                  <p className="text-xs text-muted-foreground">{pick(locale, 'الرصيد: ', 'Bal: ', 'Bak: ')}{formatPrice(tx.balance_after)}</p>
                 </div>
               </div>
             ))}

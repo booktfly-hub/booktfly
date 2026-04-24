@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import {
@@ -254,7 +255,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
         description={t('category_heroes.trips.description')}
         image="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Main Search Bar */}
         <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
 
@@ -275,7 +276,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
             type="button"
             onClick={handleSwapLocations}
             className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all shrink-0 cursor-pointer"
-            aria-label={isAr ? 'تبديل الوجهتين' : 'Swap origin and destination'}
+            aria-label={pick(locale, 'تبديل الوجهتين', 'Swap origin and destination', 'Çıkış ve varışı değiştir')}
           >
             <ArrowLeftRight className="h-4 w-4 text-slate-400" />
           </button>
@@ -293,13 +294,13 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
         </div>
 
         {/* Row 2: Trip Type, Dates, Search */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
           {/* Trip Type */}
           <div className="relative">
             <select
               value={filters.trip_type}
               onChange={(e) => handleTripTypeChange(e.target.value)}
-              className="appearance-none w-full h-12 md:h-14 px-4 pe-10 rounded-2xl bg-slate-50 border-none text-slate-700 text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
+              className="appearance-none w-full h-12 md:h-14 px-3 sm:px-4 pe-9 sm:pe-10 rounded-2xl bg-slate-50 border-none text-slate-700 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <option value="round_trip">{t('trips.round_trip')}</option>
               <option value="one_way">{t('trips.one_way')}</option>
@@ -311,11 +312,11 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
           <Popover>
             <PopoverTrigger
               className={cn(
-                'w-full h-12 md:h-14 px-4 rounded-2xl bg-slate-50 border-none text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors flex items-center justify-between',
+                'w-full h-12 md:h-14 px-3 sm:px-4 rounded-2xl bg-slate-50 border-none text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 min-w-0',
                 departureDate ? 'text-slate-700' : 'text-slate-400'
               )}
             >
-              {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{t('trips.departure_date')}</span>}
+              <span className="truncate">{departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : t('trips.departure_date')}</span>
               <CalendarIcon className="h-4 w-4 opacity-50" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -328,11 +329,11 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
             <PopoverTrigger
               disabled={filters.trip_type === 'one_way'}
               className={cn(
-                'w-full h-12 md:h-14 px-4 rounded-2xl bg-slate-50 border-none text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors flex items-center justify-between disabled:opacity-40 disabled:cursor-not-allowed',
+                'w-full h-12 md:h-14 px-3 sm:px-4 rounded-2xl bg-slate-50 border-none text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors flex items-center justify-between gap-2 min-w-0 disabled:opacity-40 disabled:cursor-not-allowed',
                 returnDate ? 'text-slate-700' : 'text-slate-400'
               )}
             >
-              {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{t('trips.return_date_filter')}</span>}
+              <span className="truncate">{returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : t('trips.return_date_filter')}</span>
               <CalendarIcon className="h-4 w-4 opacity-50" />
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -366,7 +367,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
                 onChange={(e) => updateFilter('sort', e.target.value)}
                 className="appearance-none w-40 md:w-48 h-10 px-4 pe-10 rounded-xl bg-slate-50 border-none text-slate-700 font-semibold text-xs md:text-sm focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                <option value="best">{isAr ? 'الأفضل' : 'Best'}</option>
+                <option value="best">{pick(locale, 'الأفضل', 'Best', 'En İyi')}</option>
                 <option value="newest">{t('trips.sort_newest')}</option>
                 <option value="price_asc">{t('trips.sort_price_asc')}</option>
                 <option value="price_desc">{t('trips.sort_price_desc')}</option>
@@ -502,7 +503,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
       {!loading && trips.length > 0 && (
         <div className="mb-4" role="status" aria-live="polite">
           <span className="text-sm font-medium text-muted-foreground">
-            {trips.length} {isAr ? 'رحلة وُجدت' : 'flights found'}
+            {trips.length} {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
           </span>
         </div>
       )}

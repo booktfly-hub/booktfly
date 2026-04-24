@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -77,10 +78,10 @@ export default function ProviderRoomsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-            {isAr ? 'غرفي' : 'My Rooms'}
+            {pick(locale, 'غرفي', 'My Rooms', 'Odalarım')}
           </h1>
           <p className="text-slate-500 font-medium">
-            {isAr ? 'إدارة جميع غرفك وحالاتها' : 'Manage all your rooms and their statuses'}
+            {pick(locale, 'إدارة جميع غرفك وحالاتها', 'Manage all your rooms and their statuses', 'Tüm odalarınızı ve durumlarını yönetin')}
           </p>
         </div>
         <Link
@@ -88,7 +89,7 @@ export default function ProviderRoomsPage() {
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-base font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
         >
           <Plus className="h-5 w-5" />
-          {isAr ? 'غرفة جديدة' : 'New Room'}
+          {pick(locale, 'غرفة جديدة', 'New Room', 'Yeni Oda')}
         </Link>
       </div>
 
@@ -124,17 +125,17 @@ export default function ProviderRoomsPage() {
             <BedDouble className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد غرف بعد' : 'No rooms yet'}
+            {pick(locale, 'لا توجد غرف بعد', 'No rooms yet', 'Henüz oda yok')}
           </p>
           <p className="text-slate-500 mb-8">
-            {isAr ? 'قم بإضافة غرفتك الأولى للبدء في تلقي الحجوزات' : 'Add your first room to start receiving bookings'}
+            {pick(locale, 'قم بإضافة غرفتك الأولى للبدء في تلقي الحجوزات', 'Add your first room to start receiving bookings', 'Rezervasyon almaya başlamak için ilk odanızı ekleyin')}
           </p>
           <Link
             href={`/${locale}/provider/rooms/new`}
             className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-base font-bold hover:bg-slate-800 transition-all shadow-xl hover:-translate-y-0.5"
           >
             <Plus className="h-5 w-5" />
-            {isAr ? 'أضف أول غرفة' : 'Post Your First Room'}
+            {pick(locale, 'أضف أول غرفة', 'Post Your First Room', 'İlk Odanızı Yayınlayın')}
           </Link>
         </div>
       ) : (
@@ -144,13 +145,13 @@ export default function ProviderRoomsPage() {
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الغرفة' : 'Room'}
+                    {pick(locale, 'الغرفة', 'Room', 'Oda')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'المدينة' : 'City'}
+                    {pick(locale, 'المدينة', 'City', 'Şehir')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'التصنيف' : 'Category'}
+                    {pick(locale, 'التصنيف', 'Category', 'Kategori')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('price')}
@@ -222,7 +223,7 @@ export default function ProviderRoomsPage() {
                             {formatPrice(room.price_per_night, room.currency)}
                           </span>
                           <span className="text-xs text-slate-400 ms-1">
-                            / {isAr ? 'ليلة' : 'night'}
+                            / {pick(locale, 'ليلة', 'night', 'gece')}
                           </span>
                         </Link>
                       </td>
@@ -247,8 +248,8 @@ export default function ProviderRoomsPage() {
                                   : 'bg-white border-emerald-200 text-emerald-500 hover:bg-emerald-50 hover:border-emerald-300'
                               )}
                               title={room.status === 'active'
-                                ? (isAr ? 'تعطيل' : 'Deactivate')
-                                : (isAr ? 'تفعيل' : 'Reactivate')}
+                                ? (pick(locale, 'تعطيل', 'Deactivate', 'Devre Dışı Bırak'))
+                                : (pick(locale, 'تفعيل', 'Reactivate', 'Yeniden Etkinleştir'))}
                             >
                               {togglingId === room.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -66,10 +67,10 @@ export default function ProviderCarsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-            {isAr ? 'سياراتي' : 'My Cars'}
+            {pick(locale, 'سياراتي', 'My Cars', 'Araçlarım')}
           </h1>
           <p className="text-slate-500 font-medium">
-            {isAr ? 'إدارة جميع سياراتك وحالاتها' : 'Manage all your cars and their statuses'}
+            {pick(locale, 'إدارة جميع سياراتك وحالاتها', 'Manage all your cars and their statuses', 'Tüm araçlarınızı ve durumlarını yönetin')}
           </p>
         </div>
         <Link
@@ -77,7 +78,7 @@ export default function ProviderCarsPage() {
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-base font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
         >
           <Plus className="h-5 w-5" />
-          {isAr ? 'سيارة جديدة' : 'New Car'}
+          {pick(locale, 'سيارة جديدة', 'New Car', 'Yeni Araç')}
         </Link>
       </div>
 
@@ -113,17 +114,17 @@ export default function ProviderCarsPage() {
             <CarFront className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد سيارات بعد' : 'No cars yet'}
+            {pick(locale, 'لا توجد سيارات بعد', 'No cars yet', 'Henüz araç yok')}
           </p>
           <p className="text-slate-500 mb-8">
-            {isAr ? 'قم بإضافة سيارتك الأولى للبدء في تلقي الحجوزات' : 'Add your first car to start receiving bookings'}
+            {pick(locale, 'قم بإضافة سيارتك الأولى للبدء في تلقي الحجوزات', 'Add your first car to start receiving bookings', 'Rezervasyon almaya başlamak için ilk aracınızı ekleyin')}
           </p>
           <Link
             href={`/${locale}/provider/cars/new`}
             className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-base font-bold hover:bg-slate-800 transition-all shadow-xl hover:-translate-y-0.5"
           >
             <Plus className="h-5 w-5" />
-            {isAr ? 'أضف أول سيارة' : 'Post Your First Car'}
+            {pick(locale, 'أضف أول سيارة', 'Post Your First Car', 'İlk Aracınızı Yayınlayın')}
           </Link>
         </div>
       ) : (
@@ -133,13 +134,13 @@ export default function ProviderCarsPage() {
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'السيارة' : 'Car'}
+                    {pick(locale, 'السيارة', 'Car', 'Araç')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'المدينة' : 'City'}
+                    {pick(locale, 'المدينة', 'City', 'Şehir')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الفئة' : 'Category'}
+                    {pick(locale, 'الفئة', 'Category', 'Kategori')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('price')}
@@ -155,7 +156,7 @@ export default function ProviderCarsPage() {
               <tbody className="divide-y divide-slate-100">
                 {cars.map((car) => {
                   const categoryLabel = CAR_CATEGORIES[car.category as keyof typeof CAR_CATEGORIES]
-                  const carName = isAr ? `${car.brand_ar} ${car.model_ar}` : `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`
+                  const carName = pick(locale, `${car.brand_ar} ${car.model_ar}`, `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`)
 
                   return (
                     <tr key={car.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -196,7 +197,7 @@ export default function ProviderCarsPage() {
                           {formatPrice(car.price_per_day, car.currency)}
                         </span>
                         <span className="text-xs text-slate-400 ms-1">
-                          / {isAr ? 'يوم' : 'day'}
+                          / {pick(locale, 'يوم', 'day', 'gün')}
                         </span>
                       </td>
                       <td className="p-5">
@@ -222,8 +223,8 @@ export default function ProviderCarsPage() {
                                   : 'bg-white border-emerald-200 text-emerald-500 hover:bg-emerald-50 hover:border-emerald-300'
                               )}
                               title={car.status === 'active'
-                                ? (isAr ? 'تعطيل' : 'Deactivate')
-                                : (isAr ? 'تفعيل' : 'Reactivate')}
+                                ? (pick(locale, 'تعطيل', 'Deactivate', 'Devre Dışı Bırak'))
+                                : (pick(locale, 'تفعيل', 'Reactivate', 'Yeniden Etkinleştir'))}
                             >
                               {togglingId === car.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

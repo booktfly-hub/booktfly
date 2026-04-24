@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   const tripId = searchParams.get('trip_id')
   const roomId = searchParams.get('room_id')
   const carId = searchParams.get('car_id')
+  const packageId = searchParams.get('package_id')
   const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
   const offset = parseInt(searchParams.get('offset') || '0')
 
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   if (tripId) query = query.eq('trip_id', tripId)
   if (roomId) query = query.eq('room_id', roomId)
   if (carId) query = query.eq('car_id', carId)
+  if (packageId) query = query.eq('package_id', packageId)
 
   const { data: reviews, count, error } = await query
 
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { booking_id, provider_id, trip_id, room_id, car_id, item_type, rating, comment } = body
+    const { booking_id, provider_id, trip_id, room_id, car_id, package_id, item_type, rating, comment } = body
 
     if (!booking_id || !provider_id || !rating || rating < 1 || rating > 5) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
@@ -96,6 +98,7 @@ export async function POST(request: NextRequest) {
         trip_id: trip_id || null,
         room_id: room_id || null,
         car_id: car_id || null,
+        package_id: package_id || null,
         item_type: item_type || 'trip',
         rating,
         comment: comment || null,
@@ -108,11 +111,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Notify provider
-    const { data: provider } = await supabaseAdmin
-      .from('providers')
-      .select('user_id')
-      .eq('id', provider_id)
-      .single()
+    const [{ data: provider }, { data: reviewerProfile }] = await Promise.all([
+      supabaseAdmin.from('providers').select('user_id').eq('id', provider_id).single(),
+      supabaseAdmin.from('profiles').select('full_name').eq('id', user.id).single(),
+    ])
+
+    const reviewerName = reviewerProfile?.full_name || 'A customer'
 
     if (provider?.user_id) {
       await notify({
@@ -123,6 +127,19 @@ export async function POST(request: NextRequest) {
         bodyAr: `حصلت على تقييم جديد: ${rating} نجوم`,
         bodyEn: `You received a new review: ${rating} stars`,
         data: { review_id: review.id },
+        email: {
+          subject: `New Review: ${rating}/5 Stars`,
+          html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px">
+            <h2 style="color:#0f172a">⭐ New Review Received</h2>
+            <p><strong>${reviewerName}</strong> left you a review:</p>
+            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:20px;margin:16px 0">
+              <div style="font-size:24px;margin-bottom:8px">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+              <p style="font-size:18px;font-weight:700;color:#78350f;margin:0">${rating}/5 stars</p>
+              ${comment ? `<p style="color:#475569;margin-top:12px">"${comment}"</p>` : ''}
+            </div>
+            <p style="color:#64748b;font-size:14px">Log in to your provider dashboard to view all your reviews.</p>
+          </div>`,
+        },
       })
     }
 

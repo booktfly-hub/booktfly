@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { Suspense, useCallback, useEffect, useRef, useState, use } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -93,7 +94,7 @@ export default function BookTripPage({ params }: { params: Promise<{ id: string,
 function BookTripContent({ params }: { params: Promise<{ id: string, locale: string }> }) {
   const t = useTranslations()
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -201,10 +202,8 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         if (conflictedSeats.length > 0) {
           setSelectedSeatNumbers((current) => current.filter((seat) => !unavailableSeats.has(normalizeSeatNumber(seat))))
           toast({
-            title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
-            description: isAr
-              ? `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`
-              : `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`,
+            title: pick(locale, 'تم تحديث المقاعد', 'Seats updated', 'Koltuklar güncellendi'),
+            description: pick(locale, `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`, `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`),
             variant: 'destructive',
           })
         }
@@ -242,10 +241,8 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
         if (conflictedSeats.length > 0) {
           setSelectedSeatNumbers((current) => current.filter((seat) => !unavailableSeats.has(normalizeSeatNumber(seat))))
           toast({
-            title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
-            description: isAr
-              ? `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`
-              : `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`,
+            title: pick(locale, 'تم تحديث المقاعد', 'Seats updated', 'Koltuklar güncellendi'),
+            description: pick(locale, `أصبحت المقاعد ${conflictedSeats.join(', ')} غير متاحة وتمت إزالتها من اختيارك.`, `Seats ${conflictedSeats.join(', ')} were just taken and have been removed from your selection.`),
             variant: 'destructive',
           })
         }
@@ -295,10 +292,8 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
 
       if (removedSeatsCount > 0) {
         toast({
-          title: isAr ? 'تم تحديث المقاعد' : 'Seats updated',
-          description: isAr
-            ? 'بعض المقاعد المحفوظة سابقاً لم تعد متاحة وتمت إزالتها من المسودة.'
-            : 'Some previously saved seats are no longer available and were removed from your draft.',
+          title: pick(locale, 'تم تحديث المقاعد', 'Seats updated', 'Koltuklar güncellendi'),
+          description: pick(locale, 'بعض المقاعد المحفوظة سابقاً لم تعد متاحة وتمت إزالتها من المسودة.', 'Some previously saved seats are no longer available and were removed from your draft.', 'Daha önce kaydedilen bazı koltuklar artık mevcut değil ve taslağınızdan kaldırıldı.'),
           variant: 'destructive',
         })
       }
@@ -344,7 +339,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       const result = await res.json()
       if (!res.ok) {
         toast({
-          title: isAr ? 'خطأ' : 'Error',
+          title: pick(locale, 'خطأ', 'Error', 'Hata'),
           description: resolveApiErrorMessage(result.error, te, 'image_process_failed'),
           variant: 'destructive',
         })
@@ -356,9 +351,9 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       if (d.date_of_birth) setValue(`passengers.${index}.date_of_birth`, d.date_of_birth, { shouldValidate: true, shouldDirty: true })
       if (d.id_number) setValue(`passengers.${index}.id_number`, d.id_number, { shouldValidate: true, shouldDirty: true })
       if (d.id_expiry_date) setValue(`passengers.${index}.id_expiry_date`, d.id_expiry_date, { shouldValidate: true, shouldDirty: true })
-      toast({ title: isAr ? 'تم' : 'Done', description: isAr ? 'تم استخراج بيانات الجواز بنجاح' : 'Passport data extracted successfully' })
+      toast({ title: pick(locale, 'تم', 'Done', 'Tamam'), description: pick(locale, 'تم استخراج بيانات الجواز بنجاح', 'Passport data extracted successfully', 'Pasaport verileri başarıyla çıkarıldı') })
     } catch {
-      toast({ title: isAr ? 'خطأ' : 'Error', description: isAr ? 'فشل قراءة الجواز' : 'Failed to read passport', variant: 'destructive' })
+      toast({ title: pick(locale, 'خطأ', 'Error', 'Hata'), description: pick(locale, 'فشل قراءة الجواز', 'Failed to read passport', 'Pasaport okunamadı'), variant: 'destructive' })
     } finally {
       setScanningIndex(null)
       if (fileInputRefs.current[index]) fileInputRefs.current[index]!.value = ''
@@ -386,7 +381,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
   const destCity = isAr ? trip.destination_city_ar : capitalizeFirst(trip.destination_city_en || trip.destination_city_ar)
 
   const departureDate = new Date(trip.departure_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   )
   const unavailableSeatNumbers = trip.unavailable_seat_numbers || []
@@ -419,7 +414,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
     if (seatMapEnabled && selectedSeatNumbers.length === 0) {
       toast({
         title: t('common.error'),
-        description: isAr ? 'اختر مقعداً واحداً على الأقل قبل متابعة الحجز' : 'Select at least one seat before continuing',
+        description: pick(locale, 'اختر مقعداً واحداً على الأقل قبل متابعة الحجز', 'Select at least one seat before continuing', 'Devam etmeden önce en az bir koltuk seçin'),
         variant: 'destructive',
       })
       return
@@ -507,13 +502,13 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
       <div className="mb-8 md:mb-10">
          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">
            {seatMapEnabled && bookingStep === 'seats'
-             ? (isAr ? 'اختيار المقاعد' : 'Select Your Seats')
+             ? (pick(locale, 'اختيار المقاعد', 'Select Your Seats', 'Koltuklarınızı Seçin'))
              : t('booking.title')}
          </h1>
          <p className="text-sm md:text-lg text-slate-500 font-medium">
            {seatMapEnabled && bookingStep === 'seats'
-             ? (isAr ? 'اختر مقعدك على متن الرحلة' : 'Choose your preferred seat on the flight')
-             : (isAr ? 'أدخل بيانات المسافرين لإتمام الحجز' : 'Enter passenger details to complete your booking')}
+             ? (pick(locale, 'اختر مقعدك على متن الرحلة', 'Choose your preferred seat on the flight', 'Uçuşta tercih ettiğiniz koltuğu seçin'))
+             : (pick(locale, 'أدخل بيانات المسافرين لإتمام الحجز', 'Enter passenger details to complete your booking', 'Rezervasyonunuzu tamamlamak için yolcu ayrıntılarını girin'))}
          </p>
       </div>
 
@@ -585,7 +580,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
             {/* Passenger age-category picker (P0-8) */}
             <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="mb-3 text-lg font-black text-slate-900">
-                {isAr ? 'عدد المسافرين' : 'Passengers'}
+                {pick(locale, 'عدد المسافرين', 'Passengers', 'Yolcular')}
               </h3>
               <PassengerCategoryPicker
                 value={passengerCounts}
@@ -624,10 +619,10 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 </div>
                 <div>
                   <h3 className="text-lg md:text-xl font-black text-slate-900">
-                    {isAr ? 'بيانات التواصل الأساسية' : 'Primary Contact Details'}
+                    {pick(locale, 'بيانات التواصل الأساسية', 'Primary Contact Details', 'Birincil İletişim Ayrıntıları')}
                   </h3>
                   <p className="text-sm font-medium text-slate-500">
-                    {isAr ? 'تُستخدم للتواصل بخصوص الحجز فقط' : 'Used only for booking communication'}
+                    {pick(locale, 'تُستخدم للتواصل بخصوص الحجز فقط', 'Used only for booking communication', 'Yalnızca rezervasyon iletişimi için kullanılır')}
                   </p>
                 </div>
               </div>
@@ -636,7 +631,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 <div className="space-y-1.5 md:space-y-2">
                   <label className={labelClass}>
                     <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                    {isAr ? 'رقم الجوال' : 'Phone Number'}
+                    {pick(locale, 'رقم الجوال', 'Phone Number', 'Telefon Numarası')}
                     <span className="text-destructive">*</span>
                   </label>
                   {/* Intl phone input (P0-3b) */}
@@ -653,7 +648,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 <div className="space-y-1.5 md:space-y-2">
                   <label className={labelClass}>
                     <Mail className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                    {isAr ? 'البريد الإلكتروني' : 'Email'}
+                    {pick(locale, 'البريد الإلكتروني', 'Email', 'E-posta')}
                     <span className="text-destructive">*</span>
                   </label>
                   <input
@@ -682,7 +677,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                      </h3>
                      {seatMapEnabled && selectedSeatNumbers[index] && (
                        <p className="text-sm font-semibold text-primary">
-                         {isAr ? `المقعد ${selectedSeatNumbers[index]}` : `Seat ${selectedSeatNumbers[index]}`}
+                         {pick(locale, `المقعد ${selectedSeatNumbers[index]}`, `Seat ${selectedSeatNumbers[index]}`)}
                        </p>
                      )}
                    </div>
@@ -723,12 +718,12 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     {scanningIndex === index ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        {isAr ? 'جاري قراءة الجواز...' : 'Reading passport...'}
+                        {pick(locale, 'جاري قراءة الجواز...', 'Reading passport...', 'Pasaport okunuyor...')}
                       </>
                     ) : (
                       <>
                         <ScanLine className="h-5 w-5" />
-                        {isAr ? 'مسح الجواز أو الهوية بالصورة' : 'Scan passport or ID from photo'}
+                        {pick(locale, 'مسح الجواز أو الهوية بالصورة', 'Scan passport or ID from photo', 'Fotoğraftan pasaport veya kimlik tara')}
                         <ImagePlus className="h-4 w-4 opacity-50" />
                       </>
                     )}
@@ -740,7 +735,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2">
                       <label className={labelClass}>
                         <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'الاسم الأول (بالإنجليزية)' : 'First Name (English)'}
+                        {pick(locale, 'الاسم الأول (بالإنجليزية)', 'First Name (English)', 'Ad (İngilizce)')}
                         <span className="text-destructive">*</span>
                       </label>
                       <input
@@ -763,7 +758,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2">
                       <label className={labelClass}>
                         <User className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'الاسم الأخير (بالإنجليزية)' : 'Last Name (English)'}
+                        {pick(locale, 'الاسم الأخير (بالإنجليزية)', 'Last Name (English)', 'Soyad (İngilizce)')}
                         <span className="text-destructive">*</span>
                       </label>
                       <input
@@ -786,7 +781,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2">
                       <label className={labelClass}>
                         <Cake className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'تاريخ الميلاد' : 'Date of Birth'}
+                        {pick(locale, 'تاريخ الميلاد', 'Date of Birth', 'Doğum Tarihi')}
                         <span className="text-destructive">*</span>
                       </label>
                       <Popover>
@@ -801,7 +796,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                           <span>
                             {watch(`passengers.${index}.date_of_birth`)
                               ? format(parseISO(watch(`passengers.${index}.date_of_birth`)), 'PPP', { locale: localeDate })
-                              : (isAr ? 'اختر تاريخ الميلاد' : 'Select date of birth')}
+                              : (pick(locale, 'اختر تاريخ الميلاد', 'Select date of birth', 'Doğum tarihi seç'))}
                           </span>
                           <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                         </PopoverTrigger>
@@ -823,7 +818,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2">
                       <label className={labelClass}>
                         <IdCard className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'رقم الجواز أو البطاقة' : 'Passport / ID Number'}
+                        {pick(locale, 'رقم الجواز أو البطاقة', 'Passport / ID Number', 'Pasaport / Kimlik Numarası')}
                         <span className="text-destructive">*</span>
                       </label>
                       <input
@@ -846,7 +841,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2">
                       <label className={labelClass}>
                         <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'تاريخ انتهاء الإثبات' : 'ID Expiry Date'}
+                        {pick(locale, 'تاريخ انتهاء الإثبات', 'ID Expiry Date', 'Kimlik Son Geçerlilik Tarihi')}
                         <span className="text-destructive">*</span>
                       </label>
                       <Popover>
@@ -861,7 +856,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                           <span>
                             {watch(`passengers.${index}.id_expiry_date`)
                               ? format(parseISO(watch(`passengers.${index}.id_expiry_date`)), 'PPP', { locale: localeDate })
-                              : (isAr ? 'اختر تاريخ الانتهاء' : 'Select expiry date')}
+                              : (pick(locale, 'اختر تاريخ الانتهاء', 'Select expiry date', 'Son geçerlilik tarihini seç'))}
                           </span>
                           <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                         </PopoverTrigger>
@@ -883,7 +878,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     <div className="space-y-1.5 md:space-y-2 sm:col-span-2">
                       <label className={labelClass}>
                         <Users className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {isAr ? 'فئة العمر' : 'Age category'}
+                        {pick(locale, 'فئة العمر', 'Age category', 'Yaş kategorisi')}
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {(['adult', 'child', 'infant'] as const).map((cat) => {
@@ -923,7 +918,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
               >
                 <Back className="h-4 w-4 rtl:rotate-180" />
-                {isAr ? 'تعديل بيانات المسافرين' : 'Edit passenger details'}
+                {pick(locale, 'تعديل بيانات المسافرين', 'Edit passenger details', 'Yolcu ayrıntılarını düzenle')}
               </button>
               <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
                 <SeatMap
@@ -935,11 +930,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 <div className="mt-4 flex flex-wrap gap-2">
                   {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.map((seat) => (
                     <span key={seat} className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
-                      {isAr ? 'المقعد' : 'Seat'} {seat}
+                      {pick(locale, 'المقعد', 'Seat', 'Koltuk')} {seat}
                     </span>
                   )) : (
                     <span className="text-sm text-slate-500">
-                      {isAr ? 'اختر مقعداً واحداً أو أكثر للمتابعة.' : 'Select one or more seats to continue.'}
+                      {pick(locale, 'اختر مقعداً واحداً أو أكثر للمتابعة.', 'Select one or more seats to continue.', 'Devam etmek için bir veya daha fazla koltuk seçin.')}
                     </span>
                   )}
                 </div>
@@ -954,7 +949,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                   ) : (
                     <CheckCircle className="h-5 w-5" />
                   )}
-                  {submitting ? t('common.loading') : (isAr ? 'تأكيد المقاعد والمتابعة للدفع' : 'Confirm Seats & Proceed to Payment')}
+                  {submitting ? t('common.loading') : (pick(locale, 'تأكيد المقاعد والمتابعة للدفع', 'Confirm Seats & Proceed to Payment', 'Koltukları Onayla ve Ödemeye Geç'))}
                 </button>
               </div>
               </div>
@@ -974,7 +969,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 {/* Seats selector inside the dark card */}
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur-sm mb-5">
                     <label className="block text-xs font-bold text-slate-300 mb-3 text-center uppercase tracking-wider">
-                        {seatMapEnabled ? (isAr ? 'المقاعد المختارة' : 'Selected Seats') : t('booking.seats_count')}
+                        {seatMapEnabled ? (pick(locale, 'المقاعد المختارة', 'Selected Seats', 'Seçilen Koltuklar')) : t('booking.seats_count')}
                     </label>
                     {seatMapEnabled ? (
                       <div className="rounded-xl border border-white/5 bg-black/20 p-3 text-center">
@@ -1036,7 +1031,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                     className="group mt-6 w-full h-14 rounded-2xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:-translate-y-1"
                   >
                     <ArrowRight className="h-5 w-5 rtl:rotate-180" />
-                    {isAr ? 'متابعة لاختيار المقاعد' : 'Continue to Seat Selection'}
+                    {pick(locale, 'متابعة لاختيار المقاعد', 'Continue to Seat Selection', 'Koltuk Seçimine Devam')}
                   </button>
                 ) : (
                   <button
@@ -1075,7 +1070,7 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
             <div className="flex flex-col">
                 {seatMapEnabled ? (
                   <span className="mb-1 text-xs font-semibold text-slate-300">
-                    {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.join(', ') : (isAr ? 'اختر مقاعد' : 'Select seats')}
+                    {selectedSeatNumbers.length > 0 ? selectedSeatNumbers.join(', ') : (pick(locale, 'اختر مقاعد', 'Select seats', 'Koltuk seç'))}
                   </span>
                 ) : (
                   <div className="flex items-center gap-2 mb-1">
@@ -1108,11 +1103,11 @@ function BookTripContent({ params }: { params: Promise<{ id: string, locale: str
                 className="flex-1 h-12 rounded-xl bg-primary text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               >
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                {isAr ? 'متابعة' : 'Continue'}
+                {pick(locale, 'متابعة', 'Continue', 'Devam')}
               </button>
             ) : seatMapEnabled && bookingStep === 'seats' ? (
               <span className="flex-1 h-12 rounded-xl bg-slate-700 text-slate-400 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 text-center px-2">
-                {isAr ? 'اختر مقعدك أعلاه للمتابعة' : 'Select your seat above to continue'}
+                {pick(locale, 'اختر مقعدك أعلاه للمتابعة', 'Select your seat above to continue', 'Devam etmek için yukarıdaki koltuğunuzu seçin')}
               </span>
             ) : (
               <button

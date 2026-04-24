@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import type { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { capitalizeFirst } from '@/lib/utils'
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .single()
 
   if (!trip) {
-    return { title: isAr ? 'رحلة غير موجودة' : 'Trip Not Found' }
+    return { title: pick(locale, 'رحلة غير موجودة', 'Trip Not Found', 'Gezi Bulunamadı') }
   }
 
   const origin = isAr ? trip.origin_city_ar : capitalizeFirst(trip.origin_city_en || trip.origin_city_ar)
@@ -30,13 +31,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     day: 'numeric',
   })
 
-  const title = isAr
-    ? `${origin} → ${dest} | ${trip.airline}`
-    : `${origin} → ${dest} | ${trip.airline}`
+  const title = pick(locale, `${origin} → ${dest} | ${trip.airline}`, `${origin} → ${dest} | ${trip.airline}`)
 
-  const description = isAr
-    ? `رحلة ${trip.airline} من ${origin} إلى ${dest} بتاريخ ${date} - ابتداءً من ${price} ر.س للمقعد`
-    : `${trip.airline} flight from ${origin} to ${dest} on ${date} - Starting from ${price} SAR per seat`
+  const description = pick(locale, `رحلة ${trip.airline} من ${origin} إلى ${dest} بتاريخ ${date} - ابتداءً من ${price} ر.س للمقعد`, `${trip.airline} flight from ${origin} to ${dest} on ${date} - Starting from ${price} SAR per seat`)
 
   return {
     title,

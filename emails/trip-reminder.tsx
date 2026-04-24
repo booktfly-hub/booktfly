@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -8,7 +9,7 @@ type Props = {
   destination: string
   departureDate: string
   bookingRef: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
   claimUrl?: string
 }
 
@@ -46,7 +47,7 @@ export default function TripReminder({
   locale = 'ar',
   claimUrl,
 }: Props) {
-  const s = t[locale]
+  const s = t[lkey(locale)]
   return (
     <BaseLayout previewText={s.preview(origin, destination)}>
       <Text style={title}>{s.title}</Text>

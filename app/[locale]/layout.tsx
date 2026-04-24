@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { lkey } from '@/lib/i18n-helpers'
 import { Cairo } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
@@ -49,7 +50,7 @@ export function generateStaticParams() {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params
 
-  if (!routing.locales.includes(locale as 'ar' | 'en')) {
+  if (!routing.locales.includes(lkey(locale))) {
     notFound()
   }
 

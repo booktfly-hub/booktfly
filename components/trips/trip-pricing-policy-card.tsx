@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useTranslations, useLocale } from 'next-intl'
 import { Percent, UserCog, Baby, TicketPercent, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -46,7 +47,7 @@ export function TripPricingPolicyCard(props: Props) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <UserCog className="h-4 w-4" />
           </div>
-          <h3 className="font-bold">{isAr ? 'سياسة تغيير اسم المسافر' : 'Name change policy'}</h3>
+          <h3 className="font-bold">{pick(locale, 'سياسة تغيير اسم المسافر', 'Name change policy', 'Ad değişiklik politikası')}</h3>
         </header>
 
         <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 cursor-pointer">
@@ -97,7 +98,7 @@ export function TripPricingPolicyCard(props: Props) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Baby className="h-4 w-4" />
           </div>
-          <h3 className="font-bold">{isAr ? 'خصومات حسب العمر' : 'Age-based discounts'}</h3>
+          <h3 className="font-bold">{pick(locale, 'خصومات حسب العمر', 'Age-based discounts', 'Yaşa göre indirimler')}</h3>
         </header>
 
         <div className="grid gap-3 md:grid-cols-2">
@@ -169,7 +170,7 @@ export function TripPricingPolicyCard(props: Props) {
               onChange={(e) => props.onSpecialDiscountLabelArChange(e.target.value)}
               className={inputClass}
               dir="rtl"
-              placeholder={isAr ? 'عرض خاص' : ''}
+              placeholder={pick(locale, 'عرض خاص', '', '')}
             />
           </div>
           <div>
@@ -196,12 +197,12 @@ export function TripPricingPolicyCard(props: Props) {
                 <Percent className="h-4 w-4" />
               </div>
               <h3 className="font-bold">
-                {isAr ? 'عمولة خاصة بهذه الرحلة (أدمن)' : 'Per-trip commission override (admin)'}
+                {pick(locale, 'عمولة خاصة بهذه الرحلة (أدمن)', 'Per-trip commission override (admin)', 'Gezi başına komisyon geçersiz kılma (yönetici)')}
               </h3>
             </header>
             <div>
               <label className="text-xs font-bold block mb-1">
-                {isAr ? 'النسبة (%) — اتركه فارغاً لاستخدام عمولة المزود' : 'Rate (%) — leave blank to use provider default'}
+                {pick(locale, 'النسبة (%) — اتركه فارغاً لاستخدام عمولة المزود', 'Rate (%) — leave blank to use provider default', 'Oran (%) — tedarikçi varsayılanını kullanmak için boş bırakın')}
               </label>
               <input
                 type="number"

@@ -1,5 +1,7 @@
+import { lkey } from '@/lib/i18n-helpers'
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -54,7 +56,7 @@ const EVENT_LABELS: Record<string, { ar: string; en: string }> = {
 }
 
 export default function MarkeeteerRevenuePage() {
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
@@ -89,10 +91,10 @@ export default function MarkeeteerRevenuePage() {
     <div className="space-y-8 animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {isAr ? 'الإيرادات' : 'Revenue'}
+          {pick(locale, 'الإيرادات', 'Revenue', 'Gelir')}
         </h1>
         <p className="text-slate-500 font-medium mt-1">
-          {isAr ? 'سجل نقاط FlyPoints والمعاملات' : 'FlyPoints history and transactions'}
+          {pick(locale, 'سجل نقاط FlyPoints والمعاملات', 'FlyPoints history and transactions', 'FlyPoints geçmişi ve işlemleri')}
         </p>
       </div>
 
@@ -104,7 +106,7 @@ export default function MarkeeteerRevenuePage() {
           </div>
           <p className="text-3xl font-black text-slate-900">{transactions.length}</p>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
-            {isAr ? 'إجمالي المعاملات' : 'Total Transactions'}
+            {pick(locale, 'إجمالي المعاملات', 'Total Transactions', 'Toplam İşlem')}
           </p>
         </div>
         <div className="bg-white border border-green-200 rounded-[2rem] p-6 shadow-sm">
@@ -113,7 +115,7 @@ export default function MarkeeteerRevenuePage() {
           </div>
           <p className="text-3xl font-black text-green-600">+{earned.toLocaleString()}</p>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
-            {isAr ? 'إجمالي المكتسب' : 'Total Earned'}
+            {pick(locale, 'إجمالي المكتسب', 'Total Earned', 'Toplam Kazanılan')}
           </p>
         </div>
         <div className="bg-white border border-red-200 rounded-[2rem] p-6 shadow-sm">
@@ -122,7 +124,7 @@ export default function MarkeeteerRevenuePage() {
           </div>
           <p className="text-3xl font-black text-red-600">{deducted.toLocaleString()}</p>
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
-            {isAr ? 'إجمالي المخصوم' : 'Total Deducted'}
+            {pick(locale, 'إجمالي المخصوم', 'Total Deducted', 'Toplam Kesinti')}
           </p>
         </div>
       </div>
@@ -130,7 +132,7 @@ export default function MarkeeteerRevenuePage() {
       {/* Transaction list */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-lg font-black text-slate-900">{isAr ? 'سجل المعاملات' : 'Transaction History'}</h2>
+          <h2 className="text-lg font-black text-slate-900">{pick(locale, 'سجل المعاملات', 'Transaction History', 'İşlem Geçmişi')}</h2>
         </div>
 
         {transactions.length === 0 ? (
@@ -139,7 +141,7 @@ export default function MarkeeteerRevenuePage() {
               <Star className="h-8 w-8 text-slate-300" />
             </div>
             <p className="text-slate-500 font-medium">
-              {isAr ? 'لا توجد معاملات بعد. شارك رابط الإحالة لتبدأ في كسب النقاط.' : 'No transactions yet. Share your referral link to start earning points.'}
+              {pick(locale, 'لا توجد معاملات بعد. شارك رابط الإحالة لتبدأ في كسب النقاط.', 'No transactions yet. Share your referral link to start earning points.', 'Henüz işlem yok. Puan kazanmaya başlamak için referans bağlantınızı paylaşın.')}
             </p>
           </div>
         ) : (
@@ -147,7 +149,7 @@ export default function MarkeeteerRevenuePage() {
             {transactions.map((tx) => {
               const isPositive = tx.points > 0
               const Icon = EVENT_ICONS[tx.event_type] ?? Star
-              const label = EVENT_LABELS[tx.event_type]?.[locale] ?? tx.event_type
+              const label = EVENT_LABELS[tx.event_type]?.[lkey(locale)] ?? tx.event_type
               return (
                 <div key={tx.id} className="flex items-center gap-5 p-6 hover:bg-slate-50 transition-colors">
                   <div className={cn('h-12 w-12 rounded-2xl flex items-center justify-center shrink-0', isPositive ? 'bg-green-500/10' : 'bg-red-500/10')}>
@@ -162,7 +164,7 @@ export default function MarkeeteerRevenuePage() {
                       <p className="font-bold text-slate-900">{label}</p>
                     </div>
                     <p className="text-sm text-slate-400 mt-0.5">
-                      {isAr ? 'تنتهي في' : 'Expires'}: {new Date(tx.expires_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                      {pick(locale, 'تنتهي في', 'Expires', 'Son Geçerlilik')}: {new Date(tx.expires_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                     </p>
                   </div>
                   <div className="text-end shrink-0">
@@ -170,7 +172,7 @@ export default function MarkeeteerRevenuePage() {
                       {isPositive ? '+' : ''}{tx.points.toLocaleString()}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {new Date(tx.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                      {new Date(tx.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                     </p>
                   </div>
                 </div>

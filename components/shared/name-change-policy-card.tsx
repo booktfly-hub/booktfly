@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useTranslations, useLocale } from 'next-intl'
 import { UserCog } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -27,7 +28,7 @@ export function NameChangePolicyCard(props: Props) {
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <UserCog className="h-4 w-4" />
         </div>
-        <h3 className="font-bold">{props.title || (isAr ? 'سياسة تغيير اسم المستفيد' : 'Name change policy')}</h3>
+        <h3 className="font-bold">{props.title || (pick(locale, 'سياسة تغيير اسم المستفيد', 'Name change policy', 'Ad değişiklik politikası'))}</h3>
       </header>
 
       <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 cursor-pointer">

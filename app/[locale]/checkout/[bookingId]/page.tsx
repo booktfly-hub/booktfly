@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useRef, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -155,14 +156,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       setState('confirmed')
     } catch {
       setDummyPaying(false)
-      toast({ title: isAr ? 'تعذّر إتمام الدفع، حاول مرة أخرى' : 'Payment failed, please try again', variant: 'destructive' })
+      toast({ title: pick(locale, 'تعذّر إتمام الدفع، حاول مرة أخرى', 'Payment failed, please try again', 'Ödeme başarısız, lütfen tekrar deneyin'), variant: 'destructive' })
     }
   }
 
   const handleConfirmTransfer = async () => {
     if (!receiptFile) {
       toast({
-        title: isAr ? 'يجب رفع صورة الإيصال' : 'Receipt image is required',
+        title: pick(locale, 'يجب رفع صورة الإيصال', 'Receipt image is required', 'Makbuz görseli gereklidir'),
         variant: 'destructive',
       })
       return
@@ -181,7 +182,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       if (!uploadRes.ok) {
         setState('transfer')
         toast({
-          title: isAr ? 'فشل رفع الإيصال، حاول مرة أخرى' : 'Failed to upload receipt, please try again',
+          title: pick(locale, 'فشل رفع الإيصال، حاول مرة أخرى', 'Failed to upload receipt, please try again', 'Makbuz yüklenemedi, lütfen tekrar deneyin'),
           variant: 'destructive',
         })
         return
@@ -266,7 +267,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
                 rel="noopener"
                 className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-900 text-white text-sm md:text-base font-bold hover:bg-slate-800 transition-all"
               >
-                {isAr ? 'تحميل خط السير' : 'Download itinerary'}
+                {pick(locale, 'تحميل خط السير', 'Download itinerary', 'Güzergahı indir')}
               </a>
             )}
             <Link href={browseHref} className="inline-flex items-center justify-center px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl bg-slate-50 text-slate-700 border border-slate-200 text-sm md:text-base font-bold hover:bg-slate-100 transition-all">
@@ -291,10 +292,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
           <Clock className="h-10 w-10 md:h-12 md:w-12 text-amber-500" />
         </div>
         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 md:mb-3">
-          {isAr ? 'تم استلام تأكيد التحويل' : 'Transfer Confirmation Received'}
+          {pick(locale, 'تم استلام تأكيد التحويل', 'Transfer Confirmation Received', 'Transfer Onayı Alındı')}
         </h2>
         <p className="text-base md:text-lg text-slate-500 font-medium mb-6 md:mb-8">
-          {isAr ? 'سيتم مراجعة التحويل من قبل الإدارة وتأكيد حجزك في أقرب وقت' : 'Your transfer is being reviewed by our team. Your booking will be confirmed shortly.'}
+          {pick(locale, 'سيتم مراجعة التحويل من قبل الإدارة وتأكيد حجزك في أقرب وقت', 'Your transfer is being reviewed by our team. Your booking will be confirmed shortly.', 'Transferiniz ekibimiz tarafından inceleniyor. Rezervasyonunuz kısa süre içinde onaylanacak.')}
         </p>
         <p className="text-sm text-slate-400 mb-8">
           {t('booking.booking_reference')}: <span className="font-mono font-bold text-slate-700">{shortId(bookingId)}</span>
@@ -358,17 +359,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       <div className="mb-6 md:mb-8">
         {/* Labelled checkout stepper (P0-11) — on payment step */}
         <ProgressStepper currentStep={3} className="mb-6" />
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">{isAr ? 'إتمام الدفع' : 'Complete payment'}</h1>
-        <p className="text-sm md:text-base text-slate-500 font-medium">{isAr ? 'اختر طريقة الدفع المناسبة لك' : 'Choose a payment method to continue'}</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2">{pick(locale, 'إتمام الدفع', 'Complete payment', 'Ödemeyi tamamla')}</h1>
+        <p className="text-sm md:text-base text-slate-500 font-medium">{pick(locale, 'اختر طريقة الدفع المناسبة لك', 'Choose a payment method to continue', 'Devam etmek için bir ödeme yöntemi seçin')}</p>
       </div>
 
       {/* Payment method selector — main actor of this page */}
-      <div className="mb-6 md:mb-8" role="radiogroup" aria-label={isAr ? 'طرق الدفع' : 'Payment methods'}>
+      <div className="mb-6 md:mb-8" role="radiogroup" aria-label={pick(locale, 'طرق الدفع', 'Payment methods', 'Ödeme yöntemleri')}>
         <div className="grid grid-cols-3 gap-2 md:gap-3 p-1.5 bg-slate-100 rounded-2xl">
           {([
-            { id: 'mada', label: 'mada', sub: isAr ? 'بطاقة بنكية' : 'Debit card' },
-            { id: 'apple_pay', label: 'Apple Pay', sub: isAr ? 'بلمسة واحدة' : 'One tap' },
-            { id: 'bank', label: isAr ? 'تحويل بنكي' : 'Bank transfer', sub: isAr ? 'تأكيد يدوي' : 'Manual review' },
+            { id: 'mada', label: 'mada', sub: pick(locale, 'بطاقة بنكية', 'Debit card', 'Banka kartı') },
+            { id: 'apple_pay', label: 'Apple Pay', sub: pick(locale, 'بلمسة واحدة', 'One tap', 'Tek dokunuş') },
+            { id: 'bank', label: pick(locale, 'تحويل بنكي', 'Bank transfer', 'Banka havalesi'), sub: pick(locale, 'تأكيد يدوي', 'Manual review', 'Manuel inceleme') },
           ] as const).map((m) => {
             const active = payMethod === m.id
             return (
@@ -402,11 +403,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         <div className="flex justify-between items-center text-sm md:text-base font-semibold text-slate-700 mb-4 md:mb-6">
           <span>
             {isPackageBooking && packageBooking
-              ? `${fmt(packageBooking.total_amount / packageBooking.number_of_people)} × ${packageBooking.number_of_people} ${isAr ? 'أشخاص' : 'people'}`
+              ? `${fmt(packageBooking.total_amount / packageBooking.number_of_people)} × ${packageBooking.number_of_people} ${pick(locale, 'أشخاص', 'people', 'kişi')}`
               : isCarBooking && carBooking
-                ? `${fmt(carBooking.price_per_day)} × ${carBooking.number_of_days} ${isAr ? 'يوم' : 'days'}`
+                ? `${fmt(carBooking.price_per_day)} × ${carBooking.number_of_days} ${pick(locale, 'يوم', 'days', 'gün')}`
                 : isRoomBooking && roomBooking
-                  ? `${fmt(roomBooking.price_per_night)} × ${roomBooking.number_of_days} ${isAr ? 'ليالٍ' : 'nights'} × ${roomBooking.rooms_count} ${isAr ? 'غرف' : 'rooms'}`
+                  ? `${fmt(roomBooking.price_per_night)} × ${roomBooking.number_of_days} ${pick(locale, 'ليالٍ', 'nights', 'gece')} × ${roomBooking.rooms_count} ${pick(locale, 'غرف', 'rooms', 'oda')}`
                   : `${fmt(booking!.price_per_seat)} × ${booking!.seats_count} ${t('common.seats')}`}
           </span>
           <span className="text-slate-900 bg-slate-50 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border border-slate-100">{fmt(bookingRecord.total_amount)}</span>
@@ -427,19 +428,19 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             <div className="min-w-0">
               <h3 className="text-base md:text-lg font-bold text-slate-900">
                 {payMethod === 'apple_pay'
-                  ? (isAr ? 'الدفع بـ Apple Pay' : 'Pay with Apple Pay')
-                  : (isAr ? 'الدفع بواسطة mada' : 'Pay with mada')}
+                  ? (pick(locale, 'الدفع بـ Apple Pay', 'Pay with Apple Pay', 'Apple Pay ile Öde'))
+                  : (pick(locale, 'الدفع بواسطة mada', 'Pay with mada', 'mada ile Öde'))}
               </h3>
               <p className="text-sm text-slate-500">
                 {payMethod === 'apple_pay'
-                  ? (isAr ? 'أكّد الدفع بلمسة واحدة، وسيتم تأكيد حجزك فوراً.' : 'Confirm with one tap. Booking confirmed instantly.')
-                  : (isAr ? 'سيتم خصم المبلغ من بطاقتك وتأكيد الحجز مباشرةً.' : 'You’ll be charged instantly and your booking confirmed.')}
+                  ? (pick(locale, 'أكّد الدفع بلمسة واحدة، وسيتم تأكيد حجزك فوراً.', 'Confirm with one tap. Booking confirmed instantly.', 'Tek dokunuşla onaylayın. Rezervasyon anında onaylanır.'))
+                  : (pick(locale, 'سيتم خصم المبلغ من بطاقتك وتأكيد الحجز مباشرةً.', 'You’ll be charged instantly and your booking confirmed.', 'Anında ücretlendirilecek ve rezervasyonunuz onaylanacaktır.'))}
               </p>
             </div>
           </div>
 
           <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 mb-5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{isAr ? 'المبلغ' : 'Amount'}</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{pick(locale, 'المبلغ', 'Amount', 'Tutar')}</span>
             <span className="text-xl md:text-2xl font-black text-primary tracking-tight">{fmt(bookingRecord.total_amount)}</span>
           </div>
 
@@ -457,24 +458,24 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             {dummyPaying ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                {isAr ? 'جارٍ معالجة الدفع...' : 'Processing payment...'}
+                {pick(locale, 'جارٍ معالجة الدفع...', 'Processing payment...', 'Ödeme işleniyor...')}
               </>
             ) : payMethod === 'apple_pay' ? (
               <>
                 <Apple className="h-5 w-5" />
-                {isAr ? 'ادفع بـ Apple Pay' : 'Pay with Apple Pay'}
+                {pick(locale, 'ادفع بـ Apple Pay', 'Pay with Apple Pay', 'Apple Pay ile Öde')}
               </>
             ) : (
               <>
                 <Shield className="h-5 w-5" />
-                {isAr ? `ادفع ${fmt(bookingRecord.total_amount)}` : `Pay ${fmt(bookingRecord.total_amount)}`}
+                {pick(locale, `ادفع ${fmt(bookingRecord.total_amount)}`, `Pay ${fmt(bookingRecord.total_amount)}`)}
               </>
             )}
           </button>
 
           <p className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium mt-4">
             <Shield className="h-3.5 w-3.5" />
-            {isAr ? 'اتصال آمن ومشفّر بالكامل' : 'Secure, encrypted connection'}
+            {pick(locale, 'اتصال آمن ومشفّر بالكامل', 'Secure, encrypted connection', 'Güvenli, şifrelenmiş bağlantı')}
           </p>
         </div>
       )}
@@ -486,7 +487,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Landmark className="h-4 w-4 md:h-5 md:w-5 text-primary" />
             </div>
-            <h3 className="text-lg md:text-xl font-bold text-slate-900">{isAr ? 'بيانات الحساب البنكي' : 'Bank Account Details'}</h3>
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">{pick(locale, 'بيانات الحساب البنكي', 'Bank Account Details', 'Banka Hesap Bilgileri')}</h3>
           </div>
 
           <div className="space-y-4">
@@ -506,14 +507,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
 
             {/* Bank Name */}
             <div className="bg-slate-50 rounded-xl p-4">
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{isAr ? 'اسم البنك' : 'Bank Name'}</p>
+              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{pick(locale, 'اسم البنك', 'Bank Name', 'Banka Adı')}</p>
               <p className="text-sm md:text-base font-bold text-slate-900">{bankName}</p>
             </div>
 
             {/* Account Holder */}
             <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{isAr ? 'اسم صاحب الحساب' : 'Account Holder'}</p>
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{pick(locale, 'اسم صاحب الحساب', 'Account Holder', 'Hesap Sahibi')}</p>
                 <p className="text-sm md:text-base font-bold text-slate-900">{accountHolder}</p>
               </div>
               <button
@@ -527,7 +528,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
             {/* Amount to transfer */}
             <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] md:text-xs font-bold text-primary/60 uppercase tracking-widest mb-1">{isAr ? 'المبلغ المطلوب تحويله' : 'Amount to Transfer'}</p>
+                <p className="text-[10px] md:text-xs font-bold text-primary/60 uppercase tracking-widest mb-1">{pick(locale, 'المبلغ المطلوب تحويله', 'Amount to Transfer', 'Transfer Edilecek Tutar')}</p>
                 <p className="text-xl md:text-2xl font-black text-primary">{fmt(bookingRecord.total_amount)}</p>
               </div>
               <button
@@ -545,10 +546,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
       {payMethod === 'bank' && (
       <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm mb-6">
         <h3 className="text-sm md:text-base font-bold text-slate-900 mb-1">
-          {isAr ? 'إيصال التحويل' : 'Transfer Receipt'}
+          {pick(locale, 'إيصال التحويل', 'Transfer Receipt', 'Transfer Makbuzu')}
           <span className="text-destructive ms-1">*</span>
         </h3>
-        <p className="text-xs text-muted-foreground mb-4">{isAr ? 'مطلوب - يجب رفع صورة الإيصال لتأكيد التحويل' : 'Required - upload the receipt image to confirm your transfer'}</p>
+        <p className="text-xs text-muted-foreground mb-4">{pick(locale, 'مطلوب - يجب رفع صورة الإيصال لتأكيد التحويل', 'Required - upload the receipt image to confirm your transfer', 'Gerekli - transferinizi onaylamak için makbuz görselini yükleyin')}</p>
 
         {receiptPreview ? (
           <div className="relative w-full h-48 rounded-xl overflow-hidden bg-muted">
@@ -564,7 +565,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
         ) : (
           <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
             <Upload className="h-8 w-8 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{isAr ? 'اضغط لرفع صورة الإيصال' : 'Click to upload receipt image'}</span>
+            <span className="text-sm text-muted-foreground">{pick(locale, 'اضغط لرفع صورة الإيصال', 'Click to upload receipt image', 'Makbuz görselini yüklemek için tıklayın')}</span>
             <input
               type="file"
               accept="image/*"
@@ -590,12 +591,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ bookingId: 
           <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-emerald-400" />
         )}
         {state === 'uploading'
-          ? (isAr ? 'جارٍ الإرسال...' : 'Submitting...')
-          : (isAr ? 'تأكيد إتمام التحويل' : 'Confirm Transfer Completed')}
+          ? (pick(locale, 'جارٍ الإرسال...', 'Submitting...', 'Gönderiliyor...'))
+          : (pick(locale, 'تأكيد إتمام التحويل', 'Confirm Transfer Completed', 'Transferin Tamamlandığını Onayla'))}
       </button>
 
       <p className="text-xs text-muted-foreground text-center mt-4">
-        {isAr ? 'سيتم مراجعة التحويل وتأكيد الحجز خلال ساعات العمل' : 'Your transfer will be reviewed and booking confirmed during business hours'}
+        {pick(locale, 'سيتم مراجعة التحويل وتأكيد الحجز خلال ساعات العمل', 'Your transfer will be reviewed and booking confirmed during business hours', 'Transferiniz çalışma saatlerinde incelenecek ve rezervasyon onaylanacak')}
       </p>
       </>
       )}

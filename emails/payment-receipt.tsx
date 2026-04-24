@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Row, Column, Hr } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -16,7 +17,7 @@ type PaymentReceiptProps = {
   totalAmount: number
   commissionFree: number
   passengerName: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const t = {
@@ -78,7 +79,7 @@ export default function PaymentReceipt({
   passengerName = 'Guest',
   locale = 'ar',
 }: PaymentReceiptProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview(bookingRef)}>

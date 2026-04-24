@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { Clock } from 'lucide-react'
@@ -40,8 +41,8 @@ export function CountdownTimer({ targetDate, className, compact = false }: Count
       <div className={cn('flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold', urgencyColors[urgency], urgency === 'high' && 'animate-pulse', className)}>
         <Clock className="h-3.5 w-3.5" />
         <span>
-          {days > 0 && `${days}${isAr ? 'ي' : 'd'} `}
-          {hours}{isAr ? 'س' : 'h'} {minutes}{isAr ? 'د' : 'm'}
+          {days > 0 && `${days}${pick(locale, 'ي', 'd', 'g')} `}
+          {hours}{pick(locale, 'س', 'h', 's')} {minutes}{pick(locale, 'د', 'm', 'd')}
         </span>
       </div>
     )
@@ -52,11 +53,11 @@ export function CountdownTimer({ targetDate, className, compact = false }: Count
       <Clock className="h-5 w-5 shrink-0" />
       <div className="flex flex-col">
         <span className="text-xs font-bold uppercase tracking-widest opacity-70">
-          {isAr ? 'ينتهي خلال' : 'Expires in'}
+          {pick(locale, 'ينتهي خلال', 'Expires in', 'Son geçerlilik')}
         </span>
         <span className="text-lg font-black leading-tight">
-          {days > 0 && `${days}${isAr ? ' يوم' : 'd'} `}
-          {hours}{isAr ? ' ساعة' : 'h'} {minutes}{isAr ? ' دقيقة' : 'm'}
+          {days > 0 && `${days}${pick(locale, ' يوم', 'd', 'g')} `}
+          {hours}{pick(locale, ' ساعة', 'h', 's')} {minutes}{pick(locale, ' دقيقة', 'm', 'd')}
         </span>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -57,10 +58,10 @@ export default function ProviderPackageBookingsPage() {
     <div className="space-y-8 max-w-7xl mx-auto animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-          {isAr ? 'حجوزات الباقات' : 'Package Bookings'}
+          {pick(locale, 'حجوزات الباقات', 'Package Bookings', 'Paket Rezervasyonları')}
         </h1>
         <p className="text-slate-500 font-medium">
-          {isAr ? 'إدارة حجوزات باقاتك' : 'Manage your package bookings'}
+          {pick(locale, 'إدارة حجوزات باقاتك', 'Manage your package bookings', 'Paket rezervasyonlarınızı yönetin')}
         </p>
       </div>
 
@@ -96,10 +97,10 @@ export default function ProviderPackageBookingsPage() {
             <PackageIcon className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد حجوزات بعد' : 'No bookings yet'}
+            {pick(locale, 'لا توجد حجوزات بعد', 'No bookings yet', 'Henüz rezervasyon yok')}
           </p>
           <p className="text-slate-500">
-            {isAr ? 'ستظهر حجوزات باقاتك هنا' : 'Your package bookings will appear here'}
+            {pick(locale, 'ستظهر حجوزات باقاتك هنا', 'Your package bookings will appear here', 'Paket rezervasyonlarınız burada görünecek')}
           </p>
         </div>
       ) : (
@@ -108,14 +109,14 @@ export default function ProviderPackageBookingsPage() {
             <table className="w-full text-sm text-left rtl:text-right">
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'الضيف' : 'Guest'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'الباقة' : 'Package'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'عدد الأشخاص' : 'People'}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'التواريخ' : 'Dates'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'الضيف', 'Guest', 'Misafir')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'الباقة', 'Package', 'Paket')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'عدد الأشخاص', 'People', 'Kişi')}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'التواريخ', 'Dates', 'Tarihler')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('total')}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'حصتك' : 'Your Payout'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'حصتك', 'Your Payout', 'Ödemeniz')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('status')}</th>
-                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{isAr ? 'العقد' : 'Contract'}</th>
+                  <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{pick(locale, 'العقد', 'Contract', 'Sözleşme')}</th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">{tc('date')}</th>
                 </tr>
               </thead>
@@ -138,8 +139,8 @@ export default function ProviderPackageBookingsPage() {
                           <span>{b.end_date}</span>
                         </div>
                       </td>
-                      <td className="p-5 font-bold text-slate-900">{b.total_amount} {isAr ? 'ر.س' : 'SAR'}</td>
-                      <td className="p-5 font-bold text-emerald-600">{b.provider_payout} {isAr ? 'ر.س' : 'SAR'}</td>
+                      <td className="p-5 font-bold text-slate-900">{b.total_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
+                      <td className="p-5 font-bold text-emerald-600">{b.provider_payout} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
                       <td className="p-5">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${BOOKING_STATUS_COLORS[b.status]}`}>
                           {t(`status.${b.status}`)}
@@ -148,7 +149,7 @@ export default function ProviderPackageBookingsPage() {
                       <td className="p-5">
                         <ContractPill signedAt={b.contract_signed_at} targetType="package_booking" bookingId={b.id} />
                       </td>
-                      <td className="p-5 text-slate-500">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                      <td className="p-5 text-slate-500">{new Date(b.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</td>
                     </tr>
                   )
                 })}

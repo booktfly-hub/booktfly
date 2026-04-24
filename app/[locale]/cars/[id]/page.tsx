@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import type { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import CarDetailClient from './car-detail-client'
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .single()
 
   if (!car) {
-    return { title: isAr ? 'سيارة غير موجودة' : 'Car Not Found' }
+    return { title: pick(locale, 'سيارة غير موجودة', 'Car Not Found', 'Araç Bulunamadı') }
   }
 
   const brand = isAr ? car.brand_ar : (car.brand_en || car.brand_ar)
@@ -25,13 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = isAr ? car.city_ar : (car.city_en || car.city_ar)
   const price = car.price_per_day
 
-  const title = isAr
-    ? `${brand} ${model} | ${city}`
-    : `${brand} ${model} | ${city}`
+  const title = pick(locale, `${brand} ${model} | ${city}`, `${brand} ${model} | ${city}`)
 
-  const description = isAr
-    ? `${brand} ${model} في ${city} - ابتداءً من ${price} ر.س لكل يوم`
-    : `${brand} ${model} in ${city} - Starting from ${price} SAR per day`
+  const description = pick(locale, `${brand} ${model} في ${city} - ابتداءً من ${price} ر.س لكل يوم`, `${brand} ${model} in ${city} - Starting from ${price} SAR per day`)
 
   return {
     title,

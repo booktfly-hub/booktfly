@@ -36,7 +36,7 @@ export default function LoginPage() {
 function LoginContent() {
   const t = useTranslations('auth')
   const tCommon = useTranslations('common')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect')

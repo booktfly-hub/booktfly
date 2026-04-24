@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { cn, formatPrice, shortId } from '@/lib/utils'
@@ -58,10 +59,10 @@ export default function ProviderRoomBookingsPage() {
     <div className="space-y-8 max-w-7xl mx-auto animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-          {isAr ? 'حجوزات الغرف' : 'Room Bookings'}
+          {pick(locale, 'حجوزات الغرف', 'Room Bookings', 'Oda Rezervasyonları')}
         </h1>
         <p className="text-slate-500 font-medium">
-          {isAr ? 'إدارة جميع حجوزات الغرف الواردة' : 'Manage all incoming room bookings'}
+          {pick(locale, 'إدارة جميع حجوزات الغرف الواردة', 'Manage all incoming room bookings', 'Gelen tüm oda rezervasyonlarını yönetin')}
         </p>
       </div>
 
@@ -97,10 +98,10 @@ export default function ProviderRoomBookingsPage() {
             <BedDouble className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد حجوزات بعد' : 'No bookings yet'}
+            {pick(locale, 'لا توجد حجوزات بعد', 'No bookings yet', 'Henüz rezervasyon yok')}
           </p>
           <p className="text-slate-500">
-            {isAr ? 'ستظهر حجوزات الغرف هنا عند استلامها' : 'Room bookings will appear here when received'}
+            {pick(locale, 'ستظهر حجوزات الغرف هنا عند استلامها', 'Room bookings will appear here when received', 'Oda rezervasyonları alındığında burada görünecek')}
           </p>
         </div>
       ) : (
@@ -110,19 +111,19 @@ export default function ProviderRoomBookingsPage() {
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الضيف' : 'Guest'}
+                    {pick(locale, 'الضيف', 'Guest', 'Misafir')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الغرفة' : 'Room'}
+                    {pick(locale, 'الغرفة', 'Room', 'Oda')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'تسجيل الدخول' : 'Check-in'}
+                    {pick(locale, 'تسجيل الدخول', 'Check-in', 'Giriş')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'المدة' : 'Days'}
+                    {pick(locale, 'المدة', 'Days', 'Gün')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الغرف' : 'Rooms'}
+                    {pick(locale, 'الغرف', 'Rooms', 'Odalar')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('total')}
@@ -134,7 +135,7 @@ export default function ProviderRoomBookingsPage() {
                     {tc('status')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'العقد' : 'Contract'}
+                    {pick(locale, 'العقد', 'Contract', 'Sözleşme')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('date')}
@@ -160,14 +161,14 @@ export default function ProviderRoomBookingsPage() {
                     <td className="p-5">
                       <span className="inline-flex px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 font-medium text-slate-700">
                         {new Date(booking.check_in_date).toLocaleDateString(
-                          isAr ? 'ar-SA' : 'en-US',
+                          pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
                           { month: 'short', day: 'numeric', year: 'numeric' }
                         )}
                       </span>
                     </td>
                     <td className="p-5">
                       <span className="font-bold text-slate-900">
-                        {booking.number_of_days} {isAr ? 'ليالي' : 'nights'}
+                        {booking.number_of_days} {pick(locale, 'ليالي', 'nights', 'gece')}
                       </span>
                     </td>
                     <td className="p-5">
@@ -189,7 +190,7 @@ export default function ProviderRoomBookingsPage() {
                     </td>
                     <td className="p-5 text-slate-500 text-xs">
                       {new Date(booking.created_at).toLocaleDateString(
-                        isAr ? 'ar-SA' : 'en-US'
+                        pick(locale, 'ar-SA', 'en-US', 'tr-TR')
                       )}
                     </td>
                   </tr>

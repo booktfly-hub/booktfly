@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
@@ -109,7 +110,7 @@ export function CarCard({ car, className, ribbon }: CarCardProps) {
             {car.pickup_type && (
               <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10 text-primary">
                 {car.pickup_type === 'airport' ? <Plane className="h-3.5 w-3.5" /> : <Building className="h-3.5 w-3.5" />}
-                <span className="text-xs font-semibold">{car.pickup_type === 'airport' ? (isAr ? 'مطار' : 'Airport') : (isAr ? 'فرع' : 'Branch')}</span>
+                <span className="text-xs font-semibold">{car.pickup_type === 'airport' ? (pick(locale, 'مطار', 'Airport', 'Havalimanı')) : (pick(locale, 'فرع', 'Branch', 'Şube'))}</span>
               </div>
             )}
           </div>

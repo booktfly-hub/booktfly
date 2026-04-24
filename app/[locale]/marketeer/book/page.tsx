@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useLocale } from 'next-intl'
 import { Search, Loader2, Plane, User, Mail, Phone, CreditCard, CheckCircle2, Copy, CheckCheck, ExternalLink } from 'lucide-react'
@@ -158,10 +159,10 @@ export default function MarkeeteerBookPage() {
     <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {isAr ? 'حجز لعميل' : 'Book for Customer'}
+          {pick(locale, 'حجز لعميل', 'Book for Customer', 'Müşteri İçin Rezervasyon Yap')}
         </h1>
         <p className="text-slate-500 font-medium mt-1">
-          {isAr ? 'احجز تذكرة نيابة عن عميلك' : 'Create a booking on behalf of your customer'}
+          {pick(locale, 'احجز تذكرة نيابة عن عميلك', 'Create a booking on behalf of your customer', 'Müşteriniz adına bir rezervasyon oluşturun')}
         </p>
       </div>
 

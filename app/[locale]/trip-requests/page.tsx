@@ -1,5 +1,6 @@
 'use client'
 
+import { pick, lkey } from '@/lib/i18n-helpers'
 import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -128,7 +129,7 @@ export default function TripRequestsPage() {
   const [expandedRequest, setExpandedRequest] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  const schema = getFlightRequestSchema(isAr ? 'ar' : 'en')
+  const schema = getFlightRequestSchema(lkey(locale))
 
   const {
     register,
@@ -185,10 +186,10 @@ export default function TripRequestsPage() {
         reset()
       } else {
         const body = await res.json()
-        setError(body.error || (isAr ? 'حدث خطأ' : 'Something went wrong'))
+        setError(body.error || (pick(locale, 'حدث خطأ', 'Something went wrong', 'Bir şeyler ters gitti')))
       }
     } catch {
-      setError(isAr ? 'خطأ في الاتصال' : 'Connection error')
+      setError(pick(locale, 'خطأ في الاتصال', 'Connection error', 'Bağlantı hatası'))
     } finally {
       setSubmitting(false)
     }
@@ -311,25 +312,25 @@ export default function TripRequestsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_origin')}</Label>
-                  <Input {...register('origin')} placeholder={isAr ? 'مثال: الرياض' : 'e.g. Riyadh'} aria-invalid={!!errors.origin} />
+                  <Input {...register('origin')} placeholder={pick(locale, 'مثال: الرياض', 'e.g. Riyadh', 'örn. Riyad')} aria-invalid={!!errors.origin} />
                   {errors.origin && <p className="text-xs text-destructive">{errors.origin.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_destination')}</Label>
-                  <Input {...register('destination')} placeholder={isAr ? 'مثال: القاهرة' : 'e.g. Cairo'} aria-invalid={!!errors.destination} />
+                  <Input {...register('destination')} placeholder={pick(locale, 'مثال: القاهرة', 'e.g. Cairo', 'örn. Kahire')} aria-invalid={!!errors.destination} />
                   {errors.destination && <p className="text-xs text-destructive">{errors.destination.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_departure')}</Label>
                   <Controller name="departure_date" control={control} render={({ field }) => (
-                    <DatePickerField value={field.value} onChange={field.onChange} placeholder={isAr ? 'اختر تاريخ المغادرة' : 'Pick departure date'} isAr={isAr} hasError={!!errors.departure_date} disabled={{ before: today }} />
+                    <DatePickerField value={field.value} onChange={field.onChange} placeholder={pick(locale, 'اختر تاريخ المغادرة', 'Pick departure date', 'Kalkış tarihi seç')} isAr={isAr} hasError={!!errors.departure_date} disabled={{ before: today }} />
                   )} />
                   {errors.departure_date && <p className="text-xs text-destructive">{errors.departure_date.message}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">{tHome('flight_request_return')} <span className="font-normal normal-case text-muted-foreground">({tHome('flight_request_optional')})</span></Label>
                   <Controller name="return_date" control={control} render={({ field }) => (
-                    <DatePickerField value={field.value} onChange={field.onChange} placeholder={isAr ? 'اختر تاريخ العودة' : 'Pick return date'} isAr={isAr} disabled={{ before: today }} />
+                    <DatePickerField value={field.value} onChange={field.onChange} placeholder={pick(locale, 'اختر تاريخ العودة', 'Pick return date', 'Dönüş tarihi seç')} isAr={isAr} disabled={{ before: today }} />
                   )} />
                 </div>
                 <div className="space-y-1.5">
@@ -421,7 +422,7 @@ export default function TripRequestsPage() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-slate-500">
                       <span>{req.departure_date}</span>
-                      <span>{req.seats_needed} {isAr ? 'مقاعد' : 'seats'}</span>
+                      <span>{req.seats_needed} {pick(locale, 'مقاعد', 'seats', 'koltuk')}</span>
                       <span>{req.cabin_class}</span>
                       {req.offers.length > 0 && (
                         <span className="text-amber-600 font-bold">{t('offers_count', { count: req.offers.length })}</span>
@@ -453,11 +454,11 @@ export default function TripRequestsPage() {
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                   <div>
                                     <span className="text-slate-500">{t('price_per_seat')}: </span>
-                                    <span className="font-bold text-slate-900">{offer.price_per_seat.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}</span>
+                                    <span className="font-bold text-slate-900">{offer.price_per_seat.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}</span>
                                   </div>
                                   <div>
                                     <span className="text-slate-500">{t('total_price')}: </span>
-                                    <span className="font-bold text-sky-600">{offer.total_price.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}</span>
+                                    <span className="font-bold text-sky-600">{offer.total_price.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}</span>
                                   </div>
                                 </div>
                                 {offer.notes && (

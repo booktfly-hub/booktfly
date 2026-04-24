@@ -68,7 +68,7 @@ const AUTH_REQUIRED_PATTERNS = [
 export async function proxy(request: NextRequest) {
   // Strip locale prefix to get the path
   const pathname = request.nextUrl.pathname
-  const localeMatch = pathname.match(/^\/(ar|en)(.*)$/)
+  const localeMatch = pathname.match(/^\/(ar|en|tr)(.*)$/)
   const pathWithoutLocale = localeMatch ? localeMatch[2] || '/' : pathname
 
   // Check if this is an API route - skip i18n for API

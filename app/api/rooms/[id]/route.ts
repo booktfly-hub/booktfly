@@ -113,6 +113,35 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : existingRoom.instant_book,
       available_from: (formData.get('available_from') as string) || existingRoom.available_from,
       available_to: (formData.get('available_to') as string) || existingRoom.available_to,
+      latitude: formData.get('latitude') !== null
+        ? (formData.get('latitude') ? Number(formData.get('latitude')) : undefined)
+        : existingRoom.latitude,
+      longitude: formData.get('longitude') !== null
+        ? (formData.get('longitude') ? Number(formData.get('longitude')) : undefined)
+        : existingRoom.longitude,
+      cancellation_policy: (formData.get('cancellation_policy') as 'free' | 'partial' | 'non_refundable' | null) || existingRoom.cancellation_policy,
+      cancellation_penalty_nights: formData.get('cancellation_penalty_nights') !== null
+        ? Number(formData.get('cancellation_penalty_nights'))
+        : existingRoom.cancellation_penalty_nights,
+      breakfast_included: formData.get('breakfast_included') !== null
+        ? formData.get('breakfast_included') === 'true'
+        : existingRoom.breakfast_included,
+      contact_phone: (formData.get('contact_phone') as string) || existingRoom.contact_phone,
+      bedroom_count: formData.get('bedroom_count') !== null
+        ? Number(formData.get('bedroom_count'))
+        : existingRoom.bedroom_count,
+      bathroom_count: formData.get('bathroom_count') !== null
+        ? Number(formData.get('bathroom_count'))
+        : existingRoom.bathroom_count,
+      has_view: formData.get('has_view') !== null
+        ? formData.get('has_view') === 'true'
+        : existingRoom.has_view,
+      has_balcony: formData.get('has_balcony') !== null
+        ? formData.get('has_balcony') === 'true'
+        : existingRoom.has_balcony,
+      has_kitchen: formData.get('has_kitchen') !== null
+        ? formData.get('has_kitchen') === 'true'
+        : existingRoom.has_kitchen,
       name_change_allowed: formData.get('name_change_allowed') !== null
         ? formData.get('name_change_allowed') === 'true'
         : existingRoom.name_change_allowed,
@@ -181,6 +210,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         instant_book: parsed.data.instant_book ?? false,
         available_from: parsed.data.available_from || null,
         available_to: parsed.data.available_to || null,
+        latitude: parsed.data.latitude ?? null,
+        longitude: parsed.data.longitude ?? null,
+        cancellation_policy: parsed.data.cancellation_policy ?? 'free',
+        cancellation_penalty_nights: parsed.data.cancellation_penalty_nights ?? 0,
+        breakfast_included: parsed.data.breakfast_included ?? false,
+        contact_phone: parsed.data.contact_phone || null,
+        bedroom_count: parsed.data.bedroom_count ?? existingRoom.bedroom_count ?? 1,
+        bathroom_count: parsed.data.bathroom_count ?? existingRoom.bathroom_count ?? 1,
+        has_view: parsed.data.has_view ?? false,
+        has_balcony: parsed.data.has_balcony ?? false,
+        has_kitchen: parsed.data.has_kitchen ?? false,
         name_change_allowed: parsed.data.name_change_allowed ?? false,
         name_change_fee: parsed.data.name_change_fee ?? 0,
         name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,

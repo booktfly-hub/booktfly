@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useLocale } from 'next-intl'
@@ -76,7 +77,7 @@ const BANNERS: { key: string; titleAr: string; titleEn: string; subtitleAr: stri
 ]
 
 export default function CreativeKitPage() {
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
 
   const [marketeer, setMarketeer] = useState<Marketeer | null>(null)
@@ -161,7 +162,7 @@ export default function CreativeKitPage() {
   if (!refCode) {
     return (
       <div className="px-6 py-10">
-        <p className="text-slate-500">{isAr ? 'هذه الصفحة متاحة فقط للمسوّقين المفعّلين.' : 'This page is only available for active marketeers.'}</p>
+        <p className="text-slate-500">{pick(locale, 'هذه الصفحة متاحة فقط للمسوّقين المفعّلين.', 'This page is only available for active marketeers.', 'Bu sayfa yalnızca aktif pazarlamacılar için kullanılabilir.')}</p>
       </div>
     )
   }
@@ -174,12 +175,10 @@ export default function CreativeKitPage() {
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
-            {isAr ? 'عدّة إبداعية للتسويق' : 'Creative Kit'}
+            {pick(locale, 'عدّة إبداعية للتسويق', 'Creative Kit', 'Kreatif Kit')}
           </h1>
           <p className="text-sm md:text-base text-slate-500 font-medium mt-1">
-            {isAr
-              ? 'قوالب جاهزة، بنرات، وصور مشاركة لكل رحلة — جاهزة للنسخ والنشر مع رابط إحالتك.'
-              : 'Ready-made copy, banners, and per-trip share images — pre-filled with your referral link.'}
+            {pick(locale, 'قوالب جاهزة، بنرات، وصور مشاركة لكل رحلة — جاهزة للنسخ والنشر مع رابط إحالتك.', 'Ready-made copy, banners, and per-trip share images — pre-filled with your referral link.', 'Hazır metin, bannerlar ve gezi başına paylaşım görselleri — referans bağlantınızla önceden doldurulmuş.')}
           </p>
         </div>
       </header>
@@ -187,7 +186,7 @@ export default function CreativeKitPage() {
       {/* Main referral link */}
       <section className="rounded-3xl border border-slate-200 bg-white p-5 md:p-6 shadow-sm">
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
-          {isAr ? 'رابط الإحالة الرئيسي' : 'Main referral link'}
+          {pick(locale, 'رابط الإحالة الرئيسي', 'Main referral link', 'Ana referans bağlantısı')}
         </h2>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 font-mono text-sm text-slate-900 break-all" dir="ltr">
@@ -198,7 +197,7 @@ export default function CreativeKitPage() {
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 text-white px-5 py-3 font-bold text-sm hover:bg-slate-800 transition-colors"
           >
             {copied === 'main' ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied === 'main' ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'انسخ الرابط' : 'Copy link')}
+            {copied === 'main' ? (pick(locale, 'تم النسخ', 'Copied', 'Kopyalandı')) : (pick(locale, 'انسخ الرابط', 'Copy link', 'Bağlantıyı kopyala'))}
           </button>
         </div>
       </section>
@@ -206,7 +205,7 @@ export default function CreativeKitPage() {
       {/* Copy templates */}
       <section>
         <h2 className="text-lg md:text-xl font-black text-slate-900 mb-4">
-          {isAr ? 'قوالب النص' : 'Copy templates'}
+          {pick(locale, 'قوالب النص', 'Copy templates', 'Şablonları kopyala')}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
           {TEMPLATES.map((tpl) => {
@@ -220,7 +219,7 @@ export default function CreativeKitPage() {
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 text-slate-900 px-4 py-2.5 font-bold text-sm hover:bg-slate-200 transition-colors"
                   >
                     {copied === `tpl-${tpl.key}` ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    {copied === `tpl-${tpl.key}` ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
+                    {copied === `tpl-${tpl.key}` ? (pick(locale, 'تم النسخ', 'Copied', 'Kopyalandı')) : (pick(locale, 'نسخ', 'Copy', 'Kopyala'))}
                   </button>
                   <a
                     href={whatsappHref(text)}
@@ -241,7 +240,7 @@ export default function CreativeKitPage() {
       {/* Banners */}
       <section>
         <h2 className="text-lg md:text-xl font-black text-slate-900 mb-4">
-          {isAr ? 'بنرات جاهزة' : 'Ready-made banners'}
+          {pick(locale, 'بنرات جاهزة', 'Ready-made banners', 'Hazır bannerlar')}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {BANNERS.map((b) => (
@@ -262,7 +261,7 @@ export default function CreativeKitPage() {
                   className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 text-white px-4 py-2.5 font-bold text-sm hover:bg-slate-800 transition-colors"
                 >
                   <Download className="h-4 w-4" />
-                  {isAr ? 'تحميل PNG' : 'Download PNG'}
+                  {pick(locale, 'تحميل PNG', 'Download PNG', 'PNG İndir')}
                 </button>
               </div>
             </div>
@@ -273,10 +272,10 @@ export default function CreativeKitPage() {
       {/* Per-trip share */}
       <section>
         <h2 className="text-lg md:text-xl font-black text-slate-900 mb-4">
-          {isAr ? 'صور مشاركة لكل رحلة' : 'Per-trip share images'}
+          {pick(locale, 'صور مشاركة لكل رحلة', 'Per-trip share images', 'Gezi başına paylaşım görselleri')}
         </h2>
         {trips.length === 0 ? (
-          <p className="text-sm text-slate-500">{isAr ? 'لا توجد رحلات نشطة حالياً.' : 'No active trips available right now.'}</p>
+          <p className="text-sm text-slate-500">{pick(locale, 'لا توجد رحلات نشطة حالياً.', 'No active trips available right now.', 'Şu anda aktif gezi bulunmuyor.')}</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {trips.map((tp) => {
@@ -284,9 +283,7 @@ export default function CreativeKitPage() {
               const destCity = (isAr ? tp.destination_city_ar : tp.destination_city_en) || ''
               const selected = selectedTripId === tp.id
               const link = tripLink(tp.id)
-              const msg = isAr
-                ? `رحلة ${origCity} ← ${destCity} بسعر يبدأ من ${tp.price_per_seat} ر.س ✈️\n${link}`
-                : `${origCity} → ${destCity} from ${tp.price_per_seat} SAR ✈️\n${link}`
+              const msg = pick(locale, `رحلة ${origCity} ← ${destCity} بسعر يبدأ من ${tp.price_per_seat} ر.س ✈️\n${link}`, `${origCity} → ${destCity} from ${tp.price_per_seat} SAR ✈️\n${link}`)
               return (
                 <div
                   key={tp.id}
@@ -305,7 +302,7 @@ export default function CreativeKitPage() {
                     <div className="p-3">
                       <div className="text-sm font-bold text-slate-900 truncate">{origCity} → {destCity}</div>
                       <div className="text-xs text-slate-500 mt-0.5">
-                        {new Date(tp.departure_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · {tp.airline || ''}
+                        {new Date(tp.departure_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { month: 'short', day: 'numeric', year: 'numeric' })} · {tp.airline || ''}
                       </div>
                     </div>
                   </button>
@@ -318,7 +315,7 @@ export default function CreativeKitPage() {
                           className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 text-slate-900 px-3 py-2 font-bold text-xs hover:bg-slate-200"
                         >
                           {copied === `trip-${tp.id}` ? <CheckCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                          {copied === `trip-${tp.id}` ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'نسخ النص' : 'Copy')}
+                          {copied === `trip-${tp.id}` ? (pick(locale, 'تم النسخ', 'Copied', 'Kopyalandı')) : (pick(locale, 'نسخ النص', 'Copy', 'Kopyala'))}
                         </button>
                         <a
                           href={whatsappHref(msg)}
@@ -337,7 +334,7 @@ export default function CreativeKitPage() {
                           className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 text-white px-3 py-2 font-bold text-xs hover:bg-slate-800"
                         >
                           <Download className="h-3.5 w-3.5" />
-                          {isAr ? 'صورة' : 'Image'}
+                          {pick(locale, 'صورة', 'Image', 'Görsel')}
                         </a>
                       </div>
                     </div>

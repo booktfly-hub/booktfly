@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { UserCircle, Plus } from 'lucide-react'
@@ -62,7 +63,7 @@ export function SavedPassengersPicker({ onSelect, className }: SavedPassengersPi
             </span>
             {p.is_self && (
               <span className="text-[9px] text-primary font-bold uppercase">
-                {isAr ? 'أنا' : 'me'}
+                {pick(locale, 'أنا', 'me', 'ben')}
               </span>
             )}
           </button>

@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { Star } from 'lucide-react'
 
 interface TestimonialsProps {
@@ -66,14 +67,14 @@ export function Testimonials({ locale }: TestimonialsProps) {
 
       <div className="relative z-10 mx-auto mb-20 max-w-7xl px-4 text-center sm:px-6 lg:px-8">
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-sky-700">
-          {isAr ? 'آراء المسافرين' : 'Traveler feedback'}
+          {pick(locale, 'آراء المسافرين', 'Traveler feedback', 'Yolcu geri bildirimi')}
         </p>
         <h2 className="mb-6 text-4xl font-serif font-bold tracking-wide text-[#111111] md:text-[3.5rem]">
-          {isAr ? 'ماذا يقول عملاؤنا' : 'What Our Users Say'}
+          {pick(locale, 'ماذا يقول عملاؤنا', 'What Our Users Say', 'Kullanıcılarımız Ne Diyor')}
         </h2>
         <div className="flex items-center justify-center gap-3 font-serif text-lg text-slate-600 md:text-xl">
           <span className="rounded-xl border border-orange-100 bg-white px-4 py-1.5 font-bold text-slate-800 shadow-sm">4.9/5</span>
-          <span className="font-medium">{isAr ? 'تقييم من آلاف المسافرين' : 'Rating from thousands of travelers'}</span>
+          <span className="font-medium">{pick(locale, 'تقييم من آلاف المسافرين', 'Rating from thousands of travelers', 'Binlerce yolcudan puan')}</span>
         </div>
       </div>
 
@@ -82,7 +83,7 @@ export function Testimonials({ locale }: TestimonialsProps) {
         <div className="absolute bottom-0 right-0 top-0 z-10 w-32 bg-gradient-to-l from-white via-white/90 to-transparent pointer-events-none md:w-64" />
 
         <div className="flex w-fit animate-marquee hover:[animation-play-state:paused]" style={{
-            animationDirection: isAr ? 'reverse' : 'normal'
+            animationDirection: pick(locale, 'reverse', 'normal', 'normal')
         }}>
           {marqueeReviews.map((review, idx) => {
             const isHoveredOrMiddle = idx % 2 !== 0 // Simulate the effect from screenshot where some are muted

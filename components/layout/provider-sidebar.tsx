@@ -18,6 +18,8 @@ import {
   PlaneTakeoff,
   PackageIcon,
   ChevronDown,
+  Star,
+  BarChart2,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -40,7 +42,10 @@ type NavGroup = {
 const NAV_GROUPS: NavGroup[] = [
   {
     key: 'group_overview',
-    items: [{ key: 'dashboard', icon: LayoutDashboard, href: '/provider/dashboard' }],
+    items: [
+      { key: 'dashboard', icon: LayoutDashboard, href: '/provider/dashboard' },
+      { key: 'analytics', icon: BarChart2, href: '/provider/analytics' },
+    ],
   },
   {
     key: 'group_flights',
@@ -77,7 +82,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: 'group_system',
-    items: [{ key: 'profile', icon: User, href: '/provider/profile' }],
+    items: [
+      { key: 'reviews', icon: Star, href: '/provider/reviews' },
+      { key: 'profile', icon: User, href: '/provider/profile' },
+    ],
   },
 ]
 

@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Home, Search, BookOpen, User } from 'lucide-react'
+import { Home, Search, Heart, BookOpen, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function MobileBottomNav() {
@@ -27,6 +27,7 @@ export function MobileBottomNav() {
   const items = [
     { href: `/${locale}`, icon: Home, label: t('home'), match: (p: string) => p === `/${locale}` },
     { href: `/${locale}/trips`, icon: Search, label: t('search'), match: (p: string) => p.includes('/trips') },
+    { href: `/${locale}/saved`, icon: Heart, label: t('saved'), match: (p: string) => p.includes('/saved') },
     { href: `/${locale}/my-bookings`, icon: BookOpen, label: t('bookings'), match: (p: string) => p.includes('/my-bookings') },
     { href: `/${locale}/profile`, icon: User, label: t('profile'), match: (p: string) => p.includes('/profile') },
   ]

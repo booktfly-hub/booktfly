@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { ShieldCheck, Clock, CheckCircle2, HeadphonesIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -76,13 +77,13 @@ export function ValueProposition({ locale }: ValuePropositionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12 max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#f97316]">
-            {isAr ? 'لماذا BooktFly' : 'Why BooktFly'}
+            {pick(locale, 'لماذا BooktFly', 'Why BooktFly', 'Neden BooktFly')}
           </p>
           <h2 className="mt-4 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
-            {isAr ? 'تجربة أوضح وأسهل للحجز من البحث حتى التأكيد' : 'A clearer booking experience from first search to final confirmation'}
+            {pick(locale, 'تجربة أوضح وأسهل للحجز من البحث حتى التأكيد', 'A clearer booking experience from first search to final confirmation', 'İlk aramadan son onaya kadar daha net bir rezervasyon deneyimi')}
           </h2>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600">
-            {isAr ? 'صممنا الصفحة لتركز على الثقة والسرعة وسهولة الاختيار بدون ازدحام بصري.' : 'The landing experience now emphasizes trust, speed, and decision clarity without visual clutter.'}
+            {pick(locale, 'صممنا الصفحة لتركز على الثقة والسرعة وسهولة الاختيار بدون ازدحام بصري.', 'The landing experience now emphasizes trust, speed, and decision clarity without visual clutter.', 'İniş deneyimi artık görsel karmaşa olmadan güveni, hızı ve karar netliğini vurguluyor.')}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">

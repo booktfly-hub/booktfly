@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -148,16 +149,16 @@ export default function NotificationDetailPage() {
     return (
       <div className="max-w-xl mx-auto text-center py-32">
         <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-lg font-bold mb-1">{isAr ? 'الإشعار غير موجود' : 'Notification not found'}</p>
+        <p className="text-lg font-bold mb-1">{pick(locale, 'الإشعار غير موجود', 'Notification not found', 'Bildirim bulunamadı')}</p>
         <p className="text-sm text-muted-foreground mb-6">
-          {isAr ? 'ربما تم حذفه أو لا تملك صلاحية الوصول إليه.' : 'It may have been deleted or you may not have access.'}
+          {pick(locale, 'ربما تم حذفه أو لا تملك صلاحية الوصول إليه.', 'It may have been deleted or you may not have access.', 'Silinmiş veya erişiminiz olmayabilir.')}
         </p>
         <Link
           href={`/${locale}/notifications`}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           <BackArrow className="h-4 w-4" />
-          {isAr ? 'العودة إلى الإشعارات' : 'Back to Notifications'}
+          {pick(locale, 'العودة إلى الإشعارات', 'Back to Notifications', 'Bildirimlere Dön')}
         </Link>
       </div>
     )

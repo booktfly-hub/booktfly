@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { EDIT_REQUEST_STATUS_COLORS } from '@/lib/constants'
@@ -69,7 +70,7 @@ export default function TripEditRequestsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'طلبات تعديل الرحلات' : 'Trip Edit Requests'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'طلبات تعديل الرحلات', 'Trip Edit Requests', 'Gezi Düzenleme Talepleri')}</h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {statuses.map((s) => (
@@ -80,7 +81,7 @@ export default function TripEditRequestsPage() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? t(`status.${s === 'pending' ? 'pending_review' : s}`) : isAr ? 'الكل' : 'All'}
+            {s ? t(`status.${s === 'pending' ? 'pending_review' : s}`) : pick(locale, 'الكل', 'All', 'Tümü')}
           </button>
         ))}
       </div>
@@ -102,7 +103,7 @@ export default function TripEditRequestsPage() {
                     {req.trip?.airline} • {req.trip?.provider ? (isAr ? req.trip.provider.company_name_ar : (req.trip.provider.company_name_en || req.trip.provider.company_name_ar)) : ''}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(req.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(req.created_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                   </p>
                 </div>
 
@@ -118,7 +119,7 @@ export default function TripEditRequestsPage() {
 
               {expandedId === req.id && (
                 <div className="border-t p-5 space-y-4">
-                  <h4 className="font-semibold text-sm">{isAr ? 'التعديلات المطلوبة' : 'Requested Changes'}</h4>
+                  <h4 className="font-semibold text-sm">{pick(locale, 'التعديلات المطلوبة', 'Requested Changes', 'Talep Edilen Değişiklikler')}</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     {Object.entries(req.changes).map(([key, value]) => (
                       <div key={key} className="bg-muted/30 rounded-lg p-3">
@@ -142,7 +143,7 @@ export default function TripEditRequestsPage() {
                         <input
                           value={rejectComment}
                           onChange={(e) => setRejectComment(e.target.value)}
-                          placeholder={isAr ? 'سبب الرفض...' : 'Rejection reason...'}
+                          placeholder={pick(locale, 'سبب الرفض...', 'Rejection reason...', 'Red nedeni...')}
                           className="flex-1 border rounded-lg px-3 py-2 text-sm"
                         />
                         <button
@@ -159,7 +160,7 @@ export default function TripEditRequestsPage() {
 
                   {req.admin_comment && (
                     <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">{isAr ? 'ملاحظة الإدارة' : 'Admin Comment'}</p>
+                      <p className="text-xs text-muted-foreground mb-1">{pick(locale, 'ملاحظة الإدارة', 'Admin Comment', 'Yönetici Yorumu')}</p>
                       <p className="text-sm">{req.admin_comment}</p>
                     </div>
                   )}

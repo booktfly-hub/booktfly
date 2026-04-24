@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -155,11 +156,11 @@ export default function NotificationsPage() {
           </div>
           <p className="text-lg font-bold mb-1">
             {filter === 'unread'
-              ? (isAr ? 'لا توجد إشعارات غير مقروءة' : 'No unread notifications')
+              ? (pick(locale, 'لا توجد إشعارات غير مقروءة', 'No unread notifications', 'Okunmamış bildirim yok'))
               : t('no_notifications')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {isAr ? 'ستظهر إشعاراتك هنا' : 'Your notifications will appear here'}
+            {pick(locale, 'ستظهر إشعاراتك هنا', 'Your notifications will appear here', 'Bildirimleriniz burada görünecek')}
           </p>
         </div>
       ) : (
@@ -207,7 +208,7 @@ export default function NotificationsPage() {
             className="inline-flex items-center gap-2 px-6 py-3 bg-card border rounded-xl text-sm font-semibold hover:bg-muted transition-colors disabled:opacity-50"
           >
             {loadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isAr ? 'تحميل المزيد' : 'Load More'}
+            {pick(locale, 'تحميل المزيد', 'Load More', 'Daha Fazla Yükle')}
           </button>
         </div>
       )}
