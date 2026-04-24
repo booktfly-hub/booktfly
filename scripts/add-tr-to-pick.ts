@@ -61,7 +61,7 @@ function processFile(filePath: string, stats: Stats) {
   const sf = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   const edits: Edit[] = []
 
-  const visit = (node: ts.Node) => {
+  const visit = (node: ts.Node): void => {
     if (ts.isCallExpression(node)) {
       const expr = node.expression
       if (ts.isIdentifier(expr) && expr.text === 'pick') {
