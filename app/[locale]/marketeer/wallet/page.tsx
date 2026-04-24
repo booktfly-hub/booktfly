@@ -1,7 +1,6 @@
-import { lkey } from '@/lib/i18n-helpers'
 'use client'
 
-import { pick } from '@/lib/i18n-helpers'
+import { lkey, pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Wallet, Star, Loader2 } from 'lucide-react'
