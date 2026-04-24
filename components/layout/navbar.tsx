@@ -345,7 +345,7 @@ export function Navbar() {
         {mobileOpen && (
           <div
             id={mobileMenuId}
-            className="overflow-hidden rounded-b-lg border-t border-border bg-surface/95 backdrop-blur-xl xl:hidden"
+            className="overflow-y-auto rounded-b-2xl border-t border-border bg-surface/98 backdrop-blur-xl xl:hidden max-h-[calc(100svh-72px)]"
           >
               <div className="p-4 space-y-1">
                 {navItems.map(({ href, label, icon: Icon, highlight }) => {
