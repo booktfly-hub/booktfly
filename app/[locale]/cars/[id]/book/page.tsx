@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { Suspense, useEffect, useState, use } from 'react'
 import { format, isValid, parseISO, differenceInDays } from 'date-fns'
@@ -55,7 +56,7 @@ export default function BookCarPage({ params }: { params: Promise<{ id: string; 
 function BookCarContent({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const t = useTranslations()
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const { id: carId } = use(params)
@@ -211,8 +212,8 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
         </button>
 
         <div className="mb-8 md:mb-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{isAr ? 'حجز السيارة' : 'Book Your Car'}</h1>
-          <p className="text-sm md:text-lg text-slate-500 font-medium">{isAr ? 'أدخل بيانات الحجز لإتمام العملية' : 'Enter booking details to complete your reservation'}</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{pick(locale, 'حجز السيارة', 'Book Your Car', 'Aracınızı Rezerve Edin')}</h1>
+          <p className="text-sm md:text-lg text-slate-500 font-medium">{pick(locale, 'أدخل بيانات الحجز لإتمام العملية', 'Enter booking details to complete your reservation', 'Rezervasyonunuzu tamamlamak için rezervasyon ayrıntılarını girin')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
@@ -264,10 +265,10 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-black text-slate-900">
-                      {isAr ? 'بيانات الضيف' : 'Guest Information'}
+                      {pick(locale, 'بيانات الضيف', 'Guest Information', 'Misafir Bilgileri')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'الاسم ومعلومات التواصل' : 'Name and contact information'}
+                      {pick(locale, 'الاسم ومعلومات التواصل', 'Name and contact information', 'Ad ve iletişim bilgileri')}
                     </p>
                   </div>
                 </div>
@@ -284,7 +285,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                       {...register('guest_name')}
                       dir="ltr"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
-                      placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
+                      placeholder={pick(locale, 'اسم الضيف بالإنجليزية', 'Full guest name (English)', 'Misafirin tam adı (İngilizce)')}
                       onInput={(e) => {
                         const el = e.currentTarget
                         const cleaned = el.value.replace(/[^a-zA-Z\s\-'.]/g, '')
@@ -347,10 +348,10 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                   </div>
                   <div>
                     <h3 className="text-lg md:text-xl font-black text-slate-900">
-                      {isAr ? 'تفاصيل الحجز' : 'Booking Details'}
+                      {pick(locale, 'تفاصيل الحجز', 'Booking Details', 'Rezervasyon Ayrıntıları')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'تاريخ الاستلام والإرجاع' : 'Pickup and return dates'}
+                      {pick(locale, 'تاريخ الاستلام والإرجاع', 'Pickup and return dates', 'Alım ve iade tarihleri')}
                     </p>
                   </div>
                 </div>
@@ -375,7 +376,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                         <span>
                           {pickupDate
                             ? format(parseISO(pickupDate), 'PPP', { locale: enUS })
-                            : (isAr ? 'اختر تاريخ الاستلام' : 'Select pickup date')}
+                            : (pick(locale, 'اختر تاريخ الاستلام', 'Select pickup date', 'Alım tarihi seç'))}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                       </PopoverTrigger>
@@ -413,7 +414,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                         <span>
                           {returnDate
                             ? format(parseISO(returnDate), 'PPP', { locale: enUS })
-                            : (isAr ? 'اختر تاريخ الإرجاع' : 'Select return date')}
+                            : (pick(locale, 'اختر تاريخ الإرجاع', 'Select return date', 'Dönüş tarihi seç'))}
                         </span>
                         <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
                       </PopoverTrigger>
@@ -465,7 +466,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                       className={cn(inputClass)}
                     />
                     {car.pickup_hour_from && car.pickup_hour_to && (
-                      <p className="text-xs text-slate-400">{isAr ? 'الساعات المتاحة:' : 'Available:'} {car.pickup_hour_from} — {car.pickup_hour_to}</p>
+                      <p className="text-xs text-slate-400">{pick(locale, 'الساعات المتاحة:', 'Available:', 'Müsait:')} {car.pickup_hour_from} — {car.pickup_hour_to}</p>
                     )}
                   </div>
 
@@ -483,7 +484,7 @@ function BookCarContent({ params }: { params: Promise<{ id: string; locale: stri
                       className={cn(inputClass)}
                     />
                     {car.return_hour_from && car.return_hour_to && (
-                      <p className="text-xs text-slate-400">{isAr ? 'الساعات المتاحة:' : 'Available:'} {car.return_hour_from} — {car.return_hour_to}</p>
+                      <p className="text-xs text-slate-400">{pick(locale, 'الساعات المتاحة:', 'Available:', 'Müsait:')} {car.return_hour_from} — {car.return_hour_to}</p>
                     )}
                   </div>
                 </div>

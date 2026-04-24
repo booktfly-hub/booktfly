@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import Link from 'next/link'
 import { Flame, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -62,19 +63,15 @@ export function LastMinuteDeals({ trips, rooms, cars, locale }: LastMinuteDealsP
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 rounded-full mb-4 shadow-md shadow-orange-500/20">
               <Flame className="h-4 w-4 text-white animate-pulse" />
               <span className="text-sm font-black text-white uppercase tracking-widest">
-                {isAr ? 'عروض اللحظة الأخيرة' : 'Last Minute Deals'}
+                {pick(locale, 'عروض اللحظة الأخيرة', 'Last Minute Deals', 'Son Dakika Fırsatları')}
               </span>
               <Flame className="h-4 w-4 text-white animate-pulse" />
             </div>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
-              {isAr
-                ? 'عروض اللحظة الأخيرة'
-                : 'Last Minute Deals'}
+              {pick(locale, 'عروض اللحظة الأخيرة', 'Last Minute Deals', 'Son Dakika Fırsatları')}
             </h2>
             <p className="mt-2 text-base text-slate-600 font-medium">
-              {isAr
-                ? 'أسرع! هذه العروض تنتهي قريباً'
-                : 'Hurry! These deals are expiring soon'}
+              {pick(locale, 'أسرع! هذه العروض تنتهي قريباً', 'Hurry! These deals are expiring soon', 'Acele edin! Bu fırsatların süresi yakında doluyor')}
             </p>
           </div>
 
@@ -83,7 +80,7 @@ export function LastMinuteDeals({ trips, rooms, cars, locale }: LastMinuteDealsP
               href={`/${locale}/trips?last_minute=true`}
               className="group flex items-center gap-3 px-6 py-3 rounded-xl bg-white border border-orange-200 text-slate-900 font-bold hover:bg-orange-50 hover:border-orange-300 transition-all shadow-sm"
             >
-              {isAr ? 'عرض جميع العروض' : 'View All Deals'}
+              {pick(locale, 'عرض جميع العروض', 'View All Deals', 'Tüm Fırsatları Görüntüle')}
               <Arrow className="h-4 w-4 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -144,10 +141,10 @@ export function LastMinuteDeals({ trips, rooms, cars, locale }: LastMinuteDealsP
                 <Arrow className="h-6 w-6 text-white rtl:rotate-180" />
               </div>
               <span className="text-base font-black text-slate-900">
-                {isAr ? 'عرض جميع العروض' : 'View All Deals'}
+                {pick(locale, 'عرض جميع العروض', 'View All Deals', 'Tüm Fırsatları Görüntüle')}
               </span>
               <span className="text-sm text-slate-500 font-medium">
-                {isAr ? `${items.length}+ عرض متاح` : `${items.length}+ deals available`}
+                {pick(locale, `${items.length}+ عرض متاح`, `${items.length}+ deals available`)}
               </span>
             </Link>
           </div>

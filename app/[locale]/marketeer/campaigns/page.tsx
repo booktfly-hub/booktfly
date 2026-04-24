@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { resolveApiErrorMessage } from '@/lib/api-error'
@@ -51,9 +52,7 @@ export default function MarketeerCampaignsPage() {
       const data = await res.json()
       if (res.ok) {
         toast({
-          title: isAr
-            ? `تم الإرسال! ${data.sent} رسالة ناجحة من ${data.total}`
-            : `Sent! ${data.sent} of ${data.total} emails delivered`,
+          title: pick(locale, `تم الإرسال! ${data.sent} رسالة ناجحة من ${data.total}`, `Sent! ${data.sent} of ${data.total} emails delivered`),
           variant: 'success',
         })
       } else {
@@ -72,10 +71,10 @@ export default function MarketeerCampaignsPage() {
     <div className="space-y-8 max-w-2xl mx-auto animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-          {isAr ? 'حملات البريد الإلكتروني' : 'Email Campaigns'}
+          {pick(locale, 'حملات البريد الإلكتروني', 'Email Campaigns', 'E-posta Kampanyaları')}
         </h1>
         <p className="text-slate-500 font-medium">
-          {isAr ? 'أرسل عروض اللحظة الأخيرة لعملائك' : 'Send last-minute deals to your customers'}
+          {pick(locale, 'أرسل عروض اللحظة الأخيرة لعملائك', 'Send last-minute deals to your customers', 'Müşterilerinize son dakika fırsatları gönderin')}
         </p>
       </div>
 
@@ -83,21 +82,19 @@ export default function MarketeerCampaignsPage() {
         <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
           <Mail className="h-5 w-5 text-blue-600 shrink-0" />
           <p className="text-sm text-blue-700 font-medium">
-            {isAr
-              ? 'سيتم إرسال البريد إلى جميع العملاء الذين لديهم بريد إلكتروني في قائمتك'
-              : 'Email will be sent to all customers with email addresses in your list'}
+            {pick(locale, 'سيتم إرسال البريد إلى جميع العملاء الذين لديهم بريد إلكتروني في قائمتك', 'Email will be sent to all customers with email addresses in your list', 'E-posta, listenizdeki e-posta adresi olan tüm müşterilere gönderilecektir')}
           </p>
         </div>
 
         {/* Email Subject */}
         <div>
           <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-            {isAr ? 'موضوع البريد' : 'Email Subject'} *
+            {pick(locale, 'موضوع البريد', 'Email Subject', 'E-posta Konusu')} *
           </label>
           <input
             value={form.subject}
             onChange={(e) => update('subject', e.target.value)}
-            placeholder={isAr ? 'عرض خاص: رحلة إلى جدة بخصم 30%!' : 'Special offer: Flight to Jeddah 30% off!'}
+            placeholder={pick(locale, 'عرض خاص: رحلة إلى جدة بخصم 30%!', 'Special offer: Flight to Jeddah 30% off!', 'Özel teklif: Cidde uçuşunda %30 indirim!')}
             className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
@@ -105,7 +102,7 @@ export default function MarketeerCampaignsPage() {
         {/* Listing Type */}
         <div>
           <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-            {isAr ? 'نوع العرض' : 'Deal Type'}
+            {pick(locale, 'نوع العرض', 'Deal Type', 'Fırsat Türü')}
           </label>
           <div className="flex gap-3">
             {(['flight', 'room', 'car'] as const).map((type) => (
@@ -119,7 +116,7 @@ export default function MarketeerCampaignsPage() {
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                {type === 'flight' ? (isAr ? 'رحلة' : 'Flight') : type === 'room' ? (isAr ? 'فندق' : 'Room') : (isAr ? 'سيارة' : 'Car')}
+                {type === 'flight' ? (pick(locale, 'رحلة', 'Flight', 'Uçuş')) : type === 'room' ? (pick(locale, 'فندق', 'Room', 'Oda')) : (pick(locale, 'سيارة', 'Car', 'Araç'))}
               </button>
             ))}
           </div>
@@ -129,23 +126,23 @@ export default function MarketeerCampaignsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'عنوان العرض' : 'Deal Title'} *
+              {pick(locale, 'عنوان العرض', 'Deal Title', 'Fırsat Başlığı')} *
             </label>
             <input
               value={form.title}
               onChange={(e) => update('title', e.target.value)}
-              placeholder={isAr ? 'الرياض → جدة' : 'Riyadh → Jeddah'}
+              placeholder={pick(locale, 'الرياض → جدة', 'Riyadh → Jeddah', 'Riyad → Cidde')}
               className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'تفاصيل إضافية' : 'Subtitle'}
+              {pick(locale, 'تفاصيل إضافية', 'Subtitle', 'Alt başlık')}
             </label>
             <input
               value={form.subtitle}
               onChange={(e) => update('subtitle', e.target.value)}
-              placeholder={isAr ? 'الخطوط السعودية' : 'Saudi Airlines'}
+              placeholder={pick(locale, 'الخطوط السعودية', 'Saudi Airlines', 'Suudi Havayolları')}
               className="w-full border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
@@ -155,7 +152,7 @@ export default function MarketeerCampaignsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'التاريخ' : 'Date'}
+              {pick(locale, 'التاريخ', 'Date', 'Tarih')}
             </label>
             <Popover>
               <PopoverTrigger className={cn(
@@ -166,7 +163,7 @@ export default function MarketeerCampaignsPage() {
                   <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
                   {form.departureOrDate && isValid(parseISO(form.departureOrDate))
                     ? format(parseISO(form.departureOrDate), 'd MMM yyyy')
-                    : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                    : (pick(locale, 'اختر التاريخ', 'Pick date', 'Tarih seç'))}
                 </span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </PopoverTrigger>
@@ -182,7 +179,7 @@ export default function MarketeerCampaignsPage() {
           </div>
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'ساعات متبقية' : 'Hours Left'}
+              {pick(locale, 'ساعات متبقية', 'Hours Left', 'Kalan Saat')}
             </label>
             <input
               type="number"
@@ -199,7 +196,7 @@ export default function MarketeerCampaignsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'السعر الأصلي' : 'Original Price'}
+              {pick(locale, 'السعر الأصلي', 'Original Price', 'Orijinal Fiyat')}
             </label>
             <input
               type="number"
@@ -211,7 +208,7 @@ export default function MarketeerCampaignsPage() {
           </div>
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'سعر العرض' : 'Discounted Price'}
+              {pick(locale, 'سعر العرض', 'Discounted Price', 'İndirimli Fiyat')}
             </label>
             <input
               type="number"
@@ -223,7 +220,7 @@ export default function MarketeerCampaignsPage() {
           </div>
           <div>
             <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-              {isAr ? 'نسبة الخصم %' : 'Discount %'}
+              {pick(locale, 'نسبة الخصم %', 'Discount %', 'İndirim %')}
             </label>
             <input
               type="number"
@@ -239,7 +236,7 @@ export default function MarketeerCampaignsPage() {
         {/* Booking URL */}
         <div>
           <label className="text-sm font-bold text-slate-500 uppercase tracking-widest block mb-2">
-            {isAr ? 'رابط الحجز' : 'Booking URL'} *
+            {pick(locale, 'رابط الحجز', 'Booking URL', 'Rezervasyon URL\'si')} *
           </label>
           <input
             value={form.bookingUrl}
@@ -256,7 +253,7 @@ export default function MarketeerCampaignsPage() {
           className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-base hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
         >
           {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-          {sending ? (isAr ? 'جاري الإرسال...' : 'Sending...') : (isAr ? 'إرسال الحملة' : 'Send Campaign')}
+          {sending ? (pick(locale, 'جاري الإرسال...', 'Sending...', 'Gönderiliyor...')) : (pick(locale, 'إرسال الحملة', 'Send Campaign', 'Kampanya Gönder'))}
         </button>
       </div>
     </div>

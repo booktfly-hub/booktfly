@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -69,10 +70,10 @@ export default function ProviderPackagesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
-            {isAr ? 'باقاتي' : 'My Packages'}
+            {pick(locale, 'باقاتي', 'My Packages', 'Paketlerim')}
           </h1>
           <p className="text-slate-500 font-medium">
-            {isAr ? 'إدارة جميع باقاتك وحالاتها' : 'Manage all your packages and their statuses'}
+            {pick(locale, 'إدارة جميع باقاتك وحالاتها', 'Manage all your packages and their statuses', 'Tüm paketlerinizi ve durumlarını yönetin')}
           </p>
         </div>
         <Link
@@ -80,7 +81,7 @@ export default function ProviderPackagesPage() {
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-base font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
         >
           <Plus className="h-5 w-5" />
-          {isAr ? 'باقة جديدة' : 'New Package'}
+          {pick(locale, 'باقة جديدة', 'New Package', 'Yeni Paket')}
         </Link>
       </div>
 
@@ -116,17 +117,17 @@ export default function ProviderPackagesPage() {
             <PackageIcon className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">
-            {isAr ? 'لا توجد باقات بعد' : 'No packages yet'}
+            {pick(locale, 'لا توجد باقات بعد', 'No packages yet', 'Henüz paket yok')}
           </p>
           <p className="text-slate-500 mb-8">
-            {isAr ? 'قم بإضافة باقتك الأولى للبدء في تلقي الحجوزات' : 'Add your first package to start receiving bookings'}
+            {pick(locale, 'قم بإضافة باقتك الأولى للبدء في تلقي الحجوزات', 'Add your first package to start receiving bookings', 'Rezervasyon almaya başlamak için ilk paketinizi ekleyin')}
           </p>
           <Link
             href={`/${locale}/provider/packages/new`}
             className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-base font-bold hover:bg-slate-800 transition-all shadow-xl hover:-translate-y-0.5"
           >
             <Plus className="h-5 w-5" />
-            {isAr ? 'أضف أول باقة' : 'Post Your First Package'}
+            {pick(locale, 'أضف أول باقة', 'Post Your First Package', 'İlk Paketinizi Yayınlayın')}
           </Link>
         </div>
       ) : (
@@ -136,19 +137,19 @@ export default function ProviderPackagesPage() {
               <thead className="bg-slate-50/80 border-b border-slate-100">
                 <tr>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الباقة' : 'Package'}
+                    {pick(locale, 'الباقة', 'Package', 'Paket')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الوجهة' : 'Destination'}
+                    {pick(locale, 'الوجهة', 'Destination', 'Varış')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'يشمل' : 'Includes'}
+                    {pick(locale, 'يشمل', 'Includes', 'İçerir')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('price')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
-                    {isAr ? 'الحجوزات' : 'Bookings'}
+                    {pick(locale, 'الحجوزات', 'Bookings', 'Rezervasyonlar')}
                   </th>
                   <th className="p-5 font-bold text-slate-500 uppercase tracking-widest text-xs">
                     {tc('status')}
@@ -195,17 +196,17 @@ export default function ProviderPackagesPage() {
                       <td className="p-5">
                         <div className="flex items-center gap-2">
                           {pkg.includes_flight && (
-                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-sky-50 text-sky-600" title={isAr ? 'طيران' : 'Flight'}>
+                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-sky-50 text-sky-600" title={pick(locale, 'طيران', 'Flight', 'Uçuş')}>
                               <Plane className="h-4 w-4" />
                             </span>
                           )}
                           {pkg.includes_hotel && (
-                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-amber-50 text-amber-600" title={isAr ? 'فندق' : 'Hotel'}>
+                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-amber-50 text-amber-600" title={pick(locale, 'فندق', 'Hotel', 'Otel')}>
                               <BedDouble className="h-4 w-4" />
                             </span>
                           )}
                           {pkg.includes_car && (
-                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600" title={isAr ? 'سيارة' : 'Car'}>
+                            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600" title={pick(locale, 'سيارة', 'Car', 'Araç')}>
                               <CarFront className="h-4 w-4" />
                             </span>
                           )}
@@ -251,8 +252,8 @@ export default function ProviderPackagesPage() {
                                   : 'bg-white border-emerald-200 text-emerald-500 hover:bg-emerald-50 hover:border-emerald-300'
                               )}
                               title={pkg.status === 'active'
-                                ? (isAr ? 'تعطيل' : 'Deactivate')
-                                : (isAr ? 'تفعيل' : 'Reactivate')}
+                                ? (pick(locale, 'تعطيل', 'Deactivate', 'Devre Dışı Bırak'))
+                                : (pick(locale, 'تفعيل', 'Reactivate', 'Yeniden Etkinleştir'))}
                             >
                               {togglingId === pkg.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

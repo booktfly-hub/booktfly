@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { ChevronDown, ChevronUp, Loader2, Check, X } from 'lucide-react'
@@ -64,7 +65,7 @@ export default function FlightRequestsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'طلبات الرحلات' : 'Flight Requests'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'طلبات الرحلات', 'Flight Requests', 'Uçuş Talepleri')}</h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {statuses.map(s => (
@@ -75,16 +76,16 @@ export default function FlightRequestsPage() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? (isAr ? STATUS_LABELS[s].ar : STATUS_LABELS[s].en) : (isAr ? 'الكل' : 'All')}
+            {s ? (isAr ? STATUS_LABELS[s].ar : STATUS_LABELS[s].en) : (pick(locale, 'الكل', 'All', 'Tümü'))}
           </button>
         ))}
       </div>
 
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center p-8 text-muted-foreground">{isAr ? 'جارٍ التحميل...' : 'Loading...'}</div>
+          <div className="text-center p-8 text-muted-foreground">{pick(locale, 'جارٍ التحميل...', 'Loading...', 'Yükleniyor...')}</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center p-8 text-muted-foreground">{isAr ? 'لا توجد نتائج' : 'No results'}</div>
+          <div className="text-center p-8 text-muted-foreground">{pick(locale, 'لا توجد نتائج', 'No results', 'Sonuç yok')}</div>
         ) : (
           filtered.map(req => (
             <div key={req.id} className="bg-white rounded-xl border overflow-hidden">
@@ -97,7 +98,7 @@ export default function FlightRequestsPage() {
                     {req.name} • {req.phone} • {req.email}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(req.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(req.created_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                   </p>
                 </div>
 
@@ -118,11 +119,11 @@ export default function FlightRequestsPage() {
                 <div className="border-t p-5 space-y-4">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                     {[
-                      { label: isAr ? 'تاريخ المغادرة' : 'Departure', value: req.departure_date },
-                      { label: isAr ? 'تاريخ العودة' : 'Return', value: req.return_date || '—' },
-                      { label: isAr ? 'عدد المقاعد' : 'Seats', value: req.seats_needed },
-                      { label: isAr ? 'درجة السفر' : 'Cabin', value: isAr ? CABIN_LABELS[req.cabin_class].ar : CABIN_LABELS[req.cabin_class].en },
-                      { label: isAr ? 'الميزانية القصوى' : 'Max Budget', value: req.budget_max ? `${req.budget_max} SAR` : '—' },
+                      { label: pick(locale, 'تاريخ المغادرة', 'Departure', 'Kalkış'), value: req.departure_date },
+                      { label: pick(locale, 'تاريخ العودة', 'Return', 'Dönüş'), value: req.return_date || '—' },
+                      { label: pick(locale, 'عدد المقاعد', 'Seats', 'Koltuklar'), value: req.seats_needed },
+                      { label: pick(locale, 'درجة السفر', 'Cabin', 'Kabin'), value: isAr ? CABIN_LABELS[req.cabin_class].ar : CABIN_LABELS[req.cabin_class].en },
+                      { label: pick(locale, 'الميزانية القصوى', 'Max Budget', 'Maks Bütçe'), value: req.budget_max ? `${req.budget_max} SAR` : '—' },
                     ].map(({ label, value }) => (
                       <div key={label} className="bg-muted/30 rounded-lg p-3">
                         <p className="text-xs text-muted-foreground mb-1">{label}</p>
@@ -133,7 +134,7 @@ export default function FlightRequestsPage() {
 
                   {req.notes && (
                     <div className="bg-sky-50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">{isAr ? 'ملاحظات' : 'Notes'}</p>
+                      <p className="text-xs text-muted-foreground mb-1">{pick(locale, 'ملاحظات', 'Notes', 'Notlar')}</p>
                       <p className="text-sm">{req.notes}</p>
                     </div>
                   )}
@@ -144,7 +145,7 @@ export default function FlightRequestsPage() {
                         value={adminNotes}
                         onChange={e => setAdminNotes(e.target.value)}
                         rows={2}
-                        placeholder={isAr ? 'ملاحظة للإدارة (اختياري)...' : 'Admin note (optional)...'}
+                        placeholder={pick(locale, 'ملاحظة للإدارة (اختياري)...', 'Admin note (optional)...', 'Yönetici notu (isteğe bağlı)...')}
                         className="w-full border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                       />
                       <div className="flex gap-3">
@@ -154,7 +155,7 @@ export default function FlightRequestsPage() {
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                         >
                           {submitting === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                          {isAr ? 'تمت المراجعة' : 'Mark Reviewed'}
+                          {pick(locale, 'تمت المراجعة', 'Mark Reviewed', 'İncelendi Olarak İşaretle')}
                         </button>
                         <button
                           onClick={() => handleAction(req.id, 'cancelled')}
@@ -162,7 +163,7 @@ export default function FlightRequestsPage() {
                           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-300 disabled:opacity-50 transition-colors"
                         >
                           {submitting === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-                          {isAr ? 'إلغاء' : 'Cancel'}
+                          {pick(locale, 'إلغاء', 'Cancel', 'İptal')}
                         </button>
                       </div>
                     </div>
@@ -170,7 +171,7 @@ export default function FlightRequestsPage() {
 
                   {req.admin_notes && (
                     <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">{isAr ? 'ملاحظة الإدارة' : 'Admin Note'}</p>
+                      <p className="text-xs text-muted-foreground mb-1">{pick(locale, 'ملاحظة الإدارة', 'Admin Note', 'Yönetici Notu')}</p>
                       <p className="text-sm">{req.admin_notes}</p>
                     </div>
                   )}

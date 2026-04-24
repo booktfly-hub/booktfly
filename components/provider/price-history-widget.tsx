@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
@@ -33,10 +34,10 @@ export function PriceHistoryWidget({ tripId }: { tripId: string }) {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-2 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" />
-          <h3 className="font-bold text-sm">{isAr ? 'تاريخ تغيّر السعر' : 'Price change history'}</h3>
+          <h3 className="font-bold text-sm">{pick(locale, 'تاريخ تغيّر السعر', 'Price change history', 'Fiyat değişim geçmişi')}</h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          {isAr ? 'لم يتغيّر السعر بعد. سيظهر التاريخ هنا عند أي تعديل على السعر.' : 'No price changes yet. History will appear here after any price edit.'}
+          {pick(locale, 'لم يتغيّر السعر بعد. سيظهر التاريخ هنا عند أي تعديل على السعر.', 'No price changes yet. History will appear here after any price edit.', 'Henüz fiyat değişikliği yok. Geçmiş, herhangi bir fiyat düzenlemesinden sonra burada görünecek.')}
         </p>
       </div>
     )
@@ -69,7 +70,7 @@ export function PriceHistoryWidget({ tripId }: { tripId: string }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" />
-          <h3 className="font-bold text-sm">{isAr ? 'تاريخ تغيّر السعر' : 'Price change history'}</h3>
+          <h3 className="font-bold text-sm">{pick(locale, 'تاريخ تغيّر السعر', 'Price change history', 'Fiyat değişim geçmişi')}</h3>
         </div>
         <div className={`inline-flex items-center gap-1 text-xs font-bold ${color}`}>
           <Trend className="h-3.5 w-3.5" />

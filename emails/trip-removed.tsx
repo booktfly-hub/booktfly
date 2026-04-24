@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -6,7 +7,7 @@ type TripRemovedProps = {
   origin: string
   destination: string
   reason: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const t = {
@@ -36,7 +37,7 @@ export default function TripRemoved({
   reason = '',
   locale = 'ar',
 }: TripRemovedProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview}>

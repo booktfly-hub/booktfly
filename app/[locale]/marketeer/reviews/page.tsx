@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { Star, Loader2 } from 'lucide-react'
@@ -9,7 +10,7 @@ type Review = { id: string; reviewer_name: string; rating: number; comment: stri
 type ReviewsData = { reviews: Review[]; avg_rating: number; total: number }
 
 export default function MarkeeteerReviewsPage() {
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const [data, setData] = useState<ReviewsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,10 +37,10 @@ export default function MarkeeteerReviewsPage() {
     <div className="space-y-8 animate-fade-in-up">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {isAr ? 'التقييمات' : 'Reviews'}
+          {pick(locale, 'التقييمات', 'Reviews', 'Yorumlar')}
         </h1>
         <p className="text-slate-500 font-medium mt-1">
-          {isAr ? 'تقييمات العملاء لك' : 'Customer reviews for you'}
+          {pick(locale, 'تقييمات العملاء لك', 'Customer reviews for you', 'Sizin için müşteri yorumları')}
         </p>
       </div>
 
@@ -54,7 +55,7 @@ export default function MarkeeteerReviewsPage() {
               ))}
             </div>
             <p className="text-sm text-slate-400 mt-2 font-medium">
-              {isAr ? `${reviews.length} تقييم` : `${reviews.length} reviews`}
+              {pick(locale, `${reviews.length} تقييم`, `${reviews.length} reviews`)}
             </p>
           </div>
 
@@ -82,7 +83,7 @@ export default function MarkeeteerReviewsPage() {
       {/* Reviews list */}
       <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
         <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-lg font-black text-slate-900">{isAr ? 'جميع التقييمات' : 'All Reviews'}</h2>
+          <h2 className="text-lg font-black text-slate-900">{pick(locale, 'جميع التقييمات', 'All Reviews', 'Tüm Yorumlar')}</h2>
         </div>
 
         {reviews.length === 0 ? (
@@ -90,7 +91,7 @@ export default function MarkeeteerReviewsPage() {
             <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
               <Star className="h-8 w-8 text-slate-300" />
             </div>
-            <p className="text-slate-500 font-medium">{isAr ? 'لا توجد تقييمات بعد' : 'No reviews yet'}</p>
+            <p className="text-slate-500 font-medium">{pick(locale, 'لا توجد تقييمات بعد', 'No reviews yet', 'Henüz yorum yok')}</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -111,7 +112,7 @@ export default function MarkeeteerReviewsPage() {
                     </div>
                   </div>
                   <p className="text-sm text-slate-400 shrink-0">
-                    {new Date(r.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                    {new Date(r.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                   </p>
                 </div>
                 {r.comment && <p className="text-slate-600 text-sm leading-relaxed">{r.comment}</p>}

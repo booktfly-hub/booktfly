@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import Link from 'next/link'
 import Image from 'next/image'
 import { memo } from 'react'
@@ -63,9 +64,7 @@ function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
         <ShareButton
           url={`/${locale}/trips/${trip.id}`}
           title={`${originCity} → ${destCity}`}
-          text={isAr
-            ? `رحلة ${originCity} إلى ${destCity} بـ ${formattedPrice} على BookitFly`
-            : `${originCity} → ${destCity} from ${formattedPrice} on BookitFly`}
+          text={pick(locale, `رحلة ${originCity} إلى ${destCity} بـ ${formattedPrice} على BookitFly`, `${originCity} → ${destCity} from ${formattedPrice} on BookitFly`)}
         />
         <FavoriteButton itemType="trip" itemId={trip.id} />
       </div>
@@ -94,8 +93,8 @@ function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
               )}>
                 {isTopRated ? <Star className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
                 {isTopRated
-                  ? (isAr ? 'الأعلى تقييماً' : 'Top Rated')
-                  : (isAr ? 'الأكثر حجزاً' : 'Most Booked')}
+                  ? (pick(locale, 'الأعلى تقييماً', 'Top Rated', 'En Yüksek Puanlı'))
+                  : (pick(locale, 'الأكثر حجزاً', 'Most Booked', 'En Çok Rezerve Edilen'))}
               </span>
             </div>
           )}
@@ -202,7 +201,7 @@ function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
              {/* Urgency indicator */}
              {lastMinute && remaining <= 3 && remaining > 0 && (
                <p className="text-xs font-bold text-destructive mb-3 animate-pulse">
-                 {isAr ? `متبقي ${remaining} فقط!` : `Only ${remaining} left!`}
+                 {pick(locale, `متبقي ${remaining} فقط!`, `Only ${remaining} left!`)}
                </p>
              )}
 

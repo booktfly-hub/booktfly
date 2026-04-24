@@ -63,6 +63,15 @@ export async function PATCH(
           bodyAr: `تم الموافقة على سحب مبلغ ${withdrawal.amount} وتحويله لحسابك`,
           bodyEn: `Your withdrawal request for ${withdrawal.amount} has been approved and processed.`,
           data: { withdrawal_id: id },
+          email: {
+            subject: `Withdrawal Approved - ${withdrawal.amount} SAR`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px">
+              <h2 style="color:#16a34a">✓ Withdrawal Approved</h2>
+              <p>Your withdrawal request for <strong>${withdrawal.amount} SAR</strong> has been approved and processed.</p>
+              ${comment ? `<p><strong>Note:</strong> ${comment}</p>` : ''}
+              <p style="color:#64748b;font-size:14px">The funds will be transferred to your registered IBAN within 1-3 business days.</p>
+            </div>`,
+          },
         })
       }
     } else {
@@ -85,6 +94,15 @@ export async function PATCH(
           bodyAr: `تم رفض طلب السحب${comment ? `. السبب: ${comment}` : ''}`,
           bodyEn: `Your withdrawal request was rejected.${comment ? ` Reason: ${comment}` : ''}`,
           data: { withdrawal_id: id },
+          email: {
+            subject: `Withdrawal Request Rejected`,
+            html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px">
+              <h2 style="color:#dc2626">✗ Withdrawal Request Rejected</h2>
+              <p>Your withdrawal request for <strong>${withdrawal.amount} SAR</strong> has been rejected.</p>
+              ${comment ? `<p><strong>Reason:</strong> ${comment}</p>` : ''}
+              <p style="color:#64748b;font-size:14px">Please contact support if you have questions.</p>
+            </div>`,
+          },
         })
       }
     }

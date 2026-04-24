@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -232,48 +233,48 @@ export default function AdminUsersPage() {
   }, [loadUsers])
 
   const roleCards = [
-    { role: 'buyer' as const, count: roleCounts.buyer, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', label: isAr ? 'مشترين' : 'Buyers' },
-    { role: 'provider' as const, count: roleCounts.provider, icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50', label: isAr ? 'مزودين' : 'Providers' },
-    { role: 'marketeer' as const, count: roleCounts.marketeer, icon: Megaphone, color: 'text-amber-600', bg: 'bg-amber-50', label: isAr ? 'مسوّقين' : 'Marketeers' },
-    { role: 'admin' as const, count: roleCounts.admin, icon: ShieldCheck, color: 'text-red-600', bg: 'bg-red-50', label: isAr ? 'مدراء' : 'Admins' },
+    { role: 'buyer' as const, count: roleCounts.buyer, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', label: pick(locale, 'مشترين', 'Buyers', 'Alıcılar') },
+    { role: 'provider' as const, count: roleCounts.provider, icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50', label: pick(locale, 'مزودين', 'Providers', 'Tedarikçiler') },
+    { role: 'marketeer' as const, count: roleCounts.marketeer, icon: Megaphone, color: 'text-amber-600', bg: 'bg-amber-50', label: pick(locale, 'مسوّقين', 'Marketeers', 'Pazarlamacılar') },
+    { role: 'admin' as const, count: roleCounts.admin, icon: ShieldCheck, color: 'text-red-600', bg: 'bg-red-50', label: pick(locale, 'مدراء', 'Admins', 'Yöneticiler') },
   ]
 
   const roleTabs: { value: 'all' | UserRole; label: string }[] = [
-    { value: 'all', label: isAr ? 'الكل' : 'All' },
-    { value: 'buyer', label: isAr ? 'مشترين' : 'Buyers' },
-    { value: 'provider', label: isAr ? 'مزودين' : 'Providers' },
-    { value: 'marketeer', label: isAr ? 'مسوّقين' : 'Marketeers' },
+    { value: 'all', label: pick(locale, 'الكل', 'All', 'Tümü') },
+    { value: 'buyer', label: pick(locale, 'مشترين', 'Buyers', 'Alıcılar') },
+    { value: 'provider', label: pick(locale, 'مزودين', 'Providers', 'Tedarikçiler') },
+    { value: 'marketeer', label: pick(locale, 'مسوّقين', 'Marketeers', 'Pazarlamacılar') },
   ]
 
   const dateRanges: { value: DateRange; label: string }[] = [
-    { value: 'today', label: isAr ? 'اليوم' : 'Today' },
-    { value: 'week', label: isAr ? 'هذا الأسبوع' : 'This Week' },
-    { value: 'month', label: isAr ? 'هذا الشهر' : 'This Month' },
-    { value: 'year', label: isAr ? 'هذه السنة' : 'This Year' },
-    { value: 'all', label: isAr ? 'الكل' : 'All Time' },
+    { value: 'today', label: pick(locale, 'اليوم', 'Today', 'Bugün') },
+    { value: 'week', label: pick(locale, 'هذا الأسبوع', 'This Week', 'Bu Hafta') },
+    { value: 'month', label: pick(locale, 'هذا الشهر', 'This Month', 'Bu Ay') },
+    { value: 'year', label: pick(locale, 'هذه السنة', 'This Year', 'Bu Yıl') },
+    { value: 'all', label: pick(locale, 'الكل', 'All Time', 'Tüm Zamanlar') },
   ]
 
   function getUserStatus(user: EnrichedUser): { label: string; variant: 'emerald' | 'amber' | 'red' } {
     if (user.role === 'provider') {
-      if (user.providerStatus === 'suspended') return { label: isAr ? 'موقوف' : 'Suspended', variant: 'red' }
-      if (user.providerStatus === 'active') return { label: isAr ? 'نشط' : 'Active', variant: 'emerald' }
-      return { label: isAr ? 'مسجّل' : 'Registered', variant: 'amber' }
+      if (user.providerStatus === 'suspended') return { label: pick(locale, 'موقوف', 'Suspended', 'Askıya Alındı'), variant: 'red' }
+      if (user.providerStatus === 'active') return { label: pick(locale, 'نشط', 'Active', 'Aktif'), variant: 'emerald' }
+      return { label: pick(locale, 'مسجّل', 'Registered', 'Kayıtlı'), variant: 'amber' }
     }
     if (user.role === 'marketeer') {
-      if (user.marketeerStatus === 'suspended') return { label: isAr ? 'موقوف' : 'Suspended', variant: 'red' }
-      if (user.marketeerStatus === 'active') return { label: isAr ? 'نشط' : 'Active', variant: 'emerald' }
-      return { label: isAr ? 'مسجّل' : 'Registered', variant: 'amber' }
+      if (user.marketeerStatus === 'suspended') return { label: pick(locale, 'موقوف', 'Suspended', 'Askıya Alındı'), variant: 'red' }
+      if (user.marketeerStatus === 'active') return { label: pick(locale, 'نشط', 'Active', 'Aktif'), variant: 'emerald' }
+      return { label: pick(locale, 'مسجّل', 'Registered', 'Kayıtlı'), variant: 'amber' }
     }
-    if (user.hasBooking) return { label: isAr ? 'نشط' : 'Active', variant: 'emerald' }
-    return { label: isAr ? 'مسجّل' : 'Registered', variant: 'amber' }
+    if (user.hasBooking) return { label: pick(locale, 'نشط', 'Active', 'Aktif'), variant: 'emerald' }
+    return { label: pick(locale, 'مسجّل', 'Registered', 'Kayıtlı'), variant: 'amber' }
   }
 
   function getRoleBadge(role: UserRole) {
     const map = {
-      buyer: { label: isAr ? 'مشتري' : 'Buyer', cls: 'bg-blue-100 text-blue-700' },
-      provider: { label: isAr ? 'مزود' : 'Provider', cls: 'bg-purple-100 text-purple-700' },
-      marketeer: { label: isAr ? 'مسوّق' : 'Marketeer', cls: 'bg-amber-100 text-amber-700' },
-      admin: { label: isAr ? 'مدير' : 'Admin', cls: 'bg-red-100 text-red-700' },
+      buyer: { label: pick(locale, 'مشتري', 'Buyer', 'Alıcı'), cls: 'bg-blue-100 text-blue-700' },
+      provider: { label: pick(locale, 'مزود', 'Provider', 'Tedarikçi'), cls: 'bg-purple-100 text-purple-700' },
+      marketeer: { label: pick(locale, 'مسوّق', 'Marketeer', 'Pazarlamacı'), cls: 'bg-amber-100 text-amber-700' },
+      admin: { label: pick(locale, 'مدير', 'Admin', 'Yönetici'), cls: 'bg-red-100 text-red-700' },
     }
     return map[role]
   }
@@ -295,14 +296,14 @@ export default function AdminUsersPage() {
 
   const funnelTotal = funnel.registered || 1
   const funnelItems = [
-    { label: isAr ? 'مسجّل' : 'Registered', value: funnel.registered, pct: 100, color: 'bg-slate-400', icon: UserPlus },
-    { label: isAr ? 'حجز' : 'Booked', value: funnel.booked, pct: Math.round((funnel.booked / funnelTotal) * 100), color: 'bg-blue-500', icon: UserCheck },
-    { label: isAr ? 'عميل متكرر' : 'Repeat', value: funnel.repeat, pct: Math.round((funnel.repeat / funnelTotal) * 100), color: 'bg-emerald-500', icon: Repeat },
+    { label: pick(locale, 'مسجّل', 'Registered', 'Kayıtlı'), value: funnel.registered, pct: 100, color: 'bg-slate-400', icon: UserPlus },
+    { label: pick(locale, 'حجز', 'Booked', 'Rezerve Edildi'), value: funnel.booked, pct: Math.round((funnel.booked / funnelTotal) * 100), color: 'bg-blue-500', icon: UserCheck },
+    { label: pick(locale, 'عميل متكرر', 'Repeat', 'Tekrar'), value: funnel.repeat, pct: Math.round((funnel.repeat / funnelTotal) * 100), color: 'bg-emerald-500', icon: Repeat },
   ]
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'مراقبة المستخدمين' : 'User Monitoring'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'مراقبة المستخدمين', 'User Monitoring', 'Kullanıcı İzleme')}</h1>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
         {roleCards.map((card) => (
@@ -317,7 +318,7 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="bg-white rounded-2xl border p-5 mb-6">
-        <p className="text-sm font-semibold text-slate-900 mb-3">{isAr ? 'قمع التحويل' : 'Conversion Funnel'}</p>
+        <p className="text-sm font-semibold text-slate-900 mb-3">{pick(locale, 'قمع التحويل', 'Conversion Funnel', 'Dönüşüm Hunisi')}</p>
         <div className="flex flex-col gap-4 xl:flex-row">
           {funnelItems.map((item) => (
             <div key={item.label} className="flex-1">
@@ -344,7 +345,7 @@ export default function AdminUsersPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={isAr ? 'بحث بالاسم أو البريد...' : 'Search name or email...'}
+            placeholder={pick(locale, 'بحث بالاسم أو البريد...', 'Search name or email...', 'Ad veya e-posta ara...')}
             className="w-full rounded-lg border bg-white px-3 ps-9 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
         </div>
@@ -392,10 +393,10 @@ export default function AdminUsersPage() {
                 <th className="text-start p-3 font-medium">{t('common.name')}</th>
                 <th className="text-start p-3 font-medium">{t('common.email')}</th>
                 <th className="text-start p-3 font-medium">{t('common.phone')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الدور' : 'Role'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الدور', 'Role', 'Rol')}</th>
                 <th className="text-start p-3 font-medium">{t('common.date')}</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'مؤشرات' : 'Indicators'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'مؤشرات', 'Indicators', 'Göstergeler')}</th>
                 <th className="text-start p-3 font-medium">{t('common.actions')}</th>
               </tr>
             </thead>
@@ -427,7 +428,7 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
                       <td className="p-3 text-slate-600 text-xs">
-                        {new Date(user.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                        {new Date(user.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                       </td>
                       <td className="p-3">
                         <span className={cn('inline-flex px-2 py-0.5 rounded-md text-xs font-medium', statusVariantCls[status.variant])}>
@@ -437,22 +438,22 @@ export default function AdminUsersPage() {
                       <td className="p-3">
                         <div className="flex items-center gap-1.5">
                           {user.hasBooking && (
-                            <span title={isAr ? 'لديه حجز' : 'Has booking'}>
+                            <span title={pick(locale, 'لديه حجز', 'Has booking', 'Rezervasyonu var')}>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                             </span>
                           )}
                           {user.isMarketeer && (
-                            <span title={isAr ? 'مسوّق' : 'Marketeer'}>
+                            <span title={pick(locale, 'مسوّق', 'Marketeer', 'Pazarlamacı')}>
                               <Star className="h-3.5 w-3.5 text-amber-500" />
                             </span>
                           )}
                           {user.isProvider && (
-                            <span title={isAr ? 'مزود' : 'Provider'}>
+                            <span title={pick(locale, 'مزود', 'Provider', 'Tedarikçi')}>
                               <Building2 className="h-3.5 w-3.5 text-purple-500" />
                             </span>
                           )}
                           {user.isReferred && (
-                            <span title={isAr ? 'مُحال' : 'Referred'}>
+                            <span title={pick(locale, 'مُحال', 'Referred', 'Yönlendirilen')}>
                               <Link2 className="h-3.5 w-3.5 text-blue-500" />
                             </span>
                           )}
@@ -464,7 +465,7 @@ export default function AdminUsersPage() {
                             href={viewLink}
                             className="text-xs font-medium text-primary hover:underline"
                           >
-                            {isAr ? 'عرض' : 'View'}
+                            {pick(locale, 'عرض', 'View', 'Görüntüle')}
                           </Link>
                         ) : (
                           <span className="text-xs text-slate-400">—</span>
@@ -481,9 +482,7 @@ export default function AdminUsersPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-xs text-slate-500">
-              {isAr
-                ? `عرض ${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} من ${totalCount}`
-                : `Showing ${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} of ${totalCount}`}
+              {pick(locale, `عرض ${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} من ${totalCount}`, `Showing ${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, totalCount)} of ${totalCount}`)}
             </p>
             <div className="flex gap-2">
               <button
@@ -492,14 +491,14 @@ export default function AdminUsersPage() {
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 hover:bg-slate-50 transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
-                {isAr ? 'السابق' : 'Prev'}
+                {pick(locale, 'السابق', 'Prev', 'Önceki')}
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 hover:bg-slate-50 transition-colors"
               >
-                {isAr ? 'التالي' : 'Next'}
+                {pick(locale, 'التالي', 'Next', 'İleri')}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -509,7 +508,7 @@ export default function AdminUsersPage() {
 
       <div className="bg-white rounded-2xl border p-5">
         <p className="text-sm font-semibold text-slate-900 mb-4">
-          {isAr ? 'التسجيلات اليومية (آخر 30 يوم)' : 'Daily Registrations (Last 30 Days)'}
+          {pick(locale, 'التسجيلات اليومية (آخر 30 يوم)', 'Daily Registrations (Last 30 Days)', 'Günlük Kayıtlar (Son 30 Gün)')}
         </p>
         <div className="flex items-end gap-1 h-40">
           {dailyRegs.map((day, i) => (
@@ -528,7 +527,7 @@ export default function AdminUsersPage() {
               />
               {hoveredBar === i && (
                 <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
-                  <p className="font-medium">{day.count} {isAr ? 'تسجيل' : 'registrations'}</p>
+                  <p className="font-medium">{day.count} {pick(locale, 'تسجيل', 'registrations', 'kayıt')}</p>
                   <p className="text-slate-300">{day.date}</p>
                 </div>
               )}

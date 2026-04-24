@@ -21,7 +21,7 @@ type ResetFormData = z.infer<ReturnType<typeof getMagicLinkSchema>>
 export default function ResetPasswordPage() {
   const t = useTranslations('auth')
   const tCommon = useTranslations('common')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const [isLoading, setIsLoading] = useState(false)
   const [isSent, setIsSent] = useState(false)
 

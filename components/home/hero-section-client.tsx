@@ -1,10 +1,11 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react'
+import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X, Package } from 'lucide-react'
 import { format } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
@@ -46,7 +47,7 @@ export function HeroSectionClient({
   const isAr = locale === 'ar'
   const router = useRouter()
   const t = useTranslations()
-  const [searchMode, setSearchMode] = useState<'flights'|'hotels'|'cars'>('flights')
+  const [searchMode, setSearchMode] = useState<'flights'|'hotels'|'cars'|'packages'>('flights')
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
   const [tripType, setTripType] = useState('round_trip')
@@ -90,26 +91,31 @@ export function HeroSectionClient({
   const [carPickupType, setCarPickupType] = useState('')
   const [carReturnSame, setCarReturnSame] = useState(true)
   const [carReturnCity, setCarReturnCity] = useState('')
+  const [pkgDestination, setPkgDestination] = useState('')
+  const [pkgStartDate, setPkgStartDate] = useState<Date>()
+  const [pkgEndDate, setPkgEndDate] = useState<Date>()
+  const [pkgTravelers, setPkgTravelers] = useState('1')
   const heroBackgrounds: Record<typeof searchMode, string> = {
     flights: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85',
     hotels: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85',
     cars: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2400&q=85',
+    packages: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=2400&q=85',
   }
 
   const heroDestinations = [
     {
-      city: isAr ? 'القاهرة' : 'Cairo',
-      detail: isAr ? 'رحلات وفنادق وسيارات' : 'Flights, hotels, and cars',
+      city: pick(locale, 'القاهرة', 'Cairo', 'Kahire'),
+      detail: pick(locale, 'رحلات وفنادق وسيارات', 'Flights, hotels, and cars', 'Uçuş, otel ve araç'),
       image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=420&q=80',
     },
     {
-      city: isAr ? 'دبي' : 'Dubai',
-      detail: isAr ? 'خيارات مرنة للحجز' : 'Flexible booking options',
+      city: pick(locale, 'دبي', 'Dubai', 'Dubai'),
+      detail: pick(locale, 'خيارات مرنة للحجز', 'Flexible booking options', 'Esnek rezervasyon seçenekleri'),
       image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=420&q=80',
     },
     {
-      city: isAr ? 'إسطنبول' : 'Istanbul',
-      detail: isAr ? 'عروض قريبة ومباشرة' : 'Nearby and direct deals',
+      city: pick(locale, 'إسطنبول', 'Istanbul', 'İstanbul'),
+      detail: pick(locale, 'عروض قريبة ومباشرة', 'Nearby and direct deals', 'Yakın ve direkt fırsatlar'),
       image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=420&q=80',
     },
   ]
@@ -138,6 +144,15 @@ export function HeroSectionClient({
       if (returnDate) params.set('return_date', format(returnDate, 'yyyy-MM-dd'))
       const qs = params.toString()
       return `/${locale}/cars${qs ? `?${qs}` : ''}`
+    }
+    if (searchMode === 'packages') {
+      const params = new URLSearchParams()
+      if (pkgDestination) params.set('destination', pkgDestination)
+      if (pkgStartDate) params.set('start_date', format(pkgStartDate, 'yyyy-MM-dd'))
+      if (pkgEndDate) params.set('end_date', format(pkgEndDate, 'yyyy-MM-dd'))
+      if (pkgTravelers) params.set('travelers', pkgTravelers)
+      const qs = params.toString()
+      return `/${locale}/packages${qs ? `?${qs}` : ''}`
     }
     // flights
     {
@@ -417,7 +432,7 @@ export function HeroSectionClient({
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-primary" />
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{isAr ? 'موقع الاستلام' : 'Pickup Location'}</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pick(locale, 'موقع الاستلام', 'Pickup Location', 'Alım Konumu')}</span>
         </div>
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           {/* Pickup Type + City */}
@@ -428,15 +443,15 @@ export function HeroSectionClient({
                 carPickupType ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {carPickupType === 'airport' ? <Plane className="h-4 w-4 text-primary" /> : carPickupType === 'branch' ? <Building className="h-4 w-4 text-primary" /> : <CarIcon className="h-4 w-4 text-primary" />}
-                <span className="hidden sm:inline">{carPickupType === 'airport' ? (isAr ? 'مطار' : 'Airport') : carPickupType === 'branch' ? (isAr ? 'فرع' : 'Branch') : (isAr ? 'الكل' : 'All')}</span>
+                <span className="hidden sm:inline">{carPickupType === 'airport' ? (pick(locale, 'مطار', 'Airport', 'Havalimanı')) : carPickupType === 'branch' ? (pick(locale, 'فرع', 'Branch', 'Şube')) : (pick(locale, 'الكل', 'All', 'Tümü'))}</span>
                 <ChevronDown className="h-3.5 w-3.5 text-primary" />
               </PopoverTrigger>
               <PopoverContent className="w-48 rounded-lg p-2" align="start">
                 <div className="grid gap-1">
                   {[
-                    { val: '', icon: <CarIcon className="h-4 w-4" />, label: isAr ? 'الكل' : 'All' },
-                    { val: 'airport', icon: <Plane className="h-4 w-4" />, label: isAr ? 'مطار' : 'Airport' },
-                    { val: 'branch', icon: <Building className="h-4 w-4" />, label: isAr ? 'فرع' : 'Branch' },
+                    { val: '', icon: <CarIcon className="h-4 w-4" />, label: pick(locale, 'الكل', 'All', 'Tümü') },
+                    { val: 'airport', icon: <Plane className="h-4 w-4" />, label: pick(locale, 'مطار', 'Airport', 'Havalimanı') },
+                    { val: 'branch', icon: <Building className="h-4 w-4" />, label: pick(locale, 'فرع', 'Branch', 'Şube') },
                   ].map((opt) => (
                     <button key={opt.val} type="button" onClick={() => setCarPickupType(opt.val)} className={cn('flex h-10 w-full items-center gap-2 rounded-lg px-3 text-start text-sm font-semibold transition-colors', carPickupType === opt.val ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}>
                       {opt.icon} {opt.label}
@@ -449,10 +464,10 @@ export function HeroSectionClient({
               locale={locale}
               value={origin}
               onChange={setOrigin}
-              placeholder={isAr ? 'مدينة الاستلام' : 'Pickup City'}
+              placeholder={pick(locale, 'مدينة الاستلام', 'Pickup City', 'Alım Şehri')}
               className="h-14 w-full rounded-lg border-input bg-surface text-base shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
               showLocateButton
-              myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
+              myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
             />
           </div>
 
@@ -469,7 +484,7 @@ export function HeroSectionClient({
                 ? 'border-border bg-muted text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
                 : 'bg-primary/10 text-primary border-primary'
             )}
-            title={isAr ? 'التسليم في مكان مختلف' : 'Return to different location'}
+            title={pick(locale, 'التسليم في مكان مختلف', 'Return to different location', 'Farklı konuma iade')}
           >
             <ArrowLeftRight className="h-5 w-5" />
           </button>
@@ -487,7 +502,7 @@ export function HeroSectionClient({
                   ? 'border-border bg-surface text-muted-foreground hover:text-primary'
                   : 'bg-primary/10 border-primary text-primary'
               )}
-              aria-label={isAr ? 'التسليم في مكان مختلف' : 'Return to different location'}
+              aria-label={pick(locale, 'التسليم في مكان مختلف', 'Return to different location', 'Farklı konuma iade')}
             >
               <ArrowLeftRight className="h-4 w-4 rotate-90" />
             </button>
@@ -497,16 +512,16 @@ export function HeroSectionClient({
           <div className="flex-1">
             {carReturnSame ? (
               <div className={cn(inputClass, 'flex cursor-not-allowed items-center text-muted-foreground opacity-70')}>
-                {isAr ? 'نفس موقع الاستلام' : 'Same as pickup'}
+                {pick(locale, 'نفس موقع الاستلام', 'Same as pickup', 'Alım ile aynı')}
               </div>
             ) : (
               <CityAutocomplete
                 locale={locale}
                 value={carReturnCity}
                 onChange={setCarReturnCity}
-                placeholder={isAr ? 'مدينة التسليم' : 'Drop-off City'}
+                placeholder={pick(locale, 'مدينة التسليم', 'Drop-off City', 'Bırakma Şehri')}
                 className="h-14 w-full rounded-lg border-input bg-surface text-base shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
-                myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
+                myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
               />
             )}
           </div>
@@ -517,7 +532,7 @@ export function HeroSectionClient({
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
         <Popover>
           <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !departureDate ? 'text-muted-foreground' : 'text-foreground')}>
-            {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{isAr ? 'تاريخ الاستلام' : 'Pickup Date'}</span>}
+            {departureDate ? format(departureDate, 'd MMM yyyy', { locale: enUS }) : <span>{pick(locale, 'تاريخ الاستلام', 'Pickup Date', 'Alım Tarihi')}</span>}
             <CalendarIcon className="h-4 w-4 text-primary" />
           </PopoverTrigger>
           <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
@@ -527,7 +542,7 @@ export function HeroSectionClient({
 
         <Popover>
           <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !returnDate ? 'text-muted-foreground' : 'text-foreground')}>
-            {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{isAr ? 'تاريخ الإرجاع' : 'Return Date'}</span>}
+            {returnDate ? format(returnDate, 'd MMM yyyy', { locale: enUS }) : <span>{pick(locale, 'تاريخ الإرجاع', 'Return Date', 'Dönüş Tarihi')}</span>}
             <CalendarIcon className="h-4 w-4 text-primary" />
           </PopoverTrigger>
           <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
@@ -546,7 +561,70 @@ export function HeroSectionClient({
     </>
   )
 
+  const renderPackageSearchForm = () => (
+    <>
+      {/* Destination */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pick(locale, 'الوجهة', 'Destination', 'Varış')}</span>
+        </div>
+        <Input
+          type="text"
+          value={pkgDestination}
+          onChange={(e) => setPkgDestination(e.target.value)}
+          placeholder={pick(locale, 'مدينة الوجهة', 'Destination City', 'Varış Şehri')}
+          className="h-14 rounded-lg border-input bg-surface px-5 text-sm font-semibold text-foreground shadow-sm hover:bg-muted"
+        />
+      </div>
+
+      {/* Date range */}
+      <div className="grid grid-cols-2 gap-3">
+        <Popover>
+          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !pkgStartDate ? 'text-muted-foreground' : 'text-foreground')}>
+            {pkgStartDate ? format(pkgStartDate, 'd MMM yyyy', { locale: enUS }) : <span>{pick(locale, 'تاريخ البداية', 'Start Date', 'Başlangıç Tarihi')}</span>}
+            <CalendarIcon className="h-4 w-4 text-primary" />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
+            <Calendar mode="single" selected={pkgStartDate} onSelect={setPkgStartDate} disabled={(date) => date < new Date()} initialFocus />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !pkgEndDate ? 'text-muted-foreground' : 'text-foreground')}>
+            {pkgEndDate ? format(pkgEndDate, 'd MMM yyyy', { locale: enUS }) : <span>{pick(locale, 'تاريخ النهاية', 'End Date', 'Bitiş Tarihi')}</span>}
+            <CalendarIcon className="h-4 w-4 text-primary" />
+          </PopoverTrigger>
+          <PopoverContent className="w-auto overflow-hidden rounded-lg border-border p-0 shadow-xl" align="start">
+            <Calendar mode="single" selected={pkgEndDate} onSelect={setPkgEndDate} disabled={(date) => { const min = pkgStartDate || new Date(); return date <= min }} initialFocus />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Travelers */}
+      <div className="relative">
+        <Users className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+        <Input
+          type="number"
+          min="1"
+          value={pkgTravelers}
+          onChange={(e) => setPkgTravelers(e.target.value)}
+          placeholder={pick(locale, 'عدد المسافرين', 'Number of Travelers', 'Yolcu Sayısı')}
+          className="h-14 rounded-lg border-input bg-surface pe-3 ps-9 text-sm font-semibold text-foreground shadow-sm hover:bg-muted"
+        />
+      </div>
+
+      {/* Search button */}
+      <div className="pt-2">
+        <button type="submit" className="flex h-16 w-full items-center justify-center gap-3 rounded-lg bg-primary text-lg font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 active:translate-y-px">
+          <Search className="h-5 w-5" />
+          <span>{searchButton}</span>
+        </button>
+      </div>
+    </>
+  )
+
   const renderSearchForm = () => {
+    if (searchMode === 'packages') return renderPackageSearchForm()
     if (searchMode === 'hotels') return renderHotelSearchForm()
     if (searchMode === 'cars') return renderCarSearchForm()
 
@@ -567,7 +645,7 @@ export function HeroSectionClient({
             placeholder={departureFromLabel}
             className="h-16 w-full rounded-lg border-input bg-surface text-lg shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
             showLocateButton
-            myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
+            myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
           />
 
           <button
@@ -589,7 +667,7 @@ export function HeroSectionClient({
                 setDestination(origin)
               }}
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-muted-foreground shadow-md transition-colors hover:text-primary active:scale-95"
-              aria-label={isAr ? 'تبديل الوجهتين' : 'Swap origin and destination'}
+              aria-label={pick(locale, 'تبديل الوجهتين', 'Swap origin and destination', 'Çıkış ve varışı değiştir')}
             >
               <ArrowLeftRight className="h-4 w-4 rotate-90" />
             </button>
@@ -601,7 +679,7 @@ export function HeroSectionClient({
             onChange={setDestination}
             placeholder={arrivalToLabel}
             className="h-16 w-full rounded-lg border-input bg-surface text-lg shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
-            myLocationLabel={isAr ? 'موقعي الحالي' : 'My location'}
+            myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
           />
         </div>
 
@@ -718,22 +796,22 @@ export function HeroSectionClient({
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto mt-10 flex w-full max-w-7xl flex-col items-center px-4 sm:mt-0 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto mt-10 flex w-full max-w-7xl flex-col items-center px-3 sm:mt-0 sm:px-6 lg:px-8">
         
         <div className="mx-auto mb-8 max-w-4xl text-center text-white sm:mb-10">
           <p className="animate-fade-in-up text-xs font-black uppercase tracking-[0.28em] text-white/80" style={{ animationDelay: '180ms', animationFillMode: 'both' }}>
             {heroTitle}
           </p>
-          <h1 className="mx-auto mt-5 max-w-3xl animate-fade-in-up text-4xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm sm:text-5xl md:text-6xl lg:text-7xl" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+          <h1 className="mx-auto mt-5 max-w-3xl animate-fade-in-up text-2xl font-black leading-[1.15] tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-6xl lg:text-7xl" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
             {heroSubtitle}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl animate-fade-in-up text-sm font-semibold leading-6 text-white/85 sm:text-base" style={{ animationDelay: '360ms', animationFillMode: 'both' }}>
-            {isAr ? 'قارن الخيارات، اختر وقتك، واحجز رحلتك التالية في مكان واحد.' : 'Compare options, choose your timing, and book the next part of your trip in one place.'}
+            {pick(locale, 'قارن الخيارات، اختر وقتك، واحجز رحلتك التالية في مكان واحد.', 'Compare options, choose your timing, and book the next part of your trip in one place.', 'Seçenekleri karşılaştır, zamanını seç ve bir sonraki yolculuğunu tek bir yerden rezerve et.')}
           </p>
-          <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-md animate-fade-in-up" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.15)]" />
-            <span>{isAr ? 'مقترحات السفر' : 'Travel picks'}</span>
-            <span className="text-white/70">{isAr ? 'اكتشف أحدث الوجهات' : 'Discover latest destinations'}</span>
+          <div className="mx-auto mt-6 flex max-w-full items-center gap-2 overflow-x-auto rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-md animate-fade-in-up [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex sm:w-auto sm:text-sm [&::-webkit-scrollbar]:hidden" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
+            <span className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.15)]" />
+            <span className="whitespace-nowrap">{pick(locale, 'مقترحات السفر', 'Travel picks', 'Seyahat önerileri')}</span>
+            <span className="whitespace-nowrap text-white/70">{pick(locale, 'اكتشف أحدث الوجهات', 'Discover latest destinations', 'En yeni destinasyonları keşfet')}</span>
           </div>
         </div>
 
@@ -741,28 +819,35 @@ export function HeroSectionClient({
         <div className="relative z-20 w-full max-w-4xl animate-fade-in-up group" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
           
           {/* Tabs */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex rounded-lg border border-border bg-surface p-1.5 shadow-sm">
-              <button 
-                type="button" 
-                onClick={() => setSearchMode('flights')} 
-                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'flights' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+          <div className="mb-6 flex overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:justify-center [&::-webkit-scrollbar]:hidden">
+            <div className="inline-flex shrink-0 rounded-lg border border-border bg-surface p-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setSearchMode('flights')}
+                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'flights' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <Plane className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'flights' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'طيران' : 'Flights'}
+                <Plane className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'flights' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'طيران', 'Flights', 'Uçuşlar')}
               </button>
-              <button 
-                type="button" 
-                onClick={() => setSearchMode('hotels')} 
-                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'hotels' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+              <button
+                type="button"
+                onClick={() => setSearchMode('hotels')}
+                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'hotels' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <Building className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'hotels' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'فنادق' : 'Hotels'}
+                <Building className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'hotels' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'فنادق', 'Hotels', 'Oteller')}
               </button>
-              <button 
-                type="button" 
-                onClick={() => setSearchMode('cars')} 
-                className={cn("flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-colors sm:px-8 sm:text-base", searchMode === 'cars' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+              <button
+                type="button"
+                onClick={() => setSearchMode('cars')}
+                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'cars' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
-                <CarFront className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'cars' ? 'text-primary-foreground' : 'text-primary')} /> {isAr ? 'سيارات' : 'Cars'}
+                <CarFront className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'cars' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'سيارات', 'Cars', 'Araçlar')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSearchMode('packages')}
+                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'packages' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+              >
+                <Package className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'packages' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'باقات', 'Packages', 'Paketler')}
               </button>
             </div>
           </div>
@@ -792,7 +877,7 @@ export function HeroSectionClient({
               action={getActionUrl()}
               className="space-y-4"
               onSubmit={(e) => {
-                if (searchMode === 'cars' || searchMode === 'hotels') {
+                if (searchMode === 'cars' || searchMode === 'hotels' || searchMode === 'packages') {
                   e.preventDefault()
                   router.push(getActionUrl())
                 }
@@ -810,8 +895,8 @@ export function HeroSectionClient({
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-foreground">{isAr ? 'حجز آمن 100%' : '100% Secure'}</span>
-              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'موثوق ومعتمد' : 'Trusted & Verified'}</span>
+              <span className="text-foreground">{pick(locale, 'حجز آمن 100%', '100% Secure', '%100 Güvenli')}</span>
+              <span className="text-xs font-normal text-muted-foreground">{pick(locale, 'موثوق ومعتمد', 'Trusted & Verified', 'Güvenilir ve Doğrulanmış')}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -819,8 +904,8 @@ export function HeroSectionClient({
               <CreditCard className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-foreground">{isAr ? 'دفع مرن' : 'Flexible Payments'}</span>
-              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'خيارات دفع متعددة' : 'Multiple options'}</span>
+              <span className="text-foreground">{pick(locale, 'دفع مرن', 'Flexible Payments', 'Esnek Ödemeler')}</span>
+              <span className="text-xs font-normal text-muted-foreground">{pick(locale, 'خيارات دفع متعددة', 'Multiple options', 'Birden fazla seçenek')}</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -828,8 +913,8 @@ export function HeroSectionClient({
               <Clock className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-foreground">{isAr ? 'دعم متواصل' : '24/7 Support'}</span>
-              <span className="text-xs font-normal text-muted-foreground">{isAr ? 'نحن هنا لخدمتك' : 'Always here to help'}</span>
+              <span className="text-foreground">{pick(locale, 'دعم متواصل', '24/7 Support', '7/24 Destek')}</span>
+              <span className="text-xs font-normal text-muted-foreground">{pick(locale, 'نحن هنا لخدمتك', 'Always here to help', 'Her zaman yardıma hazır')}</span>
             </div>
           </div>
         </div>

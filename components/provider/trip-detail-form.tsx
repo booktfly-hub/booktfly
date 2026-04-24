@@ -87,7 +87,7 @@ const from12HourParts = (hour: string, minute: string, period: 'AM' | 'PM') => {
   return `${String(normalizedHour).padStart(2, '0')}:${minute}`
 }
 
-function TimeSelect({ value, onChange, locale }: { value: string; onChange: (v: string) => void; locale: 'ar' | 'en' }) {
+function TimeSelect({ value, onChange, locale }: { value: string; onChange: (v: string) => void; locale: 'ar' | 'en' | 'tr' }) {
   const { hour, minute, period } = to12HourParts(value)
   return (
     <Popover>
@@ -130,7 +130,7 @@ export function TripDetailForm({ trip: initialTrip, bookings }: Props) {
   const ts = useTranslations('status')
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const initialSeatMapConfig = initialTrip.seat_map_config ?? DEFAULT_SEAT_MAP_CONFIG
 
   const [trip, setTrip] = useState(initialTrip)

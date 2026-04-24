@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { Share2 } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -40,7 +41,7 @@ export function ShareButton({ url, title, text, className, variant = 'icon' }: S
     window.open(wa, '_blank', 'noopener,noreferrer')
     try {
       await navigator.clipboard.writeText(absoluteUrl)
-      toast({ title: isAr ? 'تم نسخ الرابط' : 'Link copied', variant: 'success' })
+      toast({ title: pick(locale, 'تم نسخ الرابط', 'Link copied', 'Bağlantı kopyalandı'), variant: 'success' })
     } catch {}
   }
 
@@ -55,7 +56,7 @@ export function ShareButton({ url, title, text, className, variant = 'icon' }: S
         )}
       >
         <Share2 className="h-4 w-4" />
-        {isAr ? 'مشاركة' : 'Share'}
+        {pick(locale, 'مشاركة', 'Share', 'Paylaş')}
       </button>
     )
   }
@@ -64,7 +65,7 @@ export function ShareButton({ url, title, text, className, variant = 'icon' }: S
     <button
       type="button"
       onClick={handleClick}
-      aria-label={isAr ? 'مشاركة' : 'Share'}
+      aria-label={pick(locale, 'مشاركة', 'Share', 'Paylaş')}
       className={cn(
         'inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/95 backdrop-blur border border-border text-slate-600 hover:text-primary hover:border-primary/30 shadow-sm transition-colors',
         className

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -30,7 +31,7 @@ import { format, parseISO, isValid } from 'date-fns'
 
 export default function NewPackagePage() {
   const tc = useTranslations('common')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
 
@@ -147,7 +148,7 @@ export default function NewPackagePage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!nameAr || !destinationCityAr || !atLeastOneIncluded || computedTotal <= 0) {
-      toast({ title: isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields', variant: 'destructive' })
+      toast({ title: pick(locale, 'يرجى ملء جميع الحقول المطلوبة', 'Please fill all required fields', 'Lütfen tüm gerekli alanları doldurun'), variant: 'destructive' })
       return
     }
 
@@ -258,49 +259,49 @@ export default function NewPackagePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">{isAr ? 'باقة جديدة' : 'New Package'}</h1>
+      <h1 className="text-2xl font-bold">{pick(locale, 'باقة جديدة', 'New Package', 'Yeni Paket')}</h1>
 
       <form onSubmit={onSubmit} className="space-y-6">
         {/* Basic Info */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <Package className="h-4 w-4 text-primary" />
-            {isAr ? 'المعلومات الأساسية' : 'Basic Info'}
+            {pick(locale, 'المعلومات الأساسية', 'Basic Info', 'Temel Bilgiler')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'اسم الباقة' : 'Package Name'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'اسم الباقة', 'Package Name', 'Paket Adı')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input value={nameAr} onChange={e => setNameAr(e.target.value)} dir="rtl" className={inputClass} />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'اسم الباقة' : 'Package Name'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'اسم الباقة', 'Package Name', 'Paket Adı')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input value={nameEn} onChange={e => setNameEn(e.target.value)} dir="ltr" className={inputClass} />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'مدينة الوجهة' : 'Destination City'} ({isAr ? 'عربي' : 'Arabic'}) *
+                {pick(locale, 'مدينة الوجهة', 'Destination City', 'Varış Şehri')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) *
               </label>
               <input value={destinationCityAr} onChange={e => setDestinationCityAr(e.target.value)} dir="rtl" className={inputClass} />
             </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'مدينة الوجهة' : 'Destination City'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'مدينة الوجهة', 'Destination City', 'Varış Şehri')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <input value={destinationCityEn} onChange={e => setDestinationCityEn(e.target.value)} dir="ltr" className={inputClass} />
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الوصف' : 'Description'} ({isAr ? 'عربي' : 'Arabic'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'الوصف', 'Description', 'Açıklama')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <textarea value={descriptionAr} onChange={e => setDescriptionAr(e.target.value)} dir="rtl" rows={3} className={inputClass} />
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium block mb-1.5">
-                {isAr ? 'الوصف' : 'Description'} ({isAr ? 'إنجليزي' : 'English'}) <span className="text-muted-foreground">({tc('optional')})</span>
+                {pick(locale, 'الوصف', 'Description', 'Açıklama')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')}) <span className="text-muted-foreground">({tc('optional')})</span>
               </label>
               <textarea value={descriptionEn} onChange={e => setDescriptionEn(e.target.value)} dir="ltr" rows={3} className={inputClass} />
             </div>
@@ -309,8 +310,8 @@ export default function NewPackagePage() {
 
         {/* What's Included */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">{isAr ? 'يشمل' : "What's Included"} *</h2>
-          <p className="text-sm text-muted-foreground">{isAr ? 'اختر خدمة واحدة على الأقل' : 'Select at least one service'}</p>
+          <h2 className="font-semibold">{pick(locale, 'يشمل', "What's Included", "Neler Dahil")} *</h2>
+          <p className="text-sm text-muted-foreground">{pick(locale, 'اختر خدمة واحدة على الأقل', 'Select at least one service', 'En az bir hizmet seçin')}</p>
           <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
@@ -323,7 +324,7 @@ export default function NewPackagePage() {
               )}
             >
               <Plane className="h-6 w-6" />
-              <span className="text-sm">{isAr ? 'طيران' : 'Flight'}</span>
+              <span className="text-sm">{pick(locale, 'طيران', 'Flight', 'Uçuş')}</span>
             </button>
             <button
               type="button"
@@ -336,7 +337,7 @@ export default function NewPackagePage() {
               )}
             >
               <BedDouble className="h-6 w-6" />
-              <span className="text-sm">{isAr ? 'فندق' : 'Hotel'}</span>
+              <span className="text-sm">{pick(locale, 'فندق', 'Hotel', 'Otel')}</span>
             </button>
             <button
               type="button"
@@ -349,7 +350,7 @@ export default function NewPackagePage() {
               )}
             >
               <CarFront className="h-6 w-6" />
-              <span className="text-sm">{isAr ? 'سيارة' : 'Car'}</span>
+              <span className="text-sm">{pick(locale, 'سيارة', 'Car', 'Araç')}</span>
             </button>
           </div>
         </div>
@@ -359,28 +360,28 @@ export default function NewPackagePage() {
           <div className="bg-card border rounded-xl p-6 space-y-4">
             <h2 className="font-semibold flex items-center gap-2">
               <Plane className="h-4 w-4 text-sky-600" />
-              {isAr ? 'تفاصيل الطيران' : 'Flight Details'}
+              {pick(locale, 'تفاصيل الطيران', 'Flight Details', 'Uçuş Ayrıntıları')}
             </h2>
             <div className="flex gap-3 mb-4">
               <button type="button" onClick={() => setFlightMode('existing')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   flightMode === 'existing' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'اختر رحلة موجودة' : 'Select existing trip'}
+                {pick(locale, 'اختر رحلة موجودة', 'Select existing trip', 'Mevcut geziyi seç')}
               </button>
               <button type="button" onClick={() => setFlightMode('manual')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   flightMode === 'manual' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'إدخال يدوي' : 'Enter manually'}
+                {pick(locale, 'إدخال يدوي', 'Enter manually', 'Manuel gir')}
               </button>
             </div>
 
             {flightMode === 'existing' ? (
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اختر الرحلة' : 'Select Trip'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اختر الرحلة', 'Select Trip', 'Gezi Seç')}</label>
                 <select value={selectedTripId} onChange={e => setSelectedTripId(e.target.value)} className={selectClass}>
-                  <option value="">{isAr ? 'اختر رحلة...' : 'Select a trip...'}</option>
+                  <option value="">{pick(locale, 'اختر رحلة...', 'Select a trip...', 'Bir gezi seçin...')}</option>
                   {myTrips.map(trip => (
                     <option key={trip.id} value={trip.id}>
                       {trip.airline} - {isAr ? trip.origin_city_ar : (trip.origin_city_en || trip.origin_city_ar)} → {isAr ? trip.destination_city_ar : (trip.destination_city_en || trip.destination_city_ar)}
@@ -391,56 +392,56 @@ export default function NewPackagePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'شركة الطيران' : 'Airline'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'شركة الطيران', 'Airline', 'Havayolu')}</label>
                   <input value={flightAirline} onChange={e => setFlightAirline(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'رقم الرحلة' : 'Flight Number'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'رقم الرحلة', 'Flight Number', 'Uçuş Numarası')}</label>
                   <input value={flightNumber} onChange={e => setFlightNumber(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'المغادرة' : 'Origin'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المغادرة', 'Origin', 'Çıkış')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={flightOriginAr} onChange={e => setFlightOriginAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'المغادرة' : 'Origin'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المغادرة', 'Origin', 'Çıkış')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={flightOriginEn} onChange={e => setFlightOriginEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'رمز المغادرة' : 'Origin Code'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'رمز المغادرة', 'Origin Code', 'Çıkış Kodu')}</label>
                   <input value={flightOriginCode} onChange={e => setFlightOriginCode(e.target.value)} dir="ltr" placeholder="e.g. RUH" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الوجهة' : 'Destination'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الوجهة', 'Destination', 'Varış')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={flightDestinationAr} onChange={e => setFlightDestinationAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الوجهة' : 'Destination'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الوجهة', 'Destination', 'Varış')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={flightDestinationEn} onChange={e => setFlightDestinationEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'رمز الوجهة' : 'Destination Code'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'رمز الوجهة', 'Destination Code', 'Varış Kodu')}</label>
                   <input value={flightDestinationCode} onChange={e => setFlightDestinationCode(e.target.value)} dir="ltr" placeholder="e.g. JED" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ المغادرة' : 'Departure Date'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'تاريخ المغادرة', 'Departure Date', 'Kalkış Tarihi')}</label>
                   <input type="datetime-local" value={flightDepartureAt} onChange={e => setFlightDepartureAt(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ العودة' : 'Return Date'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'تاريخ العودة', 'Return Date', 'Dönüş Tarihi')}</label>
                   <input type="datetime-local" value={flightReturnAt} onChange={e => setFlightReturnAt(e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'درجة الرحلة' : 'Cabin Class'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'درجة الرحلة', 'Cabin Class', 'Kabin Sınıfı')}</label>
                   <select value={flightCabinClass} onChange={e => setFlightCabinClass(e.target.value)} className={selectClass}>
-                    <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
+                    <option value="">{pick(locale, 'اختر...', 'Select...', 'Seç...')}</option>
                     {Object.entries(CABIN_CLASSES).map(([key, val]) => (
                       <option key={key} value={key}>{isAr ? val.ar : val.en}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد المقاعد' : 'Seats Included'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'عدد المقاعد', 'Seats Included', 'Koltuklar Dahil')}</label>
                   <input type="number" min={1} value={flightSeatsIncluded} onChange={e => setFlightSeatsIncluded(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
                 </div>
               </div>
@@ -453,28 +454,28 @@ export default function NewPackagePage() {
           <div className="bg-card border rounded-xl p-6 space-y-4">
             <h2 className="font-semibold flex items-center gap-2">
               <BedDouble className="h-4 w-4 text-amber-600" />
-              {isAr ? 'تفاصيل الفندق' : 'Hotel Details'}
+              {pick(locale, 'تفاصيل الفندق', 'Hotel Details', 'Otel Ayrıntıları')}
             </h2>
             <div className="flex gap-3 mb-4">
               <button type="button" onClick={() => setHotelMode('existing')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   hotelMode === 'existing' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'اختر غرفة موجودة' : 'Select existing room'}
+                {pick(locale, 'اختر غرفة موجودة', 'Select existing room', 'Mevcut odayı seç')}
               </button>
               <button type="button" onClick={() => setHotelMode('manual')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   hotelMode === 'manual' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'إدخال يدوي' : 'Enter manually'}
+                {pick(locale, 'إدخال يدوي', 'Enter manually', 'Manuel gir')}
               </button>
             </div>
 
             {hotelMode === 'existing' ? (
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اختر الغرفة' : 'Select Room'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اختر الغرفة', 'Select Room', 'Oda Seç')}</label>
                 <select value={selectedRoomId} onChange={e => setSelectedRoomId(e.target.value)} className={selectClass}>
-                  <option value="">{isAr ? 'اختر غرفة...' : 'Select a room...'}</option>
+                  <option value="">{pick(locale, 'اختر غرفة...', 'Select a room...', 'Bir oda seçin...')}</option>
                   {myRooms.map(room => (
                     <option key={room.id} value={room.id}>
                       {isAr ? room.name_ar : (room.name_en || room.name_ar)} - {isAr ? room.city_ar : (room.city_en || room.city_ar)}
@@ -485,70 +486,70 @@ export default function NewPackagePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفندق' : 'Hotel Name'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم الفندق', 'Hotel Name', 'Otel Adı')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={hotelNameAr} onChange={e => setHotelNameAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'اسم الفندق' : 'Hotel Name'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اسم الفندق', 'Hotel Name', 'Otel Adı')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={hotelNameEn} onChange={e => setHotelNameEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'تصنيف الفندق' : 'Hotel Category'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'تصنيف الفندق', 'Hotel Category', 'Otel Kategorisi')}</label>
                   <select value={hotelCategory} onChange={e => setHotelCategory(e.target.value)} className={selectClass}>
-                    <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
-                    <option value="3">{isAr ? '3 نجوم' : '3 Stars'}</option>
-                    <option value="4">{isAr ? '4 نجوم' : '4 Stars'}</option>
-                    <option value="5">{isAr ? '5 نجوم' : '5 Stars'}</option>
+                    <option value="">{pick(locale, 'اختر...', 'Select...', 'Seç...')}</option>
+                    <option value="3">{pick(locale, '3 نجوم', '3 Stars', '3 Yıldız')}</option>
+                    <option value="4">{pick(locale, '4 نجوم', '4 Stars', '4 Yıldız')}</option>
+                    <option value="5">{pick(locale, '5 نجوم', '5 Stars', '5 Yıldız')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'المدينة' : 'City'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={hotelCityAr} onChange={e => setHotelCityAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'المدينة' : 'City'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'المدينة', 'City', 'Şehir')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={hotelCityEn} onChange={e => setHotelCityEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد الليالي' : 'Number of Nights'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'عدد الليالي', 'Number of Nights', 'Gece Sayısı')}</label>
                 <input type="number" min={1} value={hotelNights} onChange={e => setHotelNights(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد الأيام' : 'Number of Days'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'عدد الأيام', 'Number of Days', 'Gün Sayısı')}</label>
                 <input type="number" min={1} value={durationDays} onChange={e => setDurationDays(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'نوع الإقامة' : 'Room Basis'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'نوع الإقامة', 'Room Basis', 'Oda Bazı')}</label>
                 <select value={roomBasis} onChange={e => setRoomBasis(e.target.value)} className={selectClass}>
-                  <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
-                  <option value="single">{isAr ? 'فردية' : 'Single Room'}</option>
-                  <option value="double">{isAr ? 'مزدوجة' : 'Double Room'}</option>
-                  <option value="triple">{isAr ? 'ثلاثية' : 'Triple Room'}</option>
-                  <option value="quad">{isAr ? 'رباعية' : 'Quad Room'}</option>
+                  <option value="">{pick(locale, 'اختر...', 'Select...', 'Seç...')}</option>
+                  <option value="single">{pick(locale, 'فردية', 'Single Room', 'Tek Kişilik Oda')}</option>
+                  <option value="double">{pick(locale, 'مزدوجة', 'Double Room', 'Çift Kişilik Oda')}</option>
+                  <option value="triple">{pick(locale, 'ثلاثية', 'Triple Room', 'Üç Kişilik Oda')}</option>
+                  <option value="quad">{pick(locale, 'رباعية', 'Quad Room', 'Dört Kişilik Oda')}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-2">{isAr ? 'الخدمات المشمولة' : 'Included Services'}</label>
+              <label className="text-sm font-medium block mb-2">{pick(locale, 'الخدمات المشمولة', 'Included Services', 'Dahil Olan Hizmetler')}</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
                   <input type="checkbox" checked={breakfastIncluded} onChange={e => setBreakfastIncluded(e.target.checked)} />
-                  <span>{isAr ? 'وجبة الإفطار' : 'Breakfast'}</span>
+                  <span>{pick(locale, 'وجبة الإفطار', 'Breakfast', 'Kahvaltı')}</span>
                 </label>
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
                   <input type="checkbox" checked={airportTransferIncluded} onChange={e => setAirportTransferIncluded(e.target.checked)} />
-                  <span>{isAr ? 'استقبال وتوديع المطار' : 'Airport Transfer'}</span>
+                  <span>{pick(locale, 'استقبال وتوديع المطار', 'Airport Transfer', 'Havalimanı Transferi')}</span>
                 </label>
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
                   <input type="checkbox" checked={tourGuideIncluded} onChange={e => setTourGuideIncluded(e.target.checked)} />
-                  <span>{isAr ? 'مرشد سياحي' : 'Tour Guide'}</span>
+                  <span>{pick(locale, 'مرشد سياحي', 'Tour Guide', 'Tur Rehberi')}</span>
                 </label>
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
                   <input type="checkbox" checked={sightseeingToursIncluded} onChange={e => setSightseeingToursIncluded(e.target.checked)} />
-                  <span>{isAr ? 'جولات سياحية' : 'Sightseeing Tours'}</span>
+                  <span>{pick(locale, 'جولات سياحية', 'Sightseeing Tours', 'Şehir Turları')}</span>
                 </label>
               </div>
             </div>
@@ -560,31 +561,31 @@ export default function NewPackagePage() {
           <div className="bg-card border rounded-xl p-6 space-y-4">
             <h2 className="font-semibold flex items-center gap-2">
               <CarFront className="h-4 w-4 text-emerald-600" />
-              {isAr ? 'تفاصيل السيارة' : 'Car Details'}
+              {pick(locale, 'تفاصيل السيارة', 'Car Details', 'Araç Ayrıntıları')}
             </h2>
             <div className="flex gap-3 mb-4">
               <button type="button" onClick={() => setCarMode('existing')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   carMode === 'existing' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'اختر سيارة موجودة' : 'Select existing car'}
+                {pick(locale, 'اختر سيارة موجودة', 'Select existing car', 'Mevcut aracı seç')}
               </button>
               <button type="button" onClick={() => setCarMode('manual')}
                 className={cn('flex-1 rounded-xl border px-4 py-3 text-sm font-bold transition-all',
                   carMode === 'manual' ? 'border-primary bg-primary text-white' : 'border-slate-200 bg-slate-50 text-slate-600'
                 )}>
-                {isAr ? 'إدخال يدوي' : 'Enter manually'}
+                {pick(locale, 'إدخال يدوي', 'Enter manually', 'Manuel gir')}
               </button>
             </div>
 
             {carMode === 'existing' ? (
               <div>
-                <label className="text-sm font-medium block mb-1.5">{isAr ? 'اختر السيارة' : 'Select Car'}</label>
+                <label className="text-sm font-medium block mb-1.5">{pick(locale, 'اختر السيارة', 'Select Car', 'Araç Seç')}</label>
                 <select value={selectedCarId} onChange={e => setSelectedCarId(e.target.value)} className={selectClass}>
-                  <option value="">{isAr ? 'اختر سيارة...' : 'Select a car...'}</option>
+                  <option value="">{pick(locale, 'اختر سيارة...', 'Select a car...', 'Bir araç seçin...')}</option>
                   {myCars.map(car => (
                     <option key={car.id} value={car.id}>
-                      {isAr ? `${car.brand_ar} ${car.model_ar}` : `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`} ({car.year})
+                      {pick(locale, `${car.brand_ar} ${car.model_ar}`, `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`)} ({car.year})
                     </option>
                   ))}
                 </select>
@@ -592,32 +593,32 @@ export default function NewPackagePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الماركة' : 'Brand'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الماركة', 'Brand', 'Marka')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={carBrandAr} onChange={e => setCarBrandAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الماركة' : 'Brand'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الماركة', 'Brand', 'Marka')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={carBrandEn} onChange={e => setCarBrandEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الموديل' : 'Model'} ({isAr ? 'عربي' : 'Arabic'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الموديل', 'Model', 'Model')} ({pick(locale, 'عربي', 'Arabic', 'Arapça')})</label>
                   <input value={carModelAr} onChange={e => setCarModelAr(e.target.value)} dir="rtl" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الموديل' : 'Model'} ({isAr ? 'إنجليزي' : 'English'})</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الموديل', 'Model', 'Model')} ({pick(locale, 'إنجليزي', 'English', 'İngilizce')})</label>
                   <input value={carModelEn} onChange={e => setCarModelEn(e.target.value)} dir="ltr" className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'الفئة' : 'Category'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الفئة', 'Category', 'Kategori')}</label>
                   <select value={carCategory} onChange={e => setCarCategory(e.target.value)} className={selectClass}>
-                    <option value="">{isAr ? 'اختر...' : 'Select...'}</option>
+                    <option value="">{pick(locale, 'اختر...', 'Select...', 'Seç...')}</option>
                     {Object.entries(CAR_CATEGORIES).map(([key, val]) => (
                       <option key={key} value={key}>{isAr ? val.ar : val.en}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium block mb-1.5">{isAr ? 'عدد أيام الإيجار' : 'Rental Days'}</label>
+                  <label className="text-sm font-medium block mb-1.5">{pick(locale, 'عدد أيام الإيجار', 'Rental Days', 'Kiralama Günleri')}</label>
                   <input type="number" min={1} value={carRentalDays} onChange={e => setCarRentalDays(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
                 </div>
               </div>
@@ -629,7 +630,7 @@ export default function NewPackagePage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-primary" />
-            {isAr ? 'التسعير' : 'Pricing'}
+            {pick(locale, 'التسعير', 'Pricing', 'Fiyatlandırma')}
           </h2>
 
           {/* Component prices */}
@@ -637,7 +638,7 @@ export default function NewPackagePage() {
             {includesFlight && (
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {isAr ? 'سعر الرحلة' : 'Flight Price'} *
+                  {pick(locale, 'سعر الرحلة', 'Flight Price', 'Uçuş Fiyatı')} *
                 </label>
                 <input
                   type="number" min={0} step={0.01}
@@ -651,7 +652,7 @@ export default function NewPackagePage() {
             {includesHotel && (
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {isAr ? 'سعر الفندق' : 'Hotel Price'} *
+                  {pick(locale, 'سعر الفندق', 'Hotel Price', 'Otel Fiyatı')} *
                 </label>
                 <input
                   type="number" min={0} step={0.01}
@@ -665,7 +666,7 @@ export default function NewPackagePage() {
             {includesCar && (
               <div>
                 <label className="text-sm font-medium block mb-1.5">
-                  {isAr ? 'سعر السيارة' : 'Car Price'} *
+                  {pick(locale, 'سعر السيارة', 'Car Price', 'Araç Fiyatı')} *
                 </label>
                 <input
                   type="number" min={0} step={0.01}
@@ -682,10 +683,10 @@ export default function NewPackagePage() {
           {atLeastOneIncluded && (
             <div className="rounded-lg bg-slate-50 border px-4 py-3 flex items-center justify-between">
               <span className="text-sm font-medium text-slate-600">
-                {isAr ? 'الإجمالي' : 'Total'}
+                {pick(locale, 'الإجمالي', 'Total', 'Toplam')}
               </span>
               <span className="text-lg font-black text-slate-900">
-                {computedTotal.toLocaleString(isAr ? 'ar-SA' : 'en-SA')} {currency}
+                {computedTotal.toLocaleString(pick(locale, 'ar-SA', 'en-SA', 'tr-TR'))} {currency}
               </span>
             </div>
           )}
@@ -693,7 +694,7 @@ export default function NewPackagePage() {
           {/* Offer price */}
           <div>
             <label className="text-sm font-medium block mb-1.5">
-              {isAr ? 'سعر العرض (الباقة)' : 'Package Offer Price'}{' '}
+              {pick(locale, 'سعر العرض (الباقة)', 'Package Offer Price', 'Paket Teklif Fiyatı')}{' '}
               <span className="text-muted-foreground text-xs">({tc('optional')})</span>
             </label>
             <input
@@ -701,11 +702,11 @@ export default function NewPackagePage() {
               value={offerPrice}
               onChange={e => setOfferPrice(e.target.value ? Number(e.target.value) : '')}
               className={inputClass}
-              placeholder={isAr ? 'أدخل سعراً مخفضاً للباقة...' : 'Enter a discounted package price...'}
+              placeholder={pick(locale, 'أدخل سعراً مخفضاً للباقة...', 'Enter a discounted package price...', 'İndirimli paket fiyatı girin...')}
             />
             {savings > 0 && (
               <p className="mt-1.5 text-sm font-semibold text-emerald-600">
-                {isAr ? `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة` : `Save ${savings.toLocaleString('en-SA')} ${currency} with the package`}
+                {pick(locale, `وفر ${savings.toLocaleString('ar-SA')} ر.س مع الباقة`, `Save ${savings.toLocaleString('en-SA')} ${currency} with the package`)}
               </p>
             )}
           </div>
@@ -719,7 +720,7 @@ export default function NewPackagePage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'الحد الأقصى للحجوزات' : 'Max Bookings'} *</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'الحد الأقصى للحجوزات', 'Max Bookings', 'Maks Rezervasyon')} *</label>
               <input type="number" min={1} value={maxBookings} onChange={e => setMaxBookings(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
             </div>
           </div>
@@ -729,11 +730,11 @@ export default function NewPackagePage() {
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" />
-            {isAr ? 'التواريخ' : 'Dates'}
+            {pick(locale, 'التواريخ', 'Dates', 'Tarihler')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ البداية' : 'Start Date'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'تاريخ البداية', 'Start Date', 'Başlangıç Tarihi')}</label>
               <Popover>
                 <PopoverTrigger className={cn(
                   `${inputClass} flex items-center justify-between`,
@@ -741,7 +742,7 @@ export default function NewPackagePage() {
                 )}>
                   <span className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                    {startDate && isValid(parseISO(startDate)) ? format(parseISO(startDate), 'd MMM yyyy') : (pick(locale, 'اختر التاريخ', 'Pick date', 'Tarih seç'))}
                   </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </PopoverTrigger>
@@ -756,7 +757,7 @@ export default function NewPackagePage() {
               </Popover>
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">{isAr ? 'تاريخ النهاية' : 'End Date'}</label>
+              <label className="text-sm font-medium block mb-1.5">{pick(locale, 'تاريخ النهاية', 'End Date', 'Bitiş Tarihi')}</label>
               <Popover>
                 <PopoverTrigger className={cn(
                   `${inputClass} flex items-center justify-between`,
@@ -764,7 +765,7 @@ export default function NewPackagePage() {
                 )}>
                   <span className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (isAr ? 'اختر التاريخ' : 'Pick date')}
+                    {endDate && isValid(parseISO(endDate)) ? format(parseISO(endDate), 'd MMM yyyy') : (pick(locale, 'اختر التاريخ', 'Pick date', 'Tarih seç'))}
                   </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 </PopoverTrigger>
@@ -785,8 +786,8 @@ export default function NewPackagePage() {
         {/* Images */}
         <div className="bg-card border rounded-xl p-6 space-y-4">
           <h2 className="font-semibold">
-            {isAr ? 'صور الباقة' : 'Package Images'}{' '}
-            <span className="text-muted-foreground text-sm font-normal">({isAr ? 'حتى 5 صور' : 'Up to 5 images'})</span>
+            {pick(locale, 'صور الباقة', 'Package Images', 'Paket Görselleri')}{' '}
+            <span className="text-muted-foreground text-sm font-normal">({pick(locale, 'حتى 5 صور', 'Up to 5 images', '5 görsele kadar')})</span>
           </h2>
           {imagePreviews.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -803,7 +804,7 @@ export default function NewPackagePage() {
           {imageFiles.length < 5 && (
             <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
               <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{isAr ? 'اضغط لرفع صور' : 'Click to upload images'}</span>
+              <span className="text-sm text-muted-foreground">{pick(locale, 'اضغط لرفع صور', 'Click to upload images', 'Görselleri yüklemek için tıklayın')}</span>
               <input type="file" accept="image/*" multiple className="sr-only" onChange={e => handleImageAdd(e.target.files)} />
             </label>
           )}
@@ -816,7 +817,7 @@ export default function NewPackagePage() {
           onFeeChange={setNameChangeFee}
           refundable={nameChangeRefundable}
           onRefundableChange={setNameChangeRefundable}
-          title={isAr ? 'سياسة تغيير اسم المسافر الرئيسي' : 'Lead traveler name change policy'}
+          title={pick(locale, 'سياسة تغيير اسم المسافر الرئيسي', 'Lead traveler name change policy', 'Lider yolcu adı değişiklik politikası')}
         />
 
         <button
@@ -825,7 +826,7 @@ export default function NewPackagePage() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isAr ? 'نشر الباقة' : 'Post Package'}
+          {pick(locale, 'نشر الباقة', 'Post Package', 'Paket Yayınla')}
         </button>
       </form>
     </div>

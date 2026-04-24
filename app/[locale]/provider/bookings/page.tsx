@@ -7,6 +7,7 @@ import { BookOpen } from 'lucide-react'
 import BookingsStatusFilter from '@/components/provider/bookings-status-filter'
 import { RejectBookingButton } from '@/components/provider/reject-booking-button'
 import { ContractPill } from '@/components/bookings/contract-pill'
+import { SetPnrButton } from '@/components/provider/set-pnr-button'
 
 const validStatuses: BookingStatus[] = [
   'confirmed',
@@ -134,9 +135,18 @@ export default async function ProviderBookingsPage({ searchParams }: Props) {
                       )}
                     </td>
                     <td className="p-3">
-                      {booking.status === 'confirmed' && (
-                        <RejectBookingButton bookingId={booking.id} />
-                      )}
+                      <div className="flex items-center gap-2">
+                        {booking.status === 'confirmed' && (
+                          <RejectBookingButton bookingId={booking.id} />
+                        )}
+                        {booking.status === 'confirmed' && (
+                          <SetPnrButton
+                            bookingId={booking.id}
+                            initialPnr={booking.pnr_code}
+                            initialTicket={booking.ticket_number}
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

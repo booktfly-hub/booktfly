@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { resolveApiErrorMessage } from '@/lib/api-error'
@@ -67,7 +68,7 @@ export default function AdminWithdrawalsPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <Banknote className="h-6 w-6" />
-        {isAr ? 'طلبات السحب' : 'Withdrawal Requests'}
+        {pick(locale, 'طلبات السحب', 'Withdrawal Requests', 'Çekim Talepleri')}
       </h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
@@ -79,10 +80,10 @@ export default function AdminWithdrawalsPage() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? (s === 'pending' ? (isAr ? 'قيد المراجعة' : 'Pending')
-              : s === 'completed' ? (isAr ? 'مكتمل' : 'Completed')
-              : (isAr ? 'مرفوض' : 'Rejected'))
-              : (isAr ? 'الكل' : 'All')}
+            {s ? (s === 'pending' ? (pick(locale, 'قيد المراجعة', 'Pending', 'Beklemede'))
+              : s === 'completed' ? (pick(locale, 'مكتمل', 'Completed', 'Tamamlandı'))
+              : (pick(locale, 'مرفوض', 'Rejected', 'Reddedildi')))
+              : (pick(locale, 'الكل', 'All', 'Tümü'))}
           </button>
         ))}
       </div>
@@ -92,8 +93,8 @@ export default function AdminWithdrawalsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'مزود الخدمة' : 'Provider'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المبلغ' : 'Amount'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'مزود الخدمة', 'Provider', 'Tedarikçi')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المبلغ', 'Amount', 'Tutar')}</th>
                 <th className="text-start p-3 font-medium">IBAN</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
                 <th className="text-start p-3 font-medium">{t('common.date')}</th>
@@ -113,13 +114,13 @@ export default function AdminWithdrawalsPage() {
                     <td className="p-3 font-mono text-xs">{w.provider_iban}</td>
                     <td className="p-3">
                       <span className={cn('px-2 py-1 rounded-full text-xs font-medium', WITHDRAWAL_STATUS_COLORS[w.status] || '')}>
-                        {w.status === 'pending' ? (isAr ? 'قيد المراجعة' : 'Pending')
-                          : w.status === 'completed' ? (isAr ? 'مكتمل' : 'Completed')
-                          : (isAr ? 'مرفوض' : 'Rejected')}
+                        {w.status === 'pending' ? (pick(locale, 'قيد المراجعة', 'Pending', 'Beklemede'))
+                          : w.status === 'completed' ? (pick(locale, 'مكتمل', 'Completed', 'Tamamlandı'))
+                          : (pick(locale, 'مرفوض', 'Rejected', 'Reddedildi'))}
                       </span>
                     </td>
                     <td className="p-3 text-muted-foreground text-xs">
-                      {new Date(w.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}
+                      {new Date(w.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}
                     </td>
                     <td className="p-3">
                       {w.status === 'pending' && (
@@ -135,7 +136,7 @@ export default function AdminWithdrawalsPage() {
                           <input
                             value={commentMap[w.id] || ''}
                             onChange={(e) => setCommentMap((prev) => ({ ...prev, [w.id]: e.target.value }))}
-                            placeholder={isAr ? 'ملاحظة...' : 'Comment...'}
+                            placeholder={pick(locale, 'ملاحظة...', 'Comment...', 'Yorum...')}
                             className="w-24 border rounded px-2 py-1 text-xs"
                           />
                           <button

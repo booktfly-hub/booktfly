@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Bell, Trash2, Plane, BellOff } from 'lucide-react'
@@ -71,12 +72,12 @@ export function AlertsPageClient({ locale }: AlertsPageClientProps) {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {origin || alert.origin_code} {isAr ? '←' : '→'} {dest || alert.destination_code}
+                      {origin || alert.origin_code} {pick(locale, '←', '→', '→')} {dest || alert.destination_code}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       {alert.target_price && (
                         <span className="text-xs text-muted-foreground">
-                          {t('target_price')}: {alert.target_price} {isAr ? 'ر.س' : 'SAR'}
+                          {t('target_price')}: {alert.target_price} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                         </span>
                       )}
                       <span className={`text-xs font-medium ${alert.is_active ? 'text-success' : 'text-muted-foreground'}`}>

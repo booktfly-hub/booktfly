@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { getTranslations, getLocale } from 'next-intl/server'
 import Link from 'next/link'
 import { getProvider } from '@/lib/supabase/provider'
@@ -52,7 +53,7 @@ export default async function ProviderTripsPage({ searchParams }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{t('trip_list')}</h1>
-           <p className="text-slate-500 font-medium">{isAr ? 'إدارة جميع رحلاتك وحالاتها' : 'Manage all your trips and their statuses'}</p>
+           <p className="text-slate-500 font-medium">{pick(locale, 'إدارة جميع رحلاتك وحالاتها', 'Manage all your trips and their statuses', 'Tüm gezilerinizi ve durumlarını yönetin')}</p>
         </div>
         <Link
           href={`/${locale}/provider/trips/new`}
@@ -71,7 +72,7 @@ export default async function ProviderTripsPage({ searchParams }: Props) {
              <Plane className="h-10 w-10 text-slate-300" />
           </div>
           <p className="text-xl font-bold text-slate-900 mb-2">{t('no_trips_yet')}</p>
-          <p className="text-slate-500 mb-8">{isAr ? 'قم بإضافة رحلتك الأولى للبدء في تلقي الحجوزات' : 'Add your first trip to start receiving bookings'}</p>
+          <p className="text-slate-500 mb-8">{pick(locale, 'قم بإضافة رحلتك الأولى للبدء في تلقي الحجوزات', 'Add your first trip to start receiving bookings', 'Rezervasyon almaya başlamak için ilk gezinizi ekleyin')}</p>
           <Link
             href={`/${locale}/provider/trips/new`}
             className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl text-base font-bold hover:bg-slate-800 transition-all shadow-xl hover:-translate-y-0.5"
@@ -151,7 +152,7 @@ export default async function ProviderTripsPage({ searchParams }: Props) {
                         >
                           <div className="space-y-2 max-w-[120px]">
                             <div className="flex justify-between items-center text-xs font-bold text-slate-600">
-                               <span>{trip.booked_seats} {isAr ? 'محجوز' : 'booked'}</span>
+                               <span>{trip.booked_seats} {pick(locale, 'محجوز', 'booked', 'rezerve edildi')}</span>
                                <span className="text-slate-400">{trip.total_seats}</span>
                             </div>
                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">

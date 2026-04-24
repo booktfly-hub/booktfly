@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -96,9 +97,7 @@ export function CuratedCategoryContent({
                     {heroEyebrow}
                   </p>
                   <p className="text-sm font-bold text-slate-900">
-                    {isAr
-                      ? `${trips.length}+ رحلة مختارة لك`
-                      : `${trips.length}+ handpicked trips`}
+                    {pick(locale, `${trips.length}+ رحلة مختارة لك`, `${trips.length}+ handpicked trips`)}
                   </p>
                 </div>
               </div>
@@ -115,8 +114,8 @@ export function CuratedCategoryContent({
         {trips.length === 0 ? (
           <EmptyState
             icon={Sparkles}
-            message={isAr ? 'لا توجد رحلات متاحة حالياً' : 'No trips available right now'}
-            description={isAr ? 'عد لاحقاً — الرحلات تتحدث يومياً' : 'Check back soon — trips are added daily'}
+            message={pick(locale, 'لا توجد رحلات متاحة حالياً', 'No trips available right now', 'Şu anda mevcut gezi yok')}
+            description={pick(locale, 'عد لاحقاً — الرحلات تتحدث يومياً', 'Check back soon — trips are added daily', 'Yakında tekrar kontrol edin — her gün yeni geziler eklenir')}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -132,7 +131,7 @@ export function CuratedCategoryContent({
               className="inline-flex items-center gap-2 px-6 py-3 bg-card border rounded-xl text-sm font-semibold hover:bg-muted transition-colors disabled:opacity-50"
             >
               {loadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isAr ? 'تحميل المزيد' : 'Load More'}
+              {pick(locale, 'تحميل المزيد', 'Load More', 'Daha Fazla Yükle')}
             </button>
           </div>
         )}

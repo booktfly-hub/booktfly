@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { SignaturePad } from '@/components/signature-pad'
@@ -40,7 +41,7 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
       setSignatureUrl(json.signature_url)
       setEditing(false)
       setPending(null)
-      toast({ title: isAr ? 'تم حفظ التوقيع' : 'Signature saved', variant: 'success' })
+      toast({ title: pick(locale, 'تم حفظ التوقيع', 'Signature saved', 'İmza kaydedildi'), variant: 'success' })
       onSaved?.(json.signature_url)
     } finally {
       setSubmitting(false)
@@ -48,16 +49,16 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
   }
 
   async function remove() {
-    if (!confirm(isAr ? 'هل أنت متأكد من حذف التوقيع؟' : 'Delete saved signature?')) return
+    if (!confirm(pick(locale, 'هل أنت متأكد من حذف التوقيع؟', 'Delete saved signature?', 'Kayıtlı imza silinsin mi?'))) return
     setDeleting(true)
     try {
       const res = await fetch('/api/profile/signature', { method: 'DELETE' })
       if (!res.ok) {
-        toast({ title: isAr ? 'فشل الحذف' : 'Delete failed', variant: 'destructive' })
+        toast({ title: pick(locale, 'فشل الحذف', 'Delete failed', 'Silme başarısız'), variant: 'destructive' })
         return
       }
       setSignatureUrl(null)
-      toast({ title: isAr ? 'تم الحذف' : 'Removed', variant: 'success' })
+      toast({ title: pick(locale, 'تم الحذف', 'Removed', 'Kaldırıldı'), variant: 'success' })
       onSaved?.(null)
     } finally {
       setDeleting(false)
@@ -69,13 +70,13 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FileSignature className="h-4 w-4 text-primary" />
-          <h3 className="font-bold">{isAr ? 'التوقيع المحفوظ' : 'Saved signature'}</h3>
+          <h3 className="font-bold">{pick(locale, 'التوقيع المحفوظ', 'Saved signature', 'Kayıtlı imza')}</h3>
         </div>
         {!editing && signatureUrl && (
           <div className="flex items-center gap-2">
             <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-bold hover:bg-slate-50">
               <Pencil className="h-3.5 w-3.5" />
-              {isAr ? 'تحديث' : 'Update'}
+              {pick(locale, 'تحديث', 'Update', 'Güncelle')}
             </button>
             <button
               onClick={remove}
@@ -83,15 +84,13 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
               className="inline-flex items-center gap-1 rounded-lg border border-destructive/30 px-2.5 py-1 text-xs font-bold text-destructive hover:bg-destructive/5 disabled:opacity-50"
             >
               {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-              {isAr ? 'حذف' : 'Delete'}
+              {pick(locale, 'حذف', 'Delete', 'Sil')}
             </button>
           </div>
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {isAr
-          ? 'توقيعك المحفوظ يُستخدم لتوقيع العقود مستقبلاً. يمكنك تحديثه أو حذفه في أي وقت.'
-          : 'Your saved signature is used to sign future contracts. You can update or delete it anytime.'}
+        {pick(locale, 'توقيعك المحفوظ يُستخدم لتوقيع العقود مستقبلاً. يمكنك تحديثه أو حذفه في أي وقت.', 'Your saved signature is used to sign future contracts. You can update or delete it anytime.', 'Kayıtlı imzanız gelecekteki sözleşmeleri imzalamak için kullanılır. İstediğiniz zaman güncelleyebilir veya silebilirsiniz.')}
       </p>
 
       {!editing && signatureUrl && (
@@ -112,7 +111,7 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
           onClick={() => setEditing(true)}
           className="w-full rounded-xl border-2 border-dashed border-slate-300 py-6 text-sm font-semibold text-slate-500 hover:bg-slate-50"
         >
-          {isAr ? 'إضافة توقيع محفوظ' : 'Add a saved signature'}
+          {pick(locale, 'إضافة توقيع محفوظ', 'Add a saved signature', 'Kayıtlı imza ekle')}
         </button>
       )}
 
@@ -131,7 +130,7 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
               )}
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              {isAr ? 'حفظ التوقيع' : 'Save signature'}
+              {pick(locale, 'حفظ التوقيع', 'Save signature', 'İmzayı kaydet')}
             </button>
             <button
               onClick={() => { setEditing(false); setPending(null) }}
@@ -139,7 +138,7 @@ export function ProfileSignatureSection({ initialSignatureUrl, onSaved }: Props)
               className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-bold hover:bg-slate-50"
             >
               <X className="h-4 w-4" />
-              {isAr ? 'إلغاء' : 'Cancel'}
+              {pick(locale, 'إلغاء', 'Cancel', 'İptal')}
             </button>
           </div>
         </div>

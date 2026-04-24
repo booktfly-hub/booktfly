@@ -465,6 +465,8 @@ export type Booking = {
   booked_for_other: boolean
   checkin_reminder_24h_sent_at: string | null
   checkin_reminder_3h_sent_at: string | null
+  pnr_code: string | null
+  ticket_number: string | null
   created_at: string
   updated_at: string
   trip?: Trip
@@ -574,6 +576,8 @@ export type NameChangePolicy = {
   name_change_is_refundable: boolean
 }
 
+export type CancellationPolicy = 'free' | 'partial' | 'non_refundable'
+
 export type Room = NameChangePolicy & {
   id: string
   provider_id: string
@@ -597,6 +601,17 @@ export type Room = NameChangePolicy & {
   is_last_minute: boolean
   original_price: number | null
   discount_percentage: number
+  latitude: number | null
+  longitude: number | null
+  cancellation_policy: CancellationPolicy
+  cancellation_penalty_nights: number
+  breakfast_included: boolean
+  contact_phone: string | null
+  bedroom_count: number
+  bathroom_count: number
+  has_view: boolean
+  has_balcony: boolean
+  has_kitchen: boolean
   status: RoomStatus
   removed_reason: string | null
   removed_by: string | null
@@ -844,6 +859,7 @@ export type Car = NameChangePolicy & {
   pickup_hour_to: string | null
   return_hour_from: string | null
   return_hour_to: string | null
+  contact_phone: string | null
   status: CarStatus
   removed_reason: string | null
   removed_by: string | null
@@ -1016,6 +1032,7 @@ export type Review = {
   trip_id: string | null
   room_id: string | null
   car_id: string | null
+  package_id: string | null
   item_type: ReviewItemType
   rating: number
   comment: string | null
@@ -1055,7 +1072,7 @@ export type SavedItem = {
 export type RecentSearch = {
   id: string
   user_id: string
-  search_type: 'flight' | 'hotel' | 'car'
+  search_type: 'flight' | 'hotel' | 'car' | 'package'
   origin_code: string | null
   destination_code: string | null
   origin_name_ar: string | null

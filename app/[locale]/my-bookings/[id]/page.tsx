@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -24,6 +25,12 @@ import {
   XCircle,
   Loader2,
   Landmark,
+  Star,
+  CheckCircle2,
+  Luggage,
+  UtensilsCrossed,
+  Hash,
+  Ticket,
 } from 'lucide-react'
 import { capitalizeFirst, cn, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { TRIP_TYPES, CABIN_CLASSES, PROVIDER_TYPES } from '@/lib/constants'
@@ -46,6 +53,11 @@ export default function BookingDetailPage() {
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
   const [changeNameIndex, setChangeNameIndex] = useState<number | null>(null)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewSubmitted, setReviewSubmitted] = useState(false)
+  const [reviewHover, setReviewHover] = useState(0)
 
   const Arrow = isAr ? ArrowLeft : ArrowRight
   const Back = isAr ? ChevronRight : ChevronLeft
@@ -101,19 +113,19 @@ export default function BookingDetailPage() {
 
   const departureDate = trip
     ? new Date(trip.departure_at).toLocaleDateString(
-        isAr ? 'ar-SA' : 'en-US',
+        pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
         { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
       )
     : ''
 
   const createdDate = new Date(booking.created_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
   )
 
   const paidDate = booking.paid_at
     ? new Date(booking.paid_at).toLocaleDateString(
-        isAr ? 'ar-SA' : 'en-US',
+        pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
         { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
       )
     : null
@@ -211,6 +223,52 @@ export default function BookingDetailPage() {
               </div>
             </div>
 
+            {/* Baggage & meal */}
+            {(trip.checked_baggage_kg || trip.cabin_baggage_kg || trip.meal_included !== undefined) && (
+              <div className="mt-4 pt-4 border-t flex flex-wrap gap-4">
+                {trip.checked_baggage_kg != null && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Luggage className="h-4 w-4" />
+                    <span>{pick(locale, `أمتعة مسجلة: ${trip.checked_baggage_kg} كغ`, `Checked: ${trip.checked_baggage_kg} kg`)}</span>
+                  </div>
+                )}
+                {trip.cabin_baggage_kg != null && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Luggage className="h-4 w-4 opacity-60" />
+                    <span>{pick(locale, `أمتعة مقصورة: ${trip.cabin_baggage_kg} كغ`, `Cabin: ${trip.cabin_baggage_kg} kg`)}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <UtensilsCrossed className="h-4 w-4" />
+                  <span>{trip.meal_included ? (pick(locale, 'وجبة مشمولة', 'Meal included', 'Yemek dahil')) : (pick(locale, 'بدون وجبة', 'No meal', 'Yemek yok'))}</span>
+                </div>
+              </div>
+            )}
+
+            {/* PNR & ticket number */}
+            {(booking.pnr_code || booking.ticket_number) && (
+              <div className="mt-4 pt-4 border-t grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {booking.pnr_code && (
+                  <div className="flex items-center gap-3">
+                    <Hash className="h-4 w-4 text-accent shrink-0" />
+                    <div>
+                      <span className="text-xs text-muted-foreground">{pick(locale, 'رقم الحجز (PNR)', 'Booking Code (PNR)', 'Rezervasyon Kodu (PNR)')}</span>
+                      <p className="text-sm font-bold font-mono tracking-widest">{booking.pnr_code}</p>
+                    </div>
+                  </div>
+                )}
+                {booking.ticket_number && (
+                  <div className="flex items-center gap-3">
+                    <Ticket className="h-4 w-4 text-accent shrink-0" />
+                    <div>
+                      <span className="text-xs text-muted-foreground">{pick(locale, 'رقم التذكرة', 'Ticket Number', 'Bilet Numarası')}</span>
+                      <p className="text-sm font-bold font-mono tracking-widest">{booking.ticket_number}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Link to trip */}
             <div className="mt-4 pt-4 border-t">
               <Link
@@ -227,27 +285,27 @@ export default function BookingDetailPage() {
         <div className="rounded-xl border bg-card p-6">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <User className="h-4 w-4 text-accent" />
-            {isAr ? 'بيانات التواصل الأساسية' : 'Primary Contact'}
+            {pick(locale, 'بيانات التواصل الأساسية', 'Primary Contact', 'Birincil İletişim')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
               <User className="h-4 w-4 text-muted-foreground shrink-0" />
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'اسم جهة التواصل' : 'Contact name'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'اسم جهة التواصل', 'Contact name', 'İletişim adı')}</span>
                 <p className="text-sm font-medium">{booking.passenger_name}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'رقم الجوال' : 'Phone number'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'رقم الجوال', 'Phone number', 'Telefon numarası')}</span>
                 <p className="text-sm font-medium" dir="ltr">{booking.passenger_phone}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'البريد الإلكتروني' : 'Email'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'البريد الإلكتروني', 'Email', 'E-posta')}</span>
                 <p className="text-sm font-medium" dir="ltr">{booking.passenger_email}</p>
               </div>
             </div>
@@ -289,23 +347,23 @@ export default function BookingDetailPage() {
                     )}
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">{isAr ? 'الاسم الأول' : 'First Name'}</span>
+                    <span className="text-xs text-muted-foreground">{pick(locale, 'الاسم الأول', 'First Name', 'Ad')}</span>
                     <p className="text-sm font-medium">{p.first_name}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">{isAr ? 'الاسم الأخير' : 'Last Name'}</span>
+                    <span className="text-xs text-muted-foreground">{pick(locale, 'الاسم الأخير', 'Last Name', 'Soyad')}</span>
                     <p className="text-sm font-medium">{p.last_name}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">{isAr ? 'تاريخ الميلاد' : 'Date of Birth'}</span>
+                    <span className="text-xs text-muted-foreground">{pick(locale, 'تاريخ الميلاد', 'Date of Birth', 'Doğum Tarihi')}</span>
                     <p className="text-sm font-medium" dir="ltr">{p.date_of_birth}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">{isAr ? 'رقم الجواز أو البطاقة' : 'Passport / ID Number'}</span>
+                    <span className="text-xs text-muted-foreground">{pick(locale, 'رقم الجواز أو البطاقة', 'Passport / ID Number', 'Pasaport / Kimlik Numarası')}</span>
                     <p className="text-sm font-medium" dir="ltr">{p.id_number}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">{isAr ? 'تاريخ انتهاء الإثبات' : 'ID Expiry Date'}</span>
+                    <span className="text-xs text-muted-foreground">{pick(locale, 'تاريخ انتهاء الإثبات', 'ID Expiry Date', 'Kimlik Son Geçerlilik Tarihi')}</span>
                     <p className="text-sm font-medium" dir="ltr">{p.id_expiry_date}</p>
                   </div>
                 </div>
@@ -353,12 +411,12 @@ export default function BookingDetailPage() {
           <div className="mt-4 pt-4 border-t space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
-              <span>{isAr ? 'تاريخ الحجز' : 'Booked on'}: {createdDate}</span>
+              <span>{pick(locale, 'تاريخ الحجز', 'Booked on', 'Rezervasyon tarihi')}: {createdDate}</span>
             </div>
             {paidDate && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CreditCard className="h-3.5 w-3.5" />
-                <span>{isAr ? 'تاريخ الدفع' : 'Paid on'}: {paidDate}</span>
+                <span>{pick(locale, 'تاريخ الدفع', 'Paid on', 'Ödeme tarihi')}: {paidDate}</span>
               </div>
             )}
           </div>
@@ -369,17 +427,17 @@ export default function BookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6">
             <div className="flex items-center gap-3 mb-3">
               <Landmark className="h-5 w-5 text-warning shrink-0" />
-              <h3 className="font-semibold text-warning">{isAr ? 'بانتظار التحويل البنكي' : 'Awaiting Bank Transfer'}</h3>
+              <h3 className="font-semibold text-warning">{pick(locale, 'بانتظار التحويل البنكي', 'Awaiting Bank Transfer', 'Banka Transferi Bekleniyor')}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              {isAr ? 'يرجى إتمام التحويل البنكي لتأكيد حجزك' : 'Please complete the bank transfer to confirm your booking'}
+              {pick(locale, 'يرجى إتمام التحويل البنكي لتأكيد حجزك', 'Please complete the bank transfer to confirm your booking', 'Rezervasyonunuzu onaylamak için lütfen banka transferini tamamlayın')}
             </p>
             <Link
               href={`/${locale}/checkout/${booking.id}`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               <CreditCard className="h-4 w-4" />
-              {isAr ? 'إتمام الدفع' : 'Complete Payment'}
+              {pick(locale, 'إتمام الدفع', 'Complete Payment', 'Ödemeyi Tamamla')}
             </Link>
           </div>
         )}
@@ -389,7 +447,7 @@ export default function BookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6 flex items-center gap-3">
             <Clock className="h-5 w-5 text-warning shrink-0" />
             <p className="text-sm font-medium text-warning">
-              {isAr ? 'تم تأكيد التحويل وبانتظار مراجعة الإدارة' : 'Transfer confirmed, pending admin review'}
+              {pick(locale, 'تم تأكيد التحويل وبانتظار مراجعة الإدارة', 'Transfer confirmed, pending admin review', 'Transfer onaylandı, yönetici incelemesi bekleniyor')}
             </p>
           </div>
         )}
@@ -399,7 +457,7 @@ export default function BookingDetailPage() {
           <div className="rounded-xl border bg-destructive/5 border-destructive/20 p-6">
             <div className="flex items-center gap-3 mb-3">
               <XCircle className="h-5 w-5 text-destructive shrink-0" />
-              <h3 className="font-semibold text-destructive">{isAr ? 'تم رفض التحويل' : 'Transfer Rejected'}</h3>
+              <h3 className="font-semibold text-destructive">{pick(locale, 'تم رفض التحويل', 'Transfer Rejected', 'Transfer Reddedildi')}</h3>
             </div>
             {booking.payment_rejection_reason && (
               <p className="text-sm text-muted-foreground mb-3">{booking.payment_rejection_reason}</p>
@@ -408,7 +466,7 @@ export default function BookingDetailPage() {
               href={`/${locale}/checkout/${booking.id}`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              {isAr ? 'إعادة المحاولة' : 'Try Again'}
+              {pick(locale, 'إعادة المحاولة', 'Try Again', 'Tekrar Dene')}
             </Link>
           </div>
         )}
@@ -416,7 +474,7 @@ export default function BookingDetailPage() {
         {/* Transfer receipt */}
         {booking.transfer_receipt_url && (
           <div className="rounded-xl border bg-card p-6">
-            <h3 className="font-semibold text-foreground mb-3">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
+            <h3 className="font-semibold text-foreground mb-3">{pick(locale, 'إيصال التحويل', 'Transfer Receipt', 'Transfer Makbuzu')}</h3>
             <div className="relative w-full h-64">
               <Image src={booking.transfer_receipt_url} alt="Receipt" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain rounded-lg border" />
             </div>
@@ -450,10 +508,10 @@ export default function BookingDetailPage() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
             >
               {cancelling ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-              {isAr ? 'طلب إلغاء الحجز' : 'Request Cancellation'}
+              {pick(locale, 'طلب إلغاء الحجز', 'Request Cancellation', 'İptal Talebi')}
             </button>
             <p className="text-xs text-muted-foreground mt-2">
-              {isAr ? 'سيتم إرسال طلب الإلغاء للإدارة للمراجعة' : 'Your cancellation request will be sent to admin for review'}
+              {pick(locale, 'سيتم إرسال طلب الإلغاء للإدارة للمراجعة', 'Your cancellation request will be sent to admin for review', 'İptal talebiniz inceleme için yöneticiye gönderilecek')}
             </p>
           </div>
         )}
@@ -462,22 +520,19 @@ export default function BookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6 flex items-center gap-3">
             <Clock className="h-5 w-5 text-warning shrink-0" />
             <p className="text-sm font-medium text-warning">
-              {isAr ? 'طلب الإلغاء قيد المراجعة من الإدارة' : 'Your cancellation request is pending admin review'}
+              {pick(locale, 'طلب الإلغاء قيد المراجعة من الإدارة', 'Your cancellation request is pending admin review', 'İptal talebiniz yönetici incelemesi bekliyor')}
             </p>
           </div>
         )}
 
         {/* Provider info */}
         {provider && providerName && (
-          <Link
-            href={`/${locale}/providers/${provider.id}`}
-            className="block rounded-xl border bg-card p-6 hover:border-accent/30 transition-colors"
-          >
+          <div className="rounded-xl border bg-card p-6">
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-accent" />
               {t('trips.posted_by')}
             </h3>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-3">
               <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-accent" />
               </div>
@@ -490,7 +545,93 @@ export default function BookingDetailPage() {
                 </span>
               </div>
             </div>
-          </Link>
+            {provider.contact_phone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                <a href={`tel:${provider.contact_phone}`} className="hover:text-accent transition-colors" dir="ltr">
+                  {provider.contact_phone}
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {booking.status === 'confirmed' && trip && new Date(trip.departure_at) < new Date() && (
+          <div className="rounded-xl border bg-card p-6">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Star className="h-4 w-4 text-warning" />
+              {pick(locale, 'قيّم تجربتك', 'Rate Your Experience', 'Deneyiminizi Değerlendirin')}
+            </h3>
+
+            {reviewSubmitted ? (
+              <div className="flex items-center gap-2 text-success">
+                <CheckCircle2 className="h-5 w-5" />
+                <p className="text-sm font-semibold">{pick(locale, 'شكراً على تقييمك!', 'Thank you for your review!', 'Yorumunuz için teşekkürler!')}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      onMouseEnter={() => setReviewHover(star)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      className="transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={cn(
+                          'h-8 w-8 transition-colors',
+                          (reviewHover || reviewRating) >= star
+                            ? 'fill-warning text-warning'
+                            : 'text-muted-foreground'
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder={pick(locale, 'أضف تعليقاً (اختياري)...', 'Add a comment (optional)...', 'Yorum ekleyin (isteğe bağlı)...')}
+                  rows={3}
+                  className="w-full rounded-lg border border-input bg-surface px-4 py-3 text-sm outline-none focus:border-ring focus:ring-4 focus:ring-ring/15 resize-none"
+                />
+
+                <button
+                  type="button"
+                  disabled={reviewRating === 0 || reviewSubmitting}
+                  onClick={async () => {
+                    if (!reviewRating || !booking.provider_id) return
+                    setReviewSubmitting(true)
+                    try {
+                      const res = await fetch('/api/reviews', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          booking_id: booking.id,
+                          provider_id: booking.provider_id,
+                          trip_id: booking.trip_id,
+                          item_type: 'trip',
+                          rating: reviewRating,
+                          comment: reviewComment || undefined,
+                        }),
+                      })
+                      if (res.ok) setReviewSubmitted(true)
+                    } finally {
+                      setReviewSubmitting(false)
+                    }
+                  }}
+                  className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-primary/90"
+                >
+                  {reviewSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {pick(locale, 'إرسال التقييم', 'Submit Review', 'Yorumu Gönder')}
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

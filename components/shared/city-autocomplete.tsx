@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { MapPin, LocateFixed, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -156,7 +157,7 @@ export function CityAutocomplete({
           type="button"
           onClick={handleLocate}
           disabled={locating}
-          title={myLocationLabel ?? (isAr ? 'موقعي الحالي' : 'My location')}
+          title={myLocationLabel ?? (pick(locale, 'موقعي الحالي', 'My location', 'Konumum'))}
           className="absolute inset-y-0 end-0 flex items-center pe-3 text-primary transition-colors disabled:opacity-50 md:pe-4"
         >
           {locating ? (

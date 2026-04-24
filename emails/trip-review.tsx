@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -7,7 +8,7 @@ type Props = {
   origin: string
   destination: string
   bookingRef: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
   claimUrl?: string
   reviewUrl?: string
 }
@@ -46,7 +47,7 @@ export default function TripReview({
   claimUrl,
   reviewUrl,
 }: Props) {
-  const s = t[locale]
+  const s = t[lkey(locale)]
   const btnHref = claimUrl || reviewUrl || '#'
   const btnLabel = claimUrl ? s.claimBtn : s.reviewBtn
   return (

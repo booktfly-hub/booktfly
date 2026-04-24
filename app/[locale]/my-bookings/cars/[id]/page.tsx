@@ -1,7 +1,14 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+
+const LocationMap = dynamic(() => import('@/components/shared/location-map').then(m => m.LocationMap), {
+  ssr: false,
+  loading: () => <div className="h-[280px] rounded-lg border bg-muted/30 animate-pulse" />,
+})
 import { useLocale, useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -24,10 +31,13 @@ import {
   Fuel,
   Gauge,
   Users,
+  Star,
+  CheckCircle2,
+  ExternalLink,
 } from 'lucide-react'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { BookingDetailPageSkeleton } from '@/components/shared/loading-skeleton'
-import { capitalizeFirst, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
+import { capitalizeFirst, cn, formatPrice, formatPriceEN, shortId } from '@/lib/utils'
 import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES } from '@/lib/constants'
 import type { CarBooking } from '@/types'
 import { ChangeNameModal } from '@/components/bookings/change-name-modal'
@@ -46,6 +56,11 @@ export default function CarBookingDetailPage() {
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
   const [nameModalOpen, setNameModalOpen] = useState(false)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [reviewSubmitted, setReviewSubmitted] = useState(false)
+  const [reviewHover, setReviewHover] = useState(0)
 
   const Back = isAr ? ChevronRight : ChevronLeft
 
@@ -83,17 +98,17 @@ export default function CarBookingDetailPage() {
 
   const car = booking.car
   const provider = booking.provider || car?.provider
-  const carName = car ? (isAr ? `${car.brand_ar} ${car.model_ar}` : `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`) : ''
+  const carName = car ? (pick(locale, `${car.brand_ar} ${car.model_ar}`, `${car.brand_en || car.brand_ar} ${car.model_en || car.model_ar}`)) : ''
   const city = car ? (isAr ? car.city_ar : capitalizeFirst(car.city_en || car.city_ar)) : ''
   const pickupLocation = car ? (isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)) : null
   const fmt = (amount: number) => isAr ? formatPrice(amount, car?.currency || 'SAR') : formatPriceEN(amount, car?.currency || 'SAR')
   const createdDate = new Date(booking.created_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
   )
   const paidDate = booking.paid_at
     ? new Date(booking.paid_at).toLocaleDateString(
-        isAr ? 'ar-SA' : 'en-US',
+        pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
         { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
       )
     : null
@@ -119,7 +134,7 @@ export default function CarBookingDetailPage() {
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{isAr ? 'تفاصيل حجز السيارة' : 'Car Booking Details'}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{pick(locale, 'تفاصيل حجز السيارة', 'Car Booking Details', 'Araç Rezervasyon Ayrıntıları')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {t('booking.booking_reference')}: <span className="font-mono font-bold text-foreground">{shortId(booking.id)}</span>
           </p>
@@ -132,7 +147,7 @@ export default function CarBookingDetailPage() {
           <div className="rounded-xl border bg-card p-6">
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <CarFront className="h-4 w-4 text-accent" />
-              {isAr ? 'تفاصيل السيارة' : 'Car Details'}
+              {pick(locale, 'تفاصيل السيارة', 'Car Details', 'Araç Ayrıntıları')}
             </h3>
 
             <div className="flex items-start justify-between gap-4">
@@ -155,19 +170,19 @@ export default function CarBookingDetailPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 mt-4 border-t">
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'تاريخ الاستلام' : 'Pickup date'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'تاريخ الاستلام', 'Pickup date', 'Alım tarihi')}</span>
                 <p className="text-sm font-medium mt-0.5" dir="ltr">{booking.pickup_date}</p>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'تاريخ الإرجاع' : 'Return date'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'تاريخ الإرجاع', 'Return date', 'Dönüş tarihi')}</span>
                 <p className="text-sm font-medium mt-0.5" dir="ltr">{booking.return_date}</p>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'عدد الأيام' : 'Days'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'عدد الأيام', 'Days', 'Gün')}</span>
                 <p className="text-sm font-medium mt-0.5">{booking.number_of_days}</p>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground">{isAr ? 'السعر لكل يوم' : 'Price per day'}</span>
+                <span className="text-xs text-muted-foreground">{pick(locale, 'السعر لكل يوم', 'Price per day', 'Günlük fiyat')}</span>
                 <p className="text-sm font-medium mt-0.5">{fmt(booking.price_per_day)}</p>
               </div>
             </div>
@@ -176,7 +191,7 @@ export default function CarBookingDetailPage() {
               {car.year && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>{isAr ? 'سنة الصنع' : 'Year'}: {car.year}</span>
+                  <span>{pick(locale, 'سنة الصنع', 'Year', 'Yıl')}: {car.year}</span>
                 </div>
               )}
               {transmissionLabel && (
@@ -193,9 +208,39 @@ export default function CarBookingDetailPage() {
               )}
             </div>
 
+            {/* Contact phone */}
+            {car.contact_phone && (
+              <div className="mt-4 pt-4 border-t flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                <a href={`tel:${car.contact_phone}`} className="hover:text-accent transition-colors" dir="ltr">
+                  {car.contact_phone}
+                </a>
+              </div>
+            )}
+
+            {/* Embedded map */}
+            {car.pickup_latitude != null && car.pickup_longitude != null && (
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  {pick(locale, 'موقع الاستلام', 'Pickup location', 'Alım konumu')}
+                </div>
+                <LocationMap latitude={car.pickup_latitude} longitude={car.pickup_longitude} label={carName} />
+                <a
+                  href={`https://www.google.com/maps?q=${car.pickup_latitude},${car.pickup_longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
+                >
+                  {pick(locale, 'فتح في خرائط جوجل', 'Open in Google Maps', 'Google Haritalar\'da Aç')}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+
             <div className="mt-4 pt-4 border-t">
               <Link href={`/${locale}/cars/${car.id}`} className="text-sm text-accent hover:underline">
-                {isAr ? 'عرض صفحة السيارة' : 'View car page'} &rarr;
+                {pick(locale, 'عرض صفحة السيارة', 'View car page', 'Araç sayfasını görüntüle')} &rarr;
               </Link>
             </div>
           </div>
@@ -204,14 +249,14 @@ export default function CarBookingDetailPage() {
         <div className="rounded-xl border bg-card p-6">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <User className="h-4 w-4 text-accent" />
-            {isAr ? 'بيانات المستأجر' : 'Renter Information'}
+            {pick(locale, 'بيانات المستأجر', 'Renter Information', 'Kiralayan Bilgileri')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex items-center justify-between gap-3 sm:col-span-2">
               <div className="flex items-center gap-3">
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
-                  <span className="text-xs text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
+                  <span className="text-xs text-muted-foreground">{pick(locale, 'الاسم', 'Name', 'Ad')}</span>
                   <p className="text-sm font-medium">{booking.guest_name}</p>
                 </div>
               </div>
@@ -230,7 +275,7 @@ export default function CarBookingDetailPage() {
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
-                  <span className="text-xs text-muted-foreground">{isAr ? 'رقم الجوال' : 'Phone number'}</span>
+                  <span className="text-xs text-muted-foreground">{pick(locale, 'رقم الجوال', 'Phone number', 'Telefon numarası')}</span>
                   <p className="text-sm font-medium" dir="ltr">{booking.guest_phone}</p>
                 </div>
               </div>
@@ -239,7 +284,7 @@ export default function CarBookingDetailPage() {
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
-                  <span className="text-xs text-muted-foreground">{isAr ? 'البريد الإلكتروني' : 'Email'}</span>
+                  <span className="text-xs text-muted-foreground">{pick(locale, 'البريد الإلكتروني', 'Email', 'E-posta')}</span>
                   <p className="text-sm font-medium" dir="ltr">{booking.guest_email}</p>
                 </div>
               </div>
@@ -254,11 +299,11 @@ export default function CarBookingDetailPage() {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{isAr ? 'سعر اليوم' : 'Daily price'}</span>
+              <span className="text-muted-foreground">{pick(locale, 'سعر اليوم', 'Daily price', 'Günlük fiyat')}</span>
               <span>{fmt(booking.price_per_day)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{isAr ? 'عدد الأيام' : 'Days'}</span>
+              <span className="text-muted-foreground">{pick(locale, 'عدد الأيام', 'Days', 'Gün')}</span>
               <span>{booking.number_of_days}</span>
             </div>
             <div className="flex justify-between text-sm border-t pt-3 font-semibold text-lg">
@@ -270,12 +315,12 @@ export default function CarBookingDetailPage() {
           <div className="mt-4 pt-4 border-t space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
-              <span>{isAr ? 'تاريخ الحجز' : 'Booked on'}: {createdDate}</span>
+              <span>{pick(locale, 'تاريخ الحجز', 'Booked on', 'Rezervasyon tarihi')}: {createdDate}</span>
             </div>
             {paidDate && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CreditCard className="h-3.5 w-3.5" />
-                <span>{isAr ? 'تاريخ الدفع' : 'Paid on'}: {paidDate}</span>
+                <span>{pick(locale, 'تاريخ الدفع', 'Paid on', 'Ödeme tarihi')}: {paidDate}</span>
               </div>
             )}
           </div>
@@ -285,17 +330,17 @@ export default function CarBookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6">
             <div className="flex items-center gap-3 mb-3">
               <Landmark className="h-5 w-5 text-warning shrink-0" />
-              <h3 className="font-semibold text-warning">{isAr ? 'بانتظار التحويل البنكي' : 'Awaiting Bank Transfer'}</h3>
+              <h3 className="font-semibold text-warning">{pick(locale, 'بانتظار التحويل البنكي', 'Awaiting Bank Transfer', 'Banka Transferi Bekleniyor')}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              {isAr ? 'يرجى إتمام التحويل البنكي لتأكيد حجز السيارة' : 'Please complete the bank transfer to confirm your car booking'}
+              {pick(locale, 'يرجى إتمام التحويل البنكي لتأكيد حجز السيارة', 'Please complete the bank transfer to confirm your car booking', 'Araç rezervasyonunuzu onaylamak için lütfen banka transferini tamamlayın')}
             </p>
             <Link
               href={`/${locale}/checkout/${booking.id}?type=car`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               <CreditCard className="h-4 w-4" />
-              {isAr ? 'إتمام الدفع' : 'Complete Payment'}
+              {pick(locale, 'إتمام الدفع', 'Complete Payment', 'Ödemeyi Tamamla')}
             </Link>
           </div>
         )}
@@ -304,7 +349,7 @@ export default function CarBookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6 flex items-center gap-3">
             <Clock className="h-5 w-5 text-warning shrink-0" />
             <p className="text-sm font-medium text-warning">
-              {isAr ? 'تم تأكيد التحويل وبانتظار مراجعة الإدارة' : 'Transfer confirmed, pending admin review'}
+              {pick(locale, 'تم تأكيد التحويل وبانتظار مراجعة الإدارة', 'Transfer confirmed, pending admin review', 'Transfer onaylandı, yönetici incelemesi bekleniyor')}
             </p>
           </div>
         )}
@@ -313,7 +358,7 @@ export default function CarBookingDetailPage() {
           <div className="rounded-xl border bg-destructive/5 border-destructive/20 p-6">
             <div className="flex items-center gap-3 mb-3">
               <XCircle className="h-5 w-5 text-destructive shrink-0" />
-              <h3 className="font-semibold text-destructive">{isAr ? 'تم رفض التحويل' : 'Transfer Rejected'}</h3>
+              <h3 className="font-semibold text-destructive">{pick(locale, 'تم رفض التحويل', 'Transfer Rejected', 'Transfer Reddedildi')}</h3>
             </div>
             {booking.payment_rejection_reason && (
               <p className="text-sm text-muted-foreground mb-3">{booking.payment_rejection_reason}</p>
@@ -322,14 +367,14 @@ export default function CarBookingDetailPage() {
               href={`/${locale}/checkout/${booking.id}?type=car`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
             >
-              {isAr ? 'إعادة المحاولة' : 'Try Again'}
+              {pick(locale, 'إعادة المحاولة', 'Try Again', 'Tekrar Dene')}
             </Link>
           </div>
         )}
 
         {booking.transfer_receipt_url && (
           <div className="rounded-xl border bg-card p-6">
-            <h3 className="font-semibold text-foreground mb-3">{isAr ? 'إيصال التحويل' : 'Transfer Receipt'}</h3>
+            <h3 className="font-semibold text-foreground mb-3">{pick(locale, 'إيصال التحويل', 'Transfer Receipt', 'Transfer Makbuzu')}</h3>
             <div className="relative w-full h-64">
               <Image src={booking.transfer_receipt_url} alt="Receipt" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-contain rounded-lg border" />
             </div>
@@ -354,10 +399,10 @@ export default function CarBookingDetailPage() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive text-white text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors"
             >
               {cancelling ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-              {isAr ? 'طلب إلغاء الحجز' : 'Request Cancellation'}
+              {pick(locale, 'طلب إلغاء الحجز', 'Request Cancellation', 'İptal Talebi')}
             </button>
             <p className="text-xs text-muted-foreground mt-2">
-              {isAr ? 'سيتم إرسال طلب الإلغاء للإدارة للمراجعة' : 'Your cancellation request will be sent to admin for review'}
+              {pick(locale, 'سيتم إرسال طلب الإلغاء للإدارة للمراجعة', 'Your cancellation request will be sent to admin for review', 'İptal talebiniz inceleme için yöneticiye gönderilecek')}
             </p>
           </div>
         )}
@@ -366,7 +411,7 @@ export default function CarBookingDetailPage() {
           <div className="rounded-xl border bg-warning/5 border-warning/20 p-6 flex items-center gap-3">
             <Clock className="h-5 w-5 text-warning shrink-0" />
             <p className="text-sm font-medium text-warning">
-              {isAr ? 'طلب الإلغاء قيد المراجعة من الإدارة' : 'Your cancellation request is pending admin review'}
+              {pick(locale, 'طلب الإلغاء قيد المراجعة من الإدارة', 'Your cancellation request is pending admin review', 'İptal talebiniz yönetici incelemesi bekliyor')}
             </p>
           </div>
         )}
@@ -378,7 +423,7 @@ export default function CarBookingDetailPage() {
           >
             <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
               <Building2 className="h-4 w-4 text-accent" />
-              {isAr ? 'مقدم الخدمة' : 'Provider'}
+              {pick(locale, 'مقدم الخدمة', 'Provider', 'Tedarikçi')}
             </h3>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -404,6 +449,84 @@ export default function CarBookingDetailPage() {
             archiveUrl={booking.contract_archive_url}
           />
         </div>
+
+        {booking.status === 'confirmed' && (
+          <div className="rounded-xl border bg-card p-6">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Star className="h-4 w-4 text-warning" />
+              {pick(locale, 'قيّم تجربتك', 'Rate Your Experience', 'Deneyiminizi Değerlendirin')}
+            </h3>
+
+            {reviewSubmitted ? (
+              <div className="flex items-center gap-2 text-success">
+                <CheckCircle2 className="h-5 w-5" />
+                <p className="text-sm font-semibold">{pick(locale, 'شكراً على تقييمك!', 'Thank you for your review!', 'Yorumunuz için teşekkürler!')}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      onMouseEnter={() => setReviewHover(star)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      className="transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={cn(
+                          'h-8 w-8 transition-colors',
+                          (reviewHover || reviewRating) >= star
+                            ? 'fill-warning text-warning'
+                            : 'text-muted-foreground'
+                        )}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder={pick(locale, 'أضف تعليقاً (اختياري)...', 'Add a comment (optional)...', 'Yorum ekleyin (isteğe bağlı)...')}
+                  rows={3}
+                  className="w-full rounded-lg border border-input bg-surface px-4 py-3 text-sm outline-none focus:border-ring focus:ring-4 focus:ring-ring/15 resize-none"
+                />
+
+                <button
+                  type="button"
+                  disabled={reviewRating === 0 || reviewSubmitting}
+                  onClick={async () => {
+                    if (!reviewRating || !booking.provider_id) return
+                    setReviewSubmitting(true)
+                    try {
+                      const res = await fetch('/api/reviews', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          booking_id: booking.id,
+                          provider_id: booking.provider_id,
+                          car_id: booking.car_id,
+                          item_type: 'car',
+                          rating: reviewRating,
+                          comment: reviewComment || undefined,
+                        }),
+                      })
+                      if (res.ok) setReviewSubmitted(true)
+                    } finally {
+                      setReviewSubmitting(false)
+                    }
+                  }}
+                  className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-primary/90"
+                >
+                  {reviewSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {pick(locale, 'إرسال التقييم', 'Submit Review', 'Yorumu Gönder')}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {nameModalOpen && booking.guest_name && (

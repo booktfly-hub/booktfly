@@ -1,8 +1,18 @@
+import { pick } from '@/lib/i18n-helpers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Users, Globe, TrendingUp, MousePointerClick } from 'lucide-react'
+import { findByIso, flagEmoji } from '@/lib/countries-dial'
+
+function resolveCountry(code: string, locale: string): { flag: string; label: string } {
+  const isAr = locale === 'ar'
+  if (!code || code === '—') return { flag: '🌐', label: pick(locale, 'غير معروف', 'Unknown', 'Bilinmiyor') }
+  const match = findByIso(code)
+  const label = match ? (isAr ? match.name_ar : match.name_en) : code.toUpperCase()
+  return { flag: flagEmoji(code) || '🌐', label }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -65,33 +75,38 @@ export default async function AdminVisitorsPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{isAr ? 'تحليلات الزوار' : 'Visitor Analytics'}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{pick(locale, 'تحليلات الزوار', 'Visitor Analytics', 'Ziyaretçi Analitiği')}</h1>
         <p className="text-sm text-muted-foreground">
-          {isAr ? 'عرض مبني على رؤوس Vercel Geo، بدون تخزين IP الأصلي.' : 'Powered by Vercel geo headers. Raw IPs are never stored.'}
+          {pick(locale, 'عرض مبني على رؤوس Vercel Geo، بدون تخزين IP الأصلي.', 'Powered by Vercel geo headers. Raw IPs are never stored.', 'Vercel geo başlıkları ile çalışır. Ham IP\'ler asla saklanmaz.')}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card label={isAr ? 'زيارات اليوم' : 'Today'} value={rowsToday.length} icon={TrendingUp} />
-        <Card label={isAr ? 'آخر 7 أيام' : 'Last 7 days'} value={rows7.length} icon={TrendingUp} />
-        <Card label={isAr ? 'آخر 30 يوماً' : 'Last 30 days'} value={rows30.length} icon={MousePointerClick} />
-        <Card label={isAr ? 'زوار فريدون (30 يوماً)' : 'Unique visitors (30d)'} value={uniqueSessions30} icon={Users} />
+        <Card label={pick(locale, 'زيارات اليوم', 'Today', 'Bugün')} value={rowsToday.length} icon={TrendingUp} />
+        <Card label={pick(locale, 'آخر 7 أيام', 'Last 7 days', 'Son 7 gün')} value={rows7.length} icon={TrendingUp} />
+        <Card label={pick(locale, 'آخر 30 يوماً', 'Last 30 days', 'Son 30 gün')} value={rows30.length} icon={MousePointerClick} />
+        <Card label={pick(locale, 'زوار فريدون (30 يوماً)', 'Unique visitors (30d)', 'Benzersiz ziyaretçiler (30g)')} value={uniqueSessions30} icon={Users} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
-            <h2 className="font-bold">{isAr ? 'أفضل الدول (آخر 30 يوماً)' : 'Top countries (last 30 days)'}</h2>
+            <h2 className="font-bold">{pick(locale, 'أفضل الدول (آخر 30 يوماً)', 'Top countries (last 30 days)', 'En iyi ülkeler (son 30 gün)')}</h2>
           </div>
           {topCountries.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد بيانات بعد' : 'No data yet'}</p>
+            <p className="text-sm text-muted-foreground">{pick(locale, 'لا توجد بيانات بعد', 'No data yet', 'Henüz veri yok')}</p>
           ) : (
             <ul className="space-y-3">
-              {topCountries.map(([country, count]) => (
+              {topCountries.map(([country, count]) => {
+                const { flag, label } = resolveCountry(country, locale)
+                return (
                 <li key={country} className="text-sm">
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="font-bold">{country}</span>
+                    <span className="flex items-center gap-2 font-bold">
+                      <span className="text-lg leading-none" aria-hidden>{flag}</span>
+                      <span>{label}</span>
+                    </span>
                     <span className="text-muted-foreground">{count}</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -101,7 +116,8 @@ export default async function AdminVisitorsPage() {
                     />
                   </div>
                 </li>
-              ))}
+                )
+              })}
             </ul>
           )}
         </div>
@@ -109,10 +125,10 @@ export default async function AdminVisitorsPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <MousePointerClick className="h-4 w-4 text-primary" />
-            <h2 className="font-bold">{isAr ? 'أكثر الصفحات زيارة' : 'Top pages'}</h2>
+            <h2 className="font-bold">{pick(locale, 'أكثر الصفحات زيارة', 'Top pages', 'En iyi sayfalar')}</h2>
           </div>
           {topPaths.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد بيانات بعد' : 'No data yet'}</p>
+            <p className="text-sm text-muted-foreground">{pick(locale, 'لا توجد بيانات بعد', 'No data yet', 'Henüz veri yok')}</p>
           ) : (
             <ul className="space-y-3">
               {topPaths.map(([path, count]) => (

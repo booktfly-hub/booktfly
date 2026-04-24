@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -484,7 +485,7 @@ export default function AdminDashboard() {
     {
       key: 'revenueThisMonth',
       label: t('revenue_this_month'),
-      value: `${data.revenueThisMonth.toLocaleString()} ${isAr ? 'ر.س' : 'SAR'}`,
+      value: `${data.revenueThisMonth.toLocaleString()} ${pick(locale, 'ر.س', 'SAR', 'SAR')}`,
       icon: DollarSign,
       color: 'text-emerald-500',
       bg: 'bg-emerald-500/10',
@@ -588,7 +589,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-1">{t('dashboard')}</h1>
           <p className="text-slate-500 font-medium">
-            {isAr ? 'مركز عمليات المنصة' : 'Platform operations center'}
+            {pick(locale, 'مركز عمليات المنصة', 'Platform operations center', 'Platform operasyon merkezi')}
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200">
@@ -679,7 +680,7 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-bold text-slate-900">{t('recent_activity')}</h2>
             <div className="flex items-center gap-3">
               <Link href={`/${locale}/admin/activity-logs`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-                {isAr ? 'عرض الكل' : 'View All'}
+                {pick(locale, 'عرض الكل', 'View All', 'Tümünü Görüntüle')}
               </Link>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -712,7 +713,7 @@ export default function AdminDashboard() {
                       {log.description || log.event_type.replace(/_/g, ' ')}
                     </p>
                     <p className="text-xs text-slate-400 truncate">
-                      {profileData?.full_name || profileData?.email || (isAr ? 'مستخدم مجهول' : 'Unknown user')}
+                      {profileData?.full_name || profileData?.email || (pick(locale, 'مستخدم مجهول', 'Unknown user', 'Bilinmeyen kullanıcı'))}
                     </p>
                   </div>
                   <span className="text-xs font-medium text-slate-400 shrink-0">
@@ -728,7 +729,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-slate-900">{t('active_alerts')}</h2>
             <Link href={`/${locale}/admin/alerts`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-              {isAr ? 'عرض الكل' : 'View All'}
+              {pick(locale, 'عرض الكل', 'View All', 'Tümünü Görüntüle')}
             </Link>
           </div>
           <div className="space-y-3 max-h-[480px] overflow-y-auto">
@@ -782,12 +783,12 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">{t('flights_overview')}</h2>
             <Link href={`/${locale}/admin/trips`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-              {isAr ? 'عرض الكل' : 'View All'}
+              {pick(locale, 'عرض الكل', 'View All', 'Tümünü Görüntüle')}
             </Link>
           </div>
           <div className="space-y-3">
             {data.topTrips.length === 0 && (
-              <p className="text-sm text-slate-400 text-center py-8">{isAr ? 'لا توجد رحلات' : 'No trips'}</p>
+              <p className="text-sm text-slate-400 text-center py-8">{pick(locale, 'لا توجد رحلات', 'No trips', 'Gezi yok')}</p>
             )}
             {data.topTrips.map((trip) => {
               const occupancy = trip.total_seats > 0 ? Math.round((trip.booked_seats / trip.total_seats) * 100) : 0
@@ -818,7 +819,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-[10px] text-slate-400">
-                      {trip.booked_seats}/{trip.total_seats} {isAr ? 'مقعد' : 'seats'}
+                      {trip.booked_seats}/{trip.total_seats} {pick(locale, 'مقعد', 'seats', 'koltuk')}
                     </span>
                     <span className="text-[10px] text-slate-400">{t('occupancy')}</span>
                   </div>
@@ -832,12 +833,12 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">{t('top_providers')}</h2>
             <Link href={`/${locale}/admin/providers`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-              {isAr ? 'عرض الكل' : 'View All'}
+              {pick(locale, 'عرض الكل', 'View All', 'Tümünü Görüntüle')}
             </Link>
           </div>
           <div className="space-y-3">
             {data.topProviders.length === 0 && (
-              <p className="text-sm text-slate-400 text-center py-8">{isAr ? 'لا توجد بيانات' : 'No data'}</p>
+              <p className="text-sm text-slate-400 text-center py-8">{pick(locale, 'لا توجد بيانات', 'No data', 'Veri yok')}</p>
             )}
             {data.topProviders.map((provider, idx) => {
               const maxRevenue = data.topProviders[0]?.revenue || 1
@@ -854,7 +855,7 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <span className="text-xs font-bold text-emerald-600">
-                      {provider.revenue.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}
+                      {provider.revenue.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
@@ -873,12 +874,12 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">{t('recent_bookings')}</h2>
             <Link href={`/${locale}/admin/bookings`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition-colors">
-              {isAr ? 'عرض الكل' : 'View All'}
+              {pick(locale, 'عرض الكل', 'View All', 'Tümünü Görüntüle')}
             </Link>
           </div>
           <div className="space-y-3">
             {data.recentBookings.length === 0 && (
-              <p className="text-sm text-slate-400 text-center py-8">{isAr ? 'لا توجد حجوزات' : 'No bookings'}</p>
+              <p className="text-sm text-slate-400 text-center py-8">{pick(locale, 'لا توجد حجوزات', 'No bookings', 'Rezervasyon yok')}</p>
             )}
             {data.recentBookings.map((booking) => {
               const tripData = booking.trip as { airline: string; origin_code: string | null; destination_code: string | null } | null
@@ -898,7 +899,7 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     <span className="text-xs font-bold text-slate-600">
-                      {booking.total_amount.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}
+                      {booking.total_amount.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">{relativeTime(booking.created_at, isAr)}</p>

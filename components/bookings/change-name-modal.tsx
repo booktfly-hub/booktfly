@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Loader2, X, UserCog } from 'lucide-react'
@@ -69,7 +70,7 @@ export function ChangeNameModal({
         toast({ title: result.error || t('common.error'), variant: 'destructive' })
         return
       }
-      toast({ title: isAr ? 'تم تحديث الاسم' : 'Name updated', variant: 'success' })
+      toast({ title: pick(locale, 'تم تحديث الاسم', 'Name updated', 'Ad güncellendi'), variant: 'success' })
       onSuccess()
       onClose()
     } finally {
@@ -91,7 +92,7 @@ export function ChangeNameModal({
             <div>
               <h3 className="font-bold">{t('name_change.request')}</h3>
               <p className="text-xs text-muted-foreground">
-                {isAr ? 'تحديث اسم المسافر على هذا الحجز' : 'Update the passenger name on this booking'}
+                {pick(locale, 'تحديث اسم المسافر على هذا الحجز', 'Update the passenger name on this booking', 'Bu rezervasyondaki yolcu adını güncelle')}
               </p>
             </div>
           </div>
@@ -111,7 +112,7 @@ export function ChangeNameModal({
 
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-bold">{isAr ? 'الاسم الأول الجديد' : 'New first name'}</label>
+            <label className="mb-1 block text-xs font-bold">{pick(locale, 'الاسم الأول الجديد', 'New first name', 'Yeni ad')}</label>
             <input
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
@@ -120,7 +121,7 @@ export function ChangeNameModal({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-bold">{isAr ? 'الاسم الأخير الجديد' : 'New last name'}</label>
+            <label className="mb-1 block text-xs font-bold">{pick(locale, 'الاسم الأخير الجديد', 'New last name', 'Yeni soyad')}</label>
             <input
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
@@ -148,7 +149,7 @@ export function ChangeNameModal({
             )}
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isAr ? 'تأكيد التغيير' : 'Confirm change'}
+            {pick(locale, 'تأكيد التغيير', 'Confirm change', 'Değişikliği onayla')}
           </button>
         </div>
       </div>

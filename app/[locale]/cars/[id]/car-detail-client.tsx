@@ -1,9 +1,16 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const LocationMap = dynamic(() => import('@/components/shared/location-map').then(m => m.LocationMap), {
+  ssr: false,
+  loading: () => <div className="h-[280px] rounded-lg border bg-muted/30 animate-pulse" />,
+})
 import {
   Car as CarIcon,
   MapPin,
@@ -28,6 +35,7 @@ import { CAR_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES, CAR_FEATURES, MAX_DAYS_
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { RoomDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { buttonVariants } from '@/components/ui/button'
+import { ReviewList } from '@/components/reviews/review-list'
 import type { Car } from '@/types'
 
 export default function CarDetailClient({ params }: { params: Promise<{ id: string; locale: string }> }) {
@@ -124,7 +132,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 md:pt-32 lg:pt-36 lg:pb-12 animate-fade-in-up">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-40 md:pt-8 lg:pt-12 lg:pb-12 animate-fade-in-up">
         {/* Back button */}
         <button
           onClick={() => router.push(`/${locale}/cars`)}
@@ -202,52 +210,52 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                 )}
               </div>
 
-              <div className="p-6 md:p-10">
+              <div className="p-4 md:p-10">
                 {/* Status & Category badges */}
-                <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                <div className="mb-3 flex flex-wrap items-center gap-1.5 md:gap-2.5">
                   <span
                     className={cn(
-                      'inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm transition-all hover:scale-105',
+                      'inline-flex items-center px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider md:tracking-widest border shadow-sm transition-all hover:scale-105',
                       statusStyles[car.status] || 'bg-muted text-muted-foreground border-border'
                     )}
                   >
-                    <span className="relative flex h-2 w-2 me-2">
+                    <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2 me-1.5 md:me-2">
                       <span className={cn(
                         "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
                         car.status === 'active' ? "bg-emerald-400" : "bg-muted-foreground"
                       )}></span>
                       <span className={cn(
-                        "relative inline-flex rounded-full h-2 w-2",
+                        "relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2",
                         car.status === 'active' ? "bg-emerald-500" : "bg-muted-foreground"
                       )}></span>
                     </span>
                     {t(`status.${car.status}`)}
                   </span>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500 backdrop-blur">
-                    <CarIcon className="h-3.5 w-3.5 text-accent" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-500 backdrop-blur">
+                    <CarIcon className="h-3 w-3 md:h-3.5 md:w-3.5 text-accent" />
                     {categoryText}
                   </span>
                 </div>
 
                 {/* Name */}
-                <h1 className="text-2xl font-black tracking-tight text-slate-950 md:text-4xl mb-3">
+                <h1 className="text-lg font-black tracking-tight text-slate-950 md:text-4xl mb-2 md:mb-3 truncate">
                   {brand} {model}
                 </h1>
 
                 {/* City & Year */}
-                <div className="flex flex-col gap-1.5 mb-6">
+                <div className="flex flex-col gap-1 md:gap-1.5 mb-4 md:mb-6">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm md:text-base font-semibold text-slate-600">{city}</span>
+                    <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-400" />
+                    <span className="text-xs md:text-base font-semibold text-slate-600">{city}</span>
                   </div>
                   {pickupLocation && (
-                    <div className="flex items-start gap-2 ps-6">
-                      <span className="text-xs md:text-sm font-medium text-slate-500">{pickupLocation}</span>
+                    <div className="flex items-start gap-2 ps-5 md:ps-6">
+                      <span className="text-[11px] md:text-sm font-medium text-slate-500">{pickupLocation}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 ps-6">
-                    <span className="text-xs md:text-sm font-medium text-slate-400">
-                      <Calendar className="inline h-3.5 w-3.5 me-1" />
+                  <div className="flex items-center gap-2 ps-5 md:ps-6">
+                    <span className="text-[11px] md:text-sm font-medium text-slate-400">
+                      <Calendar className="inline h-3 w-3 md:h-3.5 md:w-3.5 me-1" />
                       {car.year}
                     </span>
                   </div>
@@ -260,9 +268,9 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                       <div className="flex items-center gap-2.5">
                         {car.pickup_type === 'airport' ? <Plane className="h-4 w-4 text-primary" /> : <Building2 className="h-4 w-4 text-primary" />}
                         <div>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'الاستلام' : 'Pickup'}</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pick(locale, 'الاستلام', 'Pickup', 'Alım')}</span>
                           <p className="text-sm font-semibold text-slate-700">
-                            {car.pickup_type === 'airport' ? (isAr ? 'توصيل للمطار' : 'Airport Delivery') : (isAr ? 'فرع الشركة' : 'Company Branch')}
+                            {car.pickup_type === 'airport' ? (pick(locale, 'توصيل للمطار', 'Airport Delivery', 'Havalimanı Teslimi')) : (pick(locale, 'فرع الشركة', 'Company Branch', 'Şirket Şubesi'))}
                             {pickupBranch && <span className="text-slate-500"> — {pickupBranch}</span>}
                           </p>
                         </div>
@@ -272,9 +280,9 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                       <div className="flex items-center gap-2.5">
                         {car.return_type === 'airport' ? <Plane className="h-4 w-4 text-accent" /> : <Building2 className="h-4 w-4 text-accent" />}
                         <div>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'الإرجاع' : 'Return'}</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pick(locale, 'الإرجاع', 'Return', 'Dönüş')}</span>
                           <p className="text-sm font-semibold text-slate-700">
-                            {car.return_type === 'airport' ? (isAr ? 'المطار' : 'Airport') : (isAr ? 'فرع مختلف' : 'Different Branch')}
+                            {car.return_type === 'airport' ? (pick(locale, 'المطار', 'Airport', 'Havalimanı')) : (pick(locale, 'فرع مختلف', 'Different Branch', 'Farklı Şube'))}
                             {returnBranch && <span className="text-slate-500"> — {returnBranch}</span>}
                           </p>
                         </div>
@@ -283,14 +291,14 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     {car.return_type === 'same_location' && (
                       <div className="flex items-center gap-2.5">
                         <Check className="h-4 w-4 text-emerald-500" />
-                        <span className="text-sm font-semibold text-slate-600">{isAr ? 'الإرجاع في نفس موقع الاستلام' : 'Return at same pickup location'}</span>
+                        <span className="text-sm font-semibold text-slate-600">{pick(locale, 'الإرجاع في نفس موقع الاستلام', 'Return at same pickup location', 'Aynı alım konumunda iade')}</span>
                       </div>
                     )}
                     {(car.pickup_hour_from || car.pickup_hour_to) && (
                       <div className="flex items-center gap-2.5">
                         <Clock className="h-4 w-4 text-slate-400" />
                         <div>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'ساعات الاستلام' : 'Pickup Hours'}</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pick(locale, 'ساعات الاستلام', 'Pickup Hours', 'Alım Saatleri')}</span>
                           <p className="text-sm font-semibold text-slate-700">{car.pickup_hour_from || '—'} → {car.pickup_hour_to || '—'}</p>
                         </div>
                       </div>
@@ -299,7 +307,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                       <div className="flex items-center gap-2.5">
                         <Clock className="h-4 w-4 text-slate-400" />
                         <div>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{isAr ? 'ساعات الإرجاع' : 'Return Hours'}</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pick(locale, 'ساعات الإرجاع', 'Return Hours', 'İade Saatleri')}</span>
                           <p className="text-sm font-semibold text-slate-700">{car.return_hour_from || '—'} → {car.return_hour_to || '—'}</p>
                         </div>
                       </div>
@@ -308,34 +316,34 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                 )}
 
                 {/* Info cards */}
-                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 mb-6">
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                    <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                      <Users className="h-3.5 w-3.5" />
-                      {isAr ? 'المقاعد' : 'Seats'}
+                <div className="grid gap-2 md:gap-3 grid-cols-2 sm:grid-cols-3 mb-4 md:mb-6">
+                  <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                      <Users className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                      {pick(locale, 'المقاعد', 'Seats', 'Koltuklar')}
                     </p>
-                    <p className="text-2xl font-black text-slate-950">{car.seats_count} {t('cars.seats')}</p>
+                    <p className="text-sm md:text-2xl font-black text-slate-950 leading-tight">{car.seats_count} {t('cars.seats')}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                    <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                      <Gauge className="h-3.5 w-3.5" />
-                      {isAr ? 'ناقل الحركة' : 'Transmission'}
+                  <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                      <Gauge className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                      {pick(locale, 'ناقل الحركة', 'Transmission', 'Şanzıman')}
                     </p>
-                    <p className="text-lg font-black text-slate-950">{transmissionText}</p>
+                    <p className="text-xs md:text-lg font-black text-slate-950 leading-tight">{transmissionText}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                    <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                      <Fuel className="h-3.5 w-3.5" />
-                      {isAr ? 'نوع الوقود' : 'Fuel Type'}
+                  <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                    <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                      <Fuel className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                      {pick(locale, 'نوع الوقود', 'Fuel Type', 'Yakıt Türü')}
                     </p>
-                    <p className="text-lg font-black text-slate-950">{fuelText}</p>
+                    <p className="text-xs md:text-lg font-black text-slate-950 leading-tight">{fuelText}</p>
                   </div>
                 </div>
 
                 {/* Price card */}
-                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
+                <div className="hidden md:block rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
                   <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">{t('cars.price_per_day')}</p>
                   {hasDiscount && (
                     <p className="text-lg font-bold text-slate-400 line-through mb-1">{originalFormatted}</p>
@@ -347,6 +355,26 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
+            {/* Pickup location map */}
+            {car.pickup_latitude != null && car.pickup_longitude != null && (
+              <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-950 md:text-xl">{pick(locale, 'موقع الاستلام', 'Pickup location', 'Alım konumu')}</h3>
+                    {(car.pickup_location_ar || car.pickup_location_en) && (
+                      <p className="text-sm font-medium text-slate-500">
+                        {isAr ? car.pickup_location_ar : (car.pickup_location_en || car.pickup_location_ar)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <LocationMap latitude={car.pickup_latitude} longitude={car.pickup_longitude} label={`${brand} ${model}`} height={320} />
+              </div>
+            )}
+
             {/* Features */}
             {car.features && car.features.length > 0 && (
               <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
@@ -354,7 +382,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <CarIcon className="h-4 w-4" />
                   </div>
-                  <h3 className="text-lg font-black text-slate-950 md:text-xl">{isAr ? 'المميزات' : 'Features'}</h3>
+                  <h3 className="text-lg font-black text-slate-950 md:text-xl">{pick(locale, 'المميزات', 'Features', 'Özellikler')}</h3>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {car.features.map((feature) => {
@@ -384,7 +412,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     <Building2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'مقدم الخدمة' : 'Provider'}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'مقدم الخدمة', 'Provider', 'Tedarikçi')}</p>
                     <p className="text-base font-black text-slate-900">{providerName}</p>
                   </div>
                 </div>
@@ -416,7 +444,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     {/* Days counter */}
                     <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
                       <label className="mb-4 block text-sm font-bold text-slate-900">
-                        {isAr ? 'عدد الأيام' : 'Number of Days'}
+                        {pick(locale, 'عدد الأيام', 'Number of Days', 'Gün Sayısı')}
                       </label>
                       <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
                         <button
@@ -429,7 +457,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                         </button>
                         <div className="text-center">
                           <p className="text-3xl font-black tracking-tight text-slate-950">{days}</p>
-                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'أيام' : 'Days'}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'أيام', 'Days', 'Gün')}</p>
                         </div>
                         <button
                           type="button"
@@ -445,7 +473,7 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
                     {/* Price breakdown */}
                     <div className="space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-5">
                       <div className="flex items-center justify-between text-sm font-medium text-slate-500">
-                        <span>{fmt(car.price_per_day)} x {days} {isAr ? 'أيام' : 'Days'}</span>
+                        <span>{fmt(car.price_per_day)} x {days} {pick(locale, 'أيام', 'Days', 'Gün')}</span>
                         <span className="font-semibold text-slate-900">{fmt(totalPrice)}</span>
                       </div>
                       <div className="flex items-center justify-between border-t border-slate-100 pt-4">
@@ -495,15 +523,24 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
+      {car.provider_id && (
+        <div className="max-w-7xl mx-auto px-4 mt-12">
+          <h3 className="text-lg font-bold mb-4">
+            {pick(locale, 'التقييمات', 'Reviews', 'Yorumlar')}
+          </h3>
+          <ReviewList providerId={car.provider_id} carId={car.id} />
+        </div>
+      )}
+
       {/* Mobile Sticky Bottom Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 pb-safe z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('cars.price_per_day')}</span>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-3 py-2.5 pb-safe z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex flex-col min-w-0 shrink-0">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('cars.price_per_day')}</span>
             {hasDiscount && (
-              <span className="text-sm font-bold text-slate-500 line-through">{originalFormatted}</span>
+              <span className="text-[11px] font-bold text-slate-500 line-through leading-tight">{originalFormatted}</span>
             )}
-            <span className={cn('text-2xl font-black', hasDiscount ? 'text-orange-400' : 'text-white')}>
+            <span className={cn('text-lg font-black leading-tight', hasDiscount ? 'text-orange-400' : 'text-white')}>
               {fmt(car.price_per_day)}
             </span>
           </div>
@@ -511,13 +548,13 @@ export default function CarDetailClient({ params }: { params: Promise<{ id: stri
           {isBookable ? (
             <Link
               href={`/${locale}/cars/${car.id}/book?days=${days}`}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold text-base active:scale-[0.98] transition-all"
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-primary text-white font-bold text-sm active:scale-[0.98] transition-all"
             >
-              <CreditCard className="h-5 w-5" />
+              <CreditCard className="h-4 w-4" />
               {t('cars.book_now')}
             </Link>
           ) : (
-            <button disabled className="flex-1 py-3.5 rounded-xl bg-destructive/20 text-destructive font-bold text-base border border-destructive/20">
+            <button disabled className="flex-1 py-3 rounded-xl bg-destructive/20 text-destructive font-bold text-sm border border-destructive/20">
               {t('cars.not_available')}
             </button>
           )}

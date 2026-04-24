@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -36,7 +37,7 @@ type DashboardData = {
 }
 
 export default function MarkeeteerDashboardPage() {
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const isAr = locale === 'ar'
   const Arrow = isAr ? ArrowLeft : ArrowRight
@@ -60,7 +61,7 @@ export default function MarkeeteerDashboardPage() {
           setData(result.data)
         }
       })
-      .catch(() => setError(isAr ? 'خطأ في تحميل البيانات' : 'Failed to load data'))
+      .catch(() => setError(pick(locale, 'خطأ في تحميل البيانات', 'Failed to load data', 'Veriler yüklenemedi')))
       .finally(() => setLoading(false))
   }, [locale, router, isAr])
 
@@ -98,7 +99,7 @@ export default function MarkeeteerDashboardPage() {
 
   const statCards = [
     {
-      label: isAr ? 'رصيد FlyPoints' : 'FlyPoints Balance',
+      label: pick(locale, 'رصيد FlyPoints', 'FlyPoints Balance', 'FlyPoints Bakiyesi'),
       value: balance.toLocaleString(),
       icon: Star,
       color: 'text-yellow-500',
@@ -106,15 +107,15 @@ export default function MarkeeteerDashboardPage() {
       href: `/${locale}/marketeer/wallet`,
     },
     {
-      label: isAr ? 'القيمة بالريال' : 'SAR Value',
-      value: `${sar_value.toLocaleString()} ${isAr ? 'ر.س' : 'SAR'}`,
+      label: pick(locale, 'القيمة بالريال', 'SAR Value', 'SAR Değeri'),
+      value: `${sar_value.toLocaleString()} ${pick(locale, 'ر.س', 'SAR', 'SAR')}`,
       icon: Wallet,
       color: 'text-green-500',
       bg: 'bg-green-500/10',
       href: `/${locale}/marketeer/wallet`,
     },
     {
-      label: isAr ? 'إجمالي المكتسب' : 'Total Earned',
+      label: pick(locale, 'إجمالي المكتسب', 'Total Earned', 'Toplam Kazanılan'),
       value: total_earned.toLocaleString(),
       icon: TrendingUp,
       color: 'text-blue-500',
@@ -122,7 +123,7 @@ export default function MarkeeteerDashboardPage() {
       href: `/${locale}/marketeer/revenue`,
     },
     {
-      label: isAr ? 'الإحالات' : 'Referrals',
+      label: pick(locale, 'الإحالات', 'Referrals', 'Referanslar'),
       value: referral_count.toString(),
       icon: Users,
       color: 'text-purple-500',
@@ -137,8 +138,8 @@ export default function MarkeeteerDashboardPage() {
       icon: Plane,
       color: 'text-sky-500',
       bg: 'bg-sky-500/10',
-      title: isAr ? 'حجز لعميل' : 'Book for Customer',
-      desc: isAr ? 'احجز تذكرة نيابة عن عميلك وارسل له رابط الدفع' : 'Create a booking for your customer and send them a payment link',
+      title: pick(locale, 'حجز لعميل', 'Book for Customer', 'Müşteri İçin Rezervasyon Yap'),
+      desc: pick(locale, 'احجز تذكرة نيابة عن عميلك وارسل له رابط الدفع', 'Create a booking for your customer and send them a payment link', 'Müşteriniz için bir rezervasyon oluşturun ve onlara bir ödeme bağlantısı gönderin'),
       value: null,
       unit: null,
     },
@@ -147,29 +148,29 @@ export default function MarkeeteerDashboardPage() {
       icon: Users,
       color: 'text-purple-500',
       bg: 'bg-purple-500/10',
-      title: isAr ? 'المستخدمون' : 'Users',
-      desc: isAr ? 'عرض المستخدمين المُحالين عبر رابطك' : 'View users referred through your link',
+      title: pick(locale, 'المستخدمون', 'Users', 'Kullanıcılar'),
+      desc: pick(locale, 'عرض المستخدمين المُحالين عبر رابطك', 'View users referred through your link', 'Bağlantınız üzerinden yönlendirilen kullanıcıları görüntüle'),
       value: referral_count,
-      unit: isAr ? 'مستخدم' : 'users',
+      unit: pick(locale, 'مستخدم', 'users', 'kullanıcı'),
     },
     {
       href: `/${locale}/marketeer/revenue`,
       icon: BarChart3,
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
-      title: isAr ? 'الإيرادات' : 'Revenue',
-      desc: isAr ? 'سجل النقاط والمعاملات' : 'Points history and transactions',
+      title: pick(locale, 'الإيرادات', 'Revenue', 'Gelir'),
+      desc: pick(locale, 'سجل النقاط والمعاملات', 'Points history and transactions', 'Puan geçmişi ve işlemleri'),
       value: transactions.length,
-      unit: isAr ? 'معاملة' : 'transactions',
+      unit: pick(locale, 'معاملة', 'transactions', 'işlem'),
     },
     {
       href: `/${locale}/marketeer/wallet`,
       icon: Wallet,
       color: 'text-green-500',
       bg: 'bg-green-500/10',
-      title: isAr ? 'المحفظة' : 'Wallet',
-      desc: isAr ? 'رصيدك وطلبات السحب' : 'Your balance and withdrawal requests',
-      value: `${sar_value.toLocaleString()} ${isAr ? 'ر.س' : 'SAR'}`,
+      title: pick(locale, 'المحفظة', 'Wallet', 'Cüzdan'),
+      desc: pick(locale, 'رصيدك وطلبات السحب', 'Your balance and withdrawal requests', 'Bakiyeniz ve çekim talepleriniz'),
+      value: `${sar_value.toLocaleString()} ${pick(locale, 'ر.س', 'SAR', 'SAR')}`,
       unit: null,
     },
     {
@@ -177,8 +178,8 @@ export default function MarkeeteerDashboardPage() {
       icon: Star,
       color: 'text-yellow-500',
       bg: 'bg-yellow-500/10',
-      title: isAr ? 'التقييمات' : 'Reviews',
-      desc: isAr ? 'تقييمات العملاء' : 'Customer reviews for you',
+      title: pick(locale, 'التقييمات', 'Reviews', 'Yorumlar'),
+      desc: pick(locale, 'تقييمات العملاء', 'Customer reviews for you', 'Sizin için müşteri yorumları'),
       value: null,
       unit: null,
     },
@@ -187,8 +188,8 @@ export default function MarkeeteerDashboardPage() {
       icon: MessageSquare,
       color: 'text-slate-500',
       bg: 'bg-slate-500/10',
-      title: isAr ? 'المحادثات' : 'Chat',
-      desc: isAr ? 'تواصل مع العملاء' : 'Communicate with customers',
+      title: pick(locale, 'المحادثات', 'Chat', 'Sohbet'),
+      desc: pick(locale, 'تواصل مع العملاء', 'Communicate with customers', 'Müşterilerle iletişim kurun'),
       value: null,
       unit: null,
       soon: true,
@@ -200,10 +201,10 @@ export default function MarkeeteerDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          {isAr ? 'لوحة المسوّق' : 'Marketeer Dashboard'}
+          {pick(locale, 'لوحة المسوّق', 'Marketeer Dashboard', 'Pazarlamacı Paneli')}
         </h1>
         <p className="text-slate-500 font-medium mt-1">
-          {isAr ? `مرحباً، ${marketeer.full_name}` : `Welcome back, ${marketeer.full_name}`}
+          {pick(locale, `مرحباً، ${marketeer.full_name}`, `Welcome back, ${marketeer.full_name}`)}
         </p>
       </div>
 
@@ -231,7 +232,7 @@ export default function MarkeeteerDashboardPage() {
         style={{ animationDelay: '320ms' }}
       >
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
-          {isAr ? 'رابط الإحالة' : 'Referral Link'}
+          {pick(locale, 'رابط الإحالة', 'Referral Link', 'Referans Bağlantısı')}
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-600 break-all">
@@ -247,23 +248,21 @@ export default function MarkeeteerDashboardPage() {
             )}
           >
             {copied ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? (isAr ? 'تم النسخ' : 'Copied!') : (isAr ? 'نسخ الرابط' : 'Copy Link')}
+            {copied ? (pick(locale, 'تم النسخ', 'Copied!', 'Kopyalandı!')) : (pick(locale, 'نسخ الرابط', 'Copy Link', 'Bağlantıyı Kopyala'))}
           </button>
         </div>
         <p className="text-xs text-slate-400 mt-3">
-          {isAr
-            ? `معدّل التحويل: 1 نقطة = ${sar_rate} ر.س`
-            : `Conversion rate: 1 point = ${sar_rate} SAR`}
+          {pick(locale, `معدّل التحويل: 1 نقطة = ${sar_rate} ر.س`, `Conversion rate: 1 point = ${sar_rate} SAR`)}
         </p>
       </div>
 
       {/* Conversion funnel + pending payout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: isAr ? 'نقرات محوّلة' : 'Attributed Clicks', value: attributed_count.toString(), color: 'text-slate-700' },
-          { label: isAr ? 'حجوزات مؤكدة' : 'Confirmed Bookings', value: confirmed_count.toString(), color: 'text-emerald-600' },
-          { label: isAr ? 'معدل التحويل' : 'Conversion Rate', value: `${conversion_rate}%`, color: 'text-sky-600' },
-          { label: isAr ? 'دفعة معلّقة' : 'Pending Payout', value: `${pending_payout.toLocaleString()} ${isAr ? 'ر.س' : 'SAR'}`, color: 'text-amber-600' },
+          { label: pick(locale, 'نقرات محوّلة', 'Attributed Clicks', 'Atfedilen Tıklamalar'), value: attributed_count.toString(), color: 'text-slate-700' },
+          { label: pick(locale, 'حجوزات مؤكدة', 'Confirmed Bookings', 'Onaylı Rezervasyonlar'), value: confirmed_count.toString(), color: 'text-emerald-600' },
+          { label: pick(locale, 'معدل التحويل', 'Conversion Rate', 'Dönüşüm Oranı'), value: `${conversion_rate}%`, color: 'text-sky-600' },
+          { label: pick(locale, 'دفعة معلّقة', 'Pending Payout', 'Bekleyen Ödeme'), value: `${pending_payout.toLocaleString()} ${pick(locale, 'ر.س', 'SAR', 'SAR')}`, color: 'text-amber-600' },
         ].map((m) => (
           <div key={m.label} className="bg-white border border-slate-200 rounded-[2rem] p-5 shadow-sm">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{m.label}</p>
@@ -277,10 +276,10 @@ export default function MarkeeteerDashboardPage() {
         <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm animate-fade-in-up">
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-              {isAr ? 'أفضل الرحلات' : 'Top Trips'}
+              {pick(locale, 'أفضل الرحلات', 'Top Trips', 'En İyi Geziler')}
             </p>
             <p className="text-xs font-bold text-slate-400">
-              {isAr ? `إجمالي ${attributed_revenue.toLocaleString()} ر.س` : `${attributed_revenue.toLocaleString()} SAR total`}
+              {pick(locale, `إجمالي ${attributed_revenue.toLocaleString()} ر.س`, `${attributed_revenue.toLocaleString()} SAR total`)}
             </p>
           </div>
           <div className="divide-y divide-slate-100">
@@ -300,10 +299,10 @@ export default function MarkeeteerDashboardPage() {
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                   <span className="text-sm font-bold text-slate-500">
-                    {t.bookings} {isAr ? 'حجز' : 'bookings'}
+                    {t.bookings} {pick(locale, 'حجز', 'bookings', 'rezervasyon')}
                   </span>
                   <span className="text-sm font-black text-emerald-600">
-                    {t.revenue.toLocaleString()} {isAr ? 'ر.س' : 'SAR'}
+                    {t.revenue.toLocaleString()} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                   </span>
                 </div>
               </Link>
@@ -336,7 +335,7 @@ export default function MarkeeteerDashboardPage() {
             style={{ animationDelay: '400ms' }}
           >
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">
-              {isAr ? 'مصادر النقاط' : 'Points Sources'}
+              {pick(locale, 'مصادر النقاط', 'Points Sources', 'Puan Kaynakları')}
             </p>
             <div className="space-y-3">
               {entries.map(([eventType, pts]) => {
@@ -374,7 +373,7 @@ export default function MarkeeteerDashboardPage() {
               </div>
               {card.soon ? (
                 <span className="text-xs font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-500">
-                  {isAr ? 'قريباً' : 'Soon'}
+                  {pick(locale, 'قريباً', 'Soon', 'Yakında')}
                 </span>
               ) : (
                 <Arrow className="h-5 w-5 text-slate-300 group-hover:text-slate-600 transition-colors group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />

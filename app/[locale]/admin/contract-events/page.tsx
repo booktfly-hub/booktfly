@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -80,11 +81,9 @@ export default async function AdminContractEventsPage() {
   return (
     <div className="max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{isAr ? 'سجل أحداث العقود' : 'Contract Audit Log'}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{pick(locale, 'سجل أحداث العقود', 'Contract Audit Log', 'Sözleşme Denetim Kaydı')}</h1>
         <p className="text-sm text-muted-foreground">
-          {isAr
-            ? 'سجل دقيق لكل حدث على العقود: التوقيع، العرض، الطباعة، التذكيرات. يُخزَّن معرف IP كمُهشَّم فقط.'
-            : 'Detailed log of every contract event: signing, viewing, printing, reminders. IPs are hashed, not stored raw.'}
+          {pick(locale, 'سجل دقيق لكل حدث على العقود: التوقيع، العرض، الطباعة، التذكيرات. يُخزَّن معرف IP كمُهشَّم فقط.', 'Detailed log of every contract event: signing, viewing, printing, reminders. IPs are hashed, not stored raw.', 'Her sözleşme olayının ayrıntılı kaydı: imzalama, görüntüleme, yazdırma, hatırlatmalar. IP\'ler hashlenir, ham olarak saklanmaz.')}
         </p>
       </div>
 
@@ -92,17 +91,17 @@ export default async function AdminContractEventsPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 border-b">
             <tr>
-              <th className="text-start p-3 font-medium">{isAr ? 'الحدث' : 'Event'}</th>
-              <th className="text-start p-3 font-medium">{isAr ? 'النوع' : 'Target'}</th>
-              <th className="text-start p-3 font-medium">{isAr ? 'المُعرِّف' : 'Target ID'}</th>
-              <th className="text-start p-3 font-medium">{isAr ? 'المستخدم' : 'Actor'}</th>
-              <th className="text-start p-3 font-medium">{isAr ? 'التاريخ' : 'When'}</th>
-              <th className="text-start p-3 font-medium">{isAr ? 'التفاصيل' : 'Details'}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'الحدث', 'Event', 'Olay')}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'النوع', 'Target', 'Hedef')}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'المُعرِّف', 'Target ID', 'Hedef Kimliği')}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'المستخدم', 'Actor', 'Aktör')}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'التاريخ', 'When', 'Ne Zaman')}</th>
+              <th className="text-start p-3 font-medium">{pick(locale, 'التفاصيل', 'Details', 'Ayrıntılar')}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {rows.length === 0 ? (
-              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">{isAr ? 'لا توجد أحداث بعد' : 'No events yet'}</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">{pick(locale, 'لا توجد أحداث بعد', 'No events yet', 'Henüz olay yok')}</td></tr>
             ) : (
               rows.map(ev => {
                 const Icon = eventIcon(ev.event_type)
@@ -135,12 +134,12 @@ export default async function AdminContractEventsPage() {
                         </div>
                       ) : (
                         <span className="italic text-muted-foreground">
-                          {ev.actor_role === 'guest' ? (isAr ? 'ضيف' : 'Guest') : '—'}
+                          {ev.actor_role === 'guest' ? (pick(locale, 'ضيف', 'Guest', 'Misafir')) : '—'}
                         </span>
                       )}
                     </td>
                     <td className="p-3 text-xs text-muted-foreground">
-                      {new Date(ev.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
+                      {new Date(ev.created_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
                     <td className="p-3 text-xs">
                       {ev.ip_hash && (

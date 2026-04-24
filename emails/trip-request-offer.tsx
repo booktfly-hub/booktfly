@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Row, Column, Hr, Button } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -11,7 +12,7 @@ type TripRequestOfferProps = {
   pricePerSeat: number
   totalPrice: number
   notes?: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://booktfly.com'
@@ -60,7 +61,7 @@ export default function TripRequestOffer({
   notes,
   locale = 'ar',
 }: TripRequestOfferProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview}>

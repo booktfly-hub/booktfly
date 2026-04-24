@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Row, Column, Hr } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -10,7 +11,7 @@ type BookingConfirmedProps = {
   airline: string
   seats: number
   totalAmount: number
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
   claimUrl?: string
 }
 
@@ -69,8 +70,8 @@ export default function BookingConfirmed({
   locale = 'ar',
   claimUrl,
 }: BookingConfirmedProps) {
-  const strings = t[locale]
-  const claim = claimCopy[locale]
+  const strings = t[lkey(locale)]
+  const claim = claimCopy[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview(bookingRef)}>

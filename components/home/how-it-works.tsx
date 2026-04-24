@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { Search, CreditCard, Plane } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -22,15 +23,13 @@ export function HowItWorks() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-16 text-center animate-fade-in-up md:mb-24">
           <p className="mb-4 text-xs font-bold uppercase tracking-[0.28em] text-orange-500">
-            {isAr ? 'كيف تبدأ' : 'How it flows'}
+            {pick(locale, 'كيف تبدأ', 'How it flows', 'Nasıl akar')}
           </p>
           <h2 className="mb-6 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
             {t('how_it_works')}
           </h2>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600">
-            {isAr
-              ? 'ثلاث خطوات واضحة لتنتقل من البحث إلى الحجز بدون تعقيد أو تشتيت.'
-              : 'Three focused steps take travelers from search to payment without unnecessary friction.'}
+            {pick(locale, 'ثلاث خطوات واضحة لتنتقل من البحث إلى الحجز بدون تعقيد أو تشتيت.', 'Three focused steps take travelers from search to payment without unnecessary friction.', 'Üç odaklı adım, yolcuları gereksiz sürtüşme olmadan aramadan ödemeye taşır.')}
           </p>
         </div>
         

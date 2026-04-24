@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect, useId } from 'react'
@@ -299,12 +300,8 @@ export function Navbar() {
                         'inline-flex shrink-0 rounded-xl transition-colors whitespace-nowrap',
                         useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100',
                         desktopCompact
-                          ? isAr
-                            ? 'text-[10px] font-bold px-2 py-2'
-                            : 'text-xs font-bold px-2.5 py-2'
-                          : isAr
-                            ? 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5'
-                            : 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5'
+                          ? pick(locale, 'text-[10px] font-bold px-2 py-2', 'text-xs font-bold px-2.5 py-2', 'text-xs font-bold px-2.5 py-2')
+                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5')
                       )}
                     >
                       {t('common.login')}
@@ -315,12 +312,8 @@ export function Navbar() {
                         'shrink-0 rounded-lg shadow-sm transition-colors whitespace-nowrap',
                         useHeroOverlay ? 'bg-white text-primary hover:bg-white/90' : 'bg-primary text-primary-foreground hover:bg-primary/90',
                         desktopCompact
-                          ? isAr
-                            ? 'text-[10px] font-bold px-2 py-2'
-                            : 'text-xs font-bold px-2.5 py-2'
-                          : isAr
-                            ? 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5'
-                            : 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5'
+                          ? pick(locale, 'text-[10px] font-bold px-2 py-2', 'text-xs font-bold px-2.5 py-2', 'text-xs font-bold px-2.5 py-2')
+                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5')
                       )}
                     >
                       {t('common.signup')}

@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Button } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -8,7 +9,7 @@ type PriceAlertProps = {
   currentPrice: number
   targetPrice: number
   searchUrl: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const t = {
@@ -44,7 +45,7 @@ export default function PriceAlertEmail({
   searchUrl = '#',
   locale = 'ar',
 }: PriceAlertProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview}>

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useLocale, useTranslations } from 'next-intl'
 import { TrendingDown, TrendingUp, Zap, Star, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -55,9 +56,7 @@ export function SortTabs({
       case 'price_asc':
       case 'price_desc':
         if (p.price == null) return null
-        return isAr
-          ? `من ${p.price.toLocaleString('ar-SA')} ${cur === 'SAR' ? 'ر.س' : cur}`
-          : `from ${p.price.toLocaleString('en-US')} ${cur}`
+        return pick(locale, `من ${p.price.toLocaleString('ar-SA')} ${cur === 'SAR' ? 'ر.س' : cur}`, `from ${p.price.toLocaleString('en-US')} ${cur}`)
       case 'fastest':
         if (p.durationMin == null) return null
         return formatDuration(p.durationMin, isAr)

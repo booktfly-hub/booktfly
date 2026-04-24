@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Plus, X, CalendarIcon } from 'lucide-react'
@@ -123,7 +124,7 @@ export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
           className="gap-1.5 text-xs"
         >
           <Plus className="h-3.5 w-3.5" />
-          {isAr ? 'إضافة رحلة' : 'Add Flight'}
+          {pick(locale, 'إضافة رحلة', 'Add Flight', 'Uçuş Ekle')}
         </Button>
       )}
     </div>

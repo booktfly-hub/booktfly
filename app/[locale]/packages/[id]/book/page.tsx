@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { format, isValid, parseISO } from 'date-fns'
@@ -55,7 +56,7 @@ export default function BookPackagePage() {
 function BookPackageContent() {
   const t = useTranslations()
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const isAr = locale === 'ar'
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -200,8 +201,8 @@ function BookPackageContent() {
         </button>
 
         <div className="mb-8 md:mb-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{isAr ? 'حجز الباقة' : 'Book Your Package'}</h1>
-          <p className="text-sm md:text-lg text-slate-500 font-medium">{isAr ? 'أدخل بيانات الحجز لإتمام العملية' : 'Enter booking details to complete your reservation'}</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">{pick(locale, 'حجز الباقة', 'Book Your Package', 'Paketinizi Rezerve Edin')}</h1>
+          <p className="text-sm md:text-lg text-slate-500 font-medium">{pick(locale, 'أدخل بيانات الحجز لإتمام العملية', 'Enter booking details to complete your reservation', 'Rezervasyonunuzu tamamlamak için rezervasyon ayrıntılarını girin')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
@@ -267,7 +268,7 @@ function BookPackageContent() {
                       {t('packages.guest_info')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'الاسم ومعلومات التواصل' : 'Name and contact information'}
+                      {pick(locale, 'الاسم ومعلومات التواصل', 'Name and contact information', 'Ad ve iletişim bilgileri')}
                     </p>
                   </div>
                 </div>
@@ -287,7 +288,7 @@ function BookPackageContent() {
                       dir="ltr"
                       autoComplete="name"
                       className={cn(inputClass, errors.guest_name && errorInputClass)}
-                      placeholder={isAr ? 'اسم الضيف بالإنجليزية' : 'Full guest name (English)'}
+                      placeholder={pick(locale, 'اسم الضيف بالإنجليزية', 'Full guest name (English)', 'Misafirin tam adı (İngilizce)')}
                     />
                     {errors.guest_name && (
                       <p className="text-xs font-bold text-destructive mt-1">{errors.guest_name.message}</p>
@@ -348,7 +349,7 @@ function BookPackageContent() {
                       {t('packages.package_details')}
                     </h3>
                     <p className="text-sm font-medium text-slate-500">
-                      {isAr ? 'عدد الأشخاص وتواريخ السفر' : 'Number of people and travel dates'}
+                      {pick(locale, 'عدد الأشخاص وتواريخ السفر', 'Number of people and travel dates', 'Kişi sayısı ve seyahat tarihleri')}
                     </p>
                   </div>
                 </div>
@@ -373,7 +374,7 @@ function BookPackageContent() {
                       <p className="text-xs font-bold text-destructive mt-1">{errors.number_of_people.message}</p>
                     )}
                     <p className="text-xs text-slate-400">
-                      {isAr ? `الأماكن المتاحة: ${availableSpots}` : `Available spots: ${availableSpots}`}
+                      {pick(locale, `الأماكن المتاحة: ${availableSpots}`, `Available spots: ${availableSpots}`)}
                     </p>
                   </div>
 
@@ -383,7 +384,7 @@ function BookPackageContent() {
                       <div className="flex items-center gap-2 mb-3">
                         <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-500" />
                         <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
-                          {isAr ? 'تواريخ سفر الباقة' : 'Package Travel Dates'}
+                          {pick(locale, 'تواريخ سفر الباقة', 'Package Travel Dates', 'Paket Seyahat Tarihleri')}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -405,7 +406,7 @@ function BookPackageContent() {
                         </div>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-3">
-                        {isAr ? 'تواريخ السفر محددة مسبقاً من قِبل مزود الباقة ولا يمكن تعديلها.' : 'Travel dates are set by the package provider and cannot be changed.'}
+                        {pick(locale, 'تواريخ السفر محددة مسبقاً من قِبل مزود الباقة ولا يمكن تعديلها.', 'Travel dates are set by the package provider and cannot be changed.', 'Seyahat tarihleri paket sağlayıcı tarafından belirlenir ve değiştirilemez.')}
                       </p>
                     </div>
                     <input type="hidden" {...register('start_date')} />

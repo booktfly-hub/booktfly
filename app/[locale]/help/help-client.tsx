@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Search, ChevronDown, ChevronUp, HelpCircle, MessageCircle } from 'lucide-react'
@@ -69,7 +70,7 @@ export function HelpPageClient({ locale }: HelpPageClientProps) {
   const [expandedIndex, setExpandedIndex] = useState<string | null>(null)
 
   const categories: { key: Category | 'all'; label: string }[] = [
-    { key: 'all', label: isAr ? 'الكل' : 'All' },
+    { key: 'all', label: pick(locale, 'الكل', 'All', 'Tümü') },
     { key: 'booking', label: t('categories.booking') },
     { key: 'payment', label: t('categories.payment') },
     { key: 'cancellation', label: t('categories.cancellation') },

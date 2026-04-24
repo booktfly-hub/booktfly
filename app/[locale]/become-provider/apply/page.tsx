@@ -82,7 +82,7 @@ export default function ApplyProviderPage() {
   const t = useTranslations('become_provider')
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState('')

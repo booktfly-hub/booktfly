@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -57,11 +58,11 @@ export function RecentSearches() {
             >
               <Plane className="h-3 w-3 text-primary" />
               <span>{origin || search.origin_code}</span>
-              <span className="text-muted-foreground">{isAr ? '←' : '→'}</span>
+              <span className="text-muted-foreground">{pick(locale, '←', '→', '→')}</span>
               <span>{dest || search.destination_code}</span>
               {search.departure_date && (
                 <span className="text-muted-foreground">
-                  {new Date(search.departure_date).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric' })}
+                  {new Date(search.departure_date).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { month: 'short', day: 'numeric' })}
                 </span>
               )}
             </button>

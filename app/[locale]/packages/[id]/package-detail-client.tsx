@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -27,6 +28,7 @@ import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { LastMinuteBadge } from '@/components/ui/last-minute-badge'
 import { RoomDetailPageSkeleton } from '@/components/shared/loading-skeleton'
 import { buttonVariants } from '@/components/ui/button'
+import { ReviewList } from '@/components/reviews/review-list'
 import { format, parseISO, isValid } from 'date-fns'
 import type { Package as PackageType } from '@/types/database'
 
@@ -115,20 +117,20 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
   const durationDays = pkg.duration_days
   const roomBasisLabel = pkg.room_basis
     ? ({
-        single: isAr ? 'فردية' : 'Single Room',
-        double: isAr ? 'مزدوجة' : 'Double Room',
-        triple: isAr ? 'ثلاثية' : 'Triple Room',
-        quad: isAr ? 'رباعية' : 'Quad Room',
+        single: pick(locale, 'فردية', 'Single Room', 'Tek Kişilik Oda'),
+        double: pick(locale, 'مزدوجة', 'Double Room', 'Çift Kişilik Oda'),
+        triple: pick(locale, 'ثلاثية', 'Triple Room', 'Üç Kişilik Oda'),
+        quad: pick(locale, 'رباعية', 'Quad Room', 'Dört Kişilik Oda'),
       }[pkg.room_basis] || pkg.room_basis)
     : null
   const hotelCity = pkg.room
     ? (isAr ? pkg.room.city_ar : (pkg.room.city_en || pkg.room.city_ar))
     : (isAr ? pkg.hotel_city_ar : (pkg.hotel_city_en || pkg.hotel_city_ar))
   const includedServices = [
-    pkg.breakfast_included ? (isAr ? 'وجبة الإفطار' : 'Breakfast') : null,
-    pkg.airport_transfer_included ? (isAr ? 'استقبال وتوديع المطار' : 'Airport Transfer') : null,
-    pkg.tour_guide_included ? (isAr ? 'مرشد سياحي' : 'Tour Guide') : null,
-    pkg.sightseeing_tours_included ? (isAr ? 'جولات سياحية' : 'Sightseeing Tours') : null,
+    pkg.breakfast_included ? (pick(locale, 'وجبة الإفطار', 'Breakfast', 'Kahvaltı')) : null,
+    pkg.airport_transfer_included ? (pick(locale, 'استقبال وتوديع المطار', 'Airport Transfer', 'Havalimanı Transferi')) : null,
+    pkg.tour_guide_included ? (pick(locale, 'مرشد سياحي', 'Tour Guide', 'Tur Rehberi')) : null,
+    pkg.sightseeing_tours_included ? (pick(locale, 'جولات سياحية', 'Sightseeing Tours', 'Şehir Turları')) : null,
   ].filter(Boolean) as string[]
 
   // Car details (from linked car or inline fields)
@@ -193,7 +195,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
               </button>
               <div className="text-center">
                 <p className="text-3xl font-black tracking-tight text-slate-950">{people}</p>
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'أشخاص' : 'People'}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'أشخاص', 'People', 'Kişi')}</p>
               </div>
               <button
                 type="button"
@@ -211,12 +213,12 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-slate-500" />
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                {isAr ? 'تواريخ سفر الباقة' : 'Package Travel Dates'}
+                {pick(locale, 'تواريخ سفر الباقة', 'Package Travel Dates', 'Paket Seyahat Tarihleri')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isAr ? 'المغادرة' : 'Departure'}</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{pick(locale, 'المغادرة', 'Departure', 'Kalkış')}</label>
                 <div className={cn(
                   'flex h-11 w-full items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold',
                   startDate ? 'text-slate-900' : 'text-slate-400'
@@ -227,7 +229,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isAr ? 'العودة' : 'Return'}</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{pick(locale, 'العودة', 'Return', 'Dönüş')}</label>
                 <div className={cn(
                   'flex h-11 w-full items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold',
                   endDate ? 'text-slate-900' : 'text-slate-400'
@@ -239,14 +241,14 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
               </div>
             </div>
             <p className="text-[11px] text-slate-400">
-              {isAr ? 'تواريخ ثابتة محددة من قِبل مزود الباقة.' : 'Fixed dates set by the package provider.'}
+              {pick(locale, 'تواريخ ثابتة محددة من قِبل مزود الباقة.', 'Fixed dates set by the package provider.', 'Paket sağlayıcı tarafından belirlenen sabit tarihler.')}
             </p>
           </div>
 
           {/* Price breakdown */}
           <div className="space-y-3 rounded-[1.5rem] border border-slate-200 bg-white p-5">
             <div className="flex items-center justify-between text-sm font-medium text-slate-500">
-              <span>{fmt(pkg.total_price)} x {people} {isAr ? 'أشخاص' : 'People'}</span>
+              <span>{fmt(pkg.total_price)} x {people} {pick(locale, 'أشخاص', 'People', 'Kişi')}</span>
               <span className="font-semibold text-slate-900">{fmt(totalPrice)}</span>
             </div>
             <div className="flex items-center justify-between border-t border-slate-100 pt-4">
@@ -275,7 +277,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
           disabled
           className="w-full rounded-2xl border border-warning/20 bg-warning/10 py-4 text-base font-bold text-warning"
         >
-          {isAr ? 'نفذت الأماكن' : 'Sold Out'}
+          {pick(locale, 'نفذت الأماكن', 'Sold Out', 'Tükendi')}
         </button>
       )}
 
@@ -284,7 +286,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
           disabled
           className="w-full rounded-2xl border border-warning/20 bg-warning/10 py-4 text-base font-bold text-warning"
         >
-          {isAr ? 'غير متاح حالياً' : 'Not Available'}
+          {pick(locale, 'غير متاح حالياً', 'Not Available', 'Mevcut Değil')}
         </button>
       )}
 
@@ -293,7 +295,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
           disabled
           className="w-full rounded-2xl border border-destructive/20 bg-destructive/10 py-4 text-base font-bold text-destructive"
         >
-          {isAr ? 'غير متاح' : 'Not Available'}
+          {pick(locale, 'غير متاح', 'Not Available', 'Mevcut Değil')}
         </button>
       )}
 
@@ -305,7 +307,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
 
   return (
     <>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 md:pt-32 lg:pt-36 lg:pb-12 animate-fade-in-up">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-40 md:pt-8 lg:pt-12 lg:pb-12 animate-fade-in-up">
         {/* Back button */}
         <button
           onClick={() => router.push(`/${locale}/packages`)}
@@ -322,7 +324,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
           <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 md:p-5 mb-6 md:mb-8 flex items-center gap-3 md:gap-4 shadow-sm animate-fade-in-up">
             <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-destructive shrink-0" />
             <p className="text-sm md:text-base font-bold text-destructive">
-              {isAr ? 'هذه الباقة غير متاحة حالياً' : 'This package is not available'}
+              {pick(locale, 'هذه الباقة غير متاحة حالياً', 'This package is not available', 'Bu paket mevcut değil')}
             </p>
           </div>
         )}
@@ -384,49 +386,49 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                 )}
               </div>
 
-              <div className="p-6 md:p-10">
+              <div className="p-4 md:p-10">
                 {/* Status badges */}
-                <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                <div className="mb-3 flex flex-wrap items-center gap-1.5 md:gap-2.5">
                   <span
                     className={cn(
-                      'inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm transition-all hover:scale-105',
+                      'inline-flex items-center px-2 md:px-4 py-1 md:py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider md:tracking-widest border shadow-sm transition-all hover:scale-105',
                       statusStyles[pkg.status] || 'bg-muted text-muted-foreground border-border'
                     )}
                   >
-                    <span className="relative flex h-2 w-2 me-2">
+                    <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2 me-1.5 md:me-2">
                       <span className={cn(
                         "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
                         pkg.status === 'active' ? "bg-emerald-400" : "bg-muted-foreground"
                       )}></span>
                       <span className={cn(
-                        "relative inline-flex rounded-full h-2 w-2",
+                        "relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2",
                         pkg.status === 'active' ? "bg-emerald-500" : "bg-muted-foreground"
                       )}></span>
                     </span>
                     {t(`status.${pkg.status}`)}
                   </span>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500 backdrop-blur">
-                    <Users className="h-3.5 w-3.5 text-accent" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-500 backdrop-blur">
+                    <Users className="h-3 w-3 md:h-3.5 md:w-3.5 text-accent" />
                     {availableSpots} {t('packages.available_spots')}
                   </span>
                 </div>
 
                 {/* Name */}
-                <h1 className="text-2xl font-black tracking-tight text-slate-950 md:text-4xl mb-3">
+                <h1 className="text-lg font-black tracking-tight text-slate-950 md:text-4xl mb-2 md:mb-3 truncate">
                   {name}
                 </h1>
 
                 {/* Destination */}
-                <div className="flex items-center gap-2 mb-4">
-                  <MapPin className="h-4 w-4 text-slate-400" />
-                  <span className="text-sm md:text-base font-semibold text-slate-600">{destination}</span>
+                <div className="flex items-center gap-2 mb-3 md:mb-4">
+                  <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-400" />
+                  <span className="text-xs md:text-base font-semibold text-slate-600 truncate">{destination}</span>
                 </div>
 
                 {/* Date range */}
                 {pkg.start_date && (
-                  <div className="flex items-center gap-2 mb-6">
-                    <Calendar className="h-4 w-4 text-slate-400" />
-                    <span className="text-sm font-semibold text-slate-500">
+                  <div className="flex items-center gap-2 mb-4 md:mb-6">
+                    <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-slate-400" />
+                    <span className="text-[11px] md:text-sm font-semibold text-slate-500">
                       {formatDateOnly(pkg.start_date)}
                       {pkg.end_date && ` — ${formatDateOnly(pkg.end_date)}`}
                     </span>
@@ -434,16 +436,16 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                 )}
 
                 {(durationDays || roomBasisLabel) && (
-                  <div className="mb-6 flex flex-wrap gap-2">
+                  <div className="mb-4 md:mb-6 flex flex-wrap gap-1.5 md:gap-2">
                     {durationDays && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
-                        <Clock className="h-4 w-4 text-slate-400" />
-                        {durationDays} {isAr ? 'أيام' : 'Days'}
+                      <span className="inline-flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 md:px-4 py-1 md:py-2 text-[11px] md:text-sm font-semibold text-slate-700">
+                        <Clock className="h-3 w-3 md:h-4 md:w-4 text-slate-400" />
+                        {durationDays} {pick(locale, 'أيام', 'Days', 'Gün')}
                       </span>
                     )}
                     {roomBasisLabel && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
-                        <BedDouble className="h-4 w-4 text-slate-400" />
+                      <span className="inline-flex items-center gap-1.5 md:gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 md:px-4 py-1 md:py-2 text-[11px] md:text-sm font-semibold text-slate-700">
+                        <BedDouble className="h-3 w-3 md:h-4 md:w-4 text-slate-400" />
                         {roomBasisLabel}
                       </span>
                     )}
@@ -452,15 +454,15 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
 
                 {/* Description */}
                 {description && (
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 mb-6">
-                    <p className="text-sm md:text-base font-medium text-slate-600 leading-relaxed whitespace-pre-line">
+                  <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50 p-3 md:p-5 mb-4 md:mb-6">
+                    <p className="text-xs md:text-base font-medium text-slate-600 leading-relaxed whitespace-pre-line">
                       {description}
                     </p>
                   </div>
                 )}
 
                 {/* Price card */}
-                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
+                <div className="hidden md:block rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
                   <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">{t('packages.total_price')} / {t('packages.per_person')}</p>
                   {hasDiscount && (
                     <p className="text-lg font-bold text-slate-400 line-through mb-1">{originalFormatted}</p>
@@ -487,44 +489,44 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {flightAirline && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.airline')}</p>
-                        <p className="text-base font-bold text-slate-900">{flightAirline}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.airline')}</p>
+                        <p className="text-xs md:text-base font-bold text-slate-900">{flightAirline}</p>
                       </div>
                     )}
                     {flightNumber && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.flight_number')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.flight_number')}</p>
                         <p className="text-base font-bold text-slate-900">{flightNumber}</p>
                       </div>
                     )}
                     {flightOrigin && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.origin')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.origin')}</p>
                         <p className="text-base font-bold text-slate-900">{flightOrigin} {flightOriginCode && <span className="text-slate-500">({flightOriginCode})</span>}</p>
                       </div>
                     )}
                     {flightDestination && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.destination')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.destination')}</p>
                         <p className="text-base font-bold text-slate-900">{flightDestination} {flightDestinationCode && <span className="text-slate-500">({flightDestinationCode})</span>}</p>
                       </div>
                     )}
                     {flightDeparture && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.departure_date')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.departure_date')}</p>
                         <p className="text-base font-bold text-slate-900">{formatDateTime(flightDeparture)}</p>
                       </div>
                     )}
                     {flightReturn && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.return_date')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.return_date')}</p>
                         <p className="text-base font-bold text-slate-900">{formatDateTime(flightReturn)}</p>
                       </div>
                     )}
                     {flightCabin && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.cabin_class')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.cabin_class')}</p>
                         <p className="text-base font-bold text-slate-900 capitalize">{flightCabin}</p>
                       </div>
                     )}
@@ -543,14 +545,14 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {hotelName && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.hotel_name')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.hotel_name')}</p>
                         <p className="text-base font-bold text-slate-900">{hotelName}</p>
                       </div>
                     )}
                     {hotelCategory && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.hotel_category')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.hotel_category')}</p>
                         <div className="flex items-center gap-1">
                           {Array.from({ length: parseInt(hotelCategory) || 0 }).map((_, i) => (
                             <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -560,33 +562,33 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                       </div>
                     )}
                     {hotelNights && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.nights')}</p>
-                        <p className="text-base font-bold text-slate-900">{hotelNights} {isAr ? 'ليالي' : 'Nights'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.nights')}</p>
+                        <p className="text-base font-bold text-slate-900">{hotelNights} {pick(locale, 'ليالي', 'Nights', 'Gece')}</p>
                       </div>
                     )}
                     {durationDays && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'المدة' : 'Duration'}</p>
-                        <p className="text-base font-bold text-slate-900">{durationDays} {isAr ? 'أيام' : 'Days'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{pick(locale, 'المدة', 'Duration', 'Süre')}</p>
+                        <p className="text-base font-bold text-slate-900">{durationDays} {pick(locale, 'أيام', 'Days', 'Gün')}</p>
                       </div>
                     )}
                     {roomBasisLabel && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'نوع الإقامة' : 'Room Basis'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{pick(locale, 'نوع الإقامة', 'Room Basis', 'Oda Bazı')}</p>
                         <p className="text-base font-bold text-slate-900">{roomBasisLabel}</p>
                       </div>
                     )}
                     {hotelCity && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'المدينة' : 'City'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{pick(locale, 'المدينة', 'City', 'Şehir')}</p>
                         <p className="text-base font-bold text-slate-900">{hotelCity}</p>
                       </div>
                     )}
                   </div>
                   {includedServices.length > 0 && (
                     <div className="mt-4">
-                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'الخدمات المشمولة' : 'Included Services'}</p>
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'الخدمات المشمولة', 'Included Services', 'Dahil Olan Hizmetler')}</p>
                       <div className="flex flex-wrap gap-2">
                         {includedServices.map((service) => (
                           <span key={service} className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700">
@@ -610,27 +612,27 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {carBrand && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.car_brand')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.car_brand')}</p>
                         <p className="text-base font-bold text-slate-900">{carBrand}</p>
                       </div>
                     )}
                     {carModel && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.car_model')}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.car_model')}</p>
                         <p className="text-base font-bold text-slate-900">{carModel}</p>
                       </div>
                     )}
                     {carCategory && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{isAr ? 'الفئة' : 'Category'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{pick(locale, 'الفئة', 'Category', 'Kategori')}</p>
                         <p className="text-base font-bold text-slate-900 capitalize">{carCategory}</p>
                       </div>
                     )}
                     {carRentalDays && (
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 mb-1">{t('packages.rental_days')}</p>
-                        <p className="text-base font-bold text-slate-900">{carRentalDays} {isAr ? 'أيام' : 'Days'}</p>
+                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 md:p-4">
+                        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400 mb-1">{t('packages.rental_days')}</p>
+                        <p className="text-base font-bold text-slate-900">{carRentalDays} {pick(locale, 'أيام', 'Days', 'Gün')}</p>
                       </div>
                     )}
                   </div>
@@ -646,7 +648,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
                     <Building2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'مقدم الخدمة' : 'Provider'}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'مقدم الخدمة', 'Provider', 'Tedarikçi')}</p>
                     <p className="text-base font-black text-slate-900">{providerName}</p>
                   </div>
                 </div>
@@ -680,6 +682,15 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
         </div>
       </div>
 
+      {pkg.provider_id && (
+        <div className="max-w-7xl mx-auto px-4 mt-12">
+          <h3 className="text-lg font-bold mb-4">
+            {pick(locale, 'التقييمات', 'Reviews', 'Yorumlar')}
+          </h3>
+          <ReviewList providerId={pkg.provider_id} packageId={pkg.id} />
+        </div>
+      )}
+
       {/* Mobile Sticky Bottom Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 pb-safe z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -702,7 +713,7 @@ export default function PackageDetailClient({ params, initialPkg }: { params: Pr
             </button>
           ) : (
             <button disabled className="flex-1 py-3.5 rounded-xl bg-destructive/20 text-destructive font-bold text-base border border-destructive/20">
-              {isSoldOut ? (isAr ? 'نفذت الأماكن' : 'Sold Out') : (isAr ? 'غير متاح' : 'Not Available')}
+              {isSoldOut ? (pick(locale, 'نفذت الأماكن', 'Sold Out', 'Tükendi')) : (pick(locale, 'غير متاح', 'Not Available', 'Mevcut Değil'))}
             </button>
           )}
         </div>

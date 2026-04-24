@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useLocale } from 'next-intl'
 import { Flame } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -37,7 +38,7 @@ export function LastMinuteBadge({ discount, className, size = 'sm' }: LastMinute
       )}
     >
       <Flame className={cn(iconSizes[size], 'animate-pulse')} />
-      <span>{isAr ? 'لحظة أخيرة' : 'Last Minute'}</span>
+      <span>{pick(locale, 'لحظة أخيرة', 'Last Minute', 'Son Dakika')}</span>
       {discount != null && discount > 0 && (
         <span className="rounded-md bg-white/20 px-1.5 py-0.5 text-[9px] font-black">
           {discount}%

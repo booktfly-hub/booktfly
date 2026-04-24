@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -54,12 +55,12 @@ export default function AdminPackageBookingDetail() {
     : '-'
 
   const timeline = [
-    { label: isAr ? 'تاريخ الحجز' : 'Booking Date', value: booking.created_at },
-    { label: isAr ? 'تاريخ الدفع' : 'Paid At', value: booking.paid_at },
-    { label: isAr ? 'تأكيد التحويل' : 'Transfer Confirmed', value: booking.transfer_confirmed_at },
-    { label: isAr ? 'مراجعة الدفع' : 'Payment Reviewed', value: booking.payment_reviewed_at },
-    { label: isAr ? 'تاريخ الإلغاء' : 'Cancelled At', value: booking.cancelled_at },
-    { label: isAr ? 'تاريخ الاسترداد' : 'Refunded At', value: booking.refunded_at },
+    { label: pick(locale, 'تاريخ الحجز', 'Booking Date', 'Rezervasyon Tarihi'), value: booking.created_at },
+    { label: pick(locale, 'تاريخ الدفع', 'Paid At', 'Ödeme Tarihi'), value: booking.paid_at },
+    { label: pick(locale, 'تأكيد التحويل', 'Transfer Confirmed', 'Transfer Onaylandı'), value: booking.transfer_confirmed_at },
+    { label: pick(locale, 'مراجعة الدفع', 'Payment Reviewed', 'Ödeme İncelendi'), value: booking.payment_reviewed_at },
+    { label: pick(locale, 'تاريخ الإلغاء', 'Cancelled At', 'İptal Tarihi'), value: booking.cancelled_at },
+    { label: pick(locale, 'تاريخ الاسترداد', 'Refunded At', 'İade Tarihi'), value: booking.refunded_at },
   ].filter((x) => x.value)
 
   return (
@@ -73,7 +74,7 @@ export default function AdminPackageBookingDetail() {
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold">{isAr ? 'تفاصيل حجز الباقة' : 'Package Booking Detail'}</h1>
+              <h1 className="text-xl font-bold">{pick(locale, 'تفاصيل حجز الباقة', 'Package Booking Detail', 'Paket Rezervasyon Detayı')}</h1>
               <p className="text-sm text-muted-foreground">#{shortId(booking.id)}</p>
             </div>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${BOOKING_STATUS_COLORS[booking.status]}`}>
@@ -83,14 +84,14 @@ export default function AdminPackageBookingDetail() {
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'معلومات الباقة' : 'Package Info'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'معلومات الباقة', 'Package Info', 'Paket Bilgisi')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'اسم الباقة' : 'Package'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'اسم الباقة', 'Package', 'Paket')}</p>
               <p className="font-medium">{packageName}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'الوجهة' : 'Destination'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'الوجهة', 'Destination', 'Varış')}</p>
               <p className="font-medium">{destination}</p>
             </div>
             <div>
@@ -98,15 +99,15 @@ export default function AdminPackageBookingDetail() {
               <p className="font-medium">{providerName}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'عدد الأشخاص' : 'People'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'عدد الأشخاص', 'People', 'Kişi')}</p>
               <p className="font-medium">{booking.number_of_people}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'تاريخ البدء' : 'Start'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'تاريخ البدء', 'Start', 'Başlangıç')}</p>
               <p className="font-medium" dir="ltr">{booking.start_date}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">{isAr ? 'تاريخ الانتهاء' : 'End'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'تاريخ الانتهاء', 'End', 'Bitiş')}</p>
               <p className="font-medium" dir="ltr">{booking.end_date}</p>
             </div>
           </div>
@@ -127,21 +128,21 @@ export default function AdminPackageBookingDetail() {
         </div>
 
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-semibold mb-3">{isAr ? 'معلومات الضيف' : 'Guest Info'}</h3>
+          <h3 className="font-semibold mb-3">{pick(locale, 'معلومات الضيف', 'Guest Info', 'Misafir Bilgisi')}</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">{isAr ? 'اسم الضيف' : 'Guest Name'}</p>
+              <p className="text-muted-foreground">{pick(locale, 'اسم الضيف', 'Guest Name', 'Misafir Adı')}</p>
               <p className="font-medium">{booking.guest_name}</p>
             </div>
             {booking.guest_phone && (
               <div>
-                <p className="text-muted-foreground">{isAr ? 'الهاتف' : 'Phone'}</p>
+                <p className="text-muted-foreground">{pick(locale, 'الهاتف', 'Phone', 'Telefon')}</p>
                 <p className="font-medium" dir="ltr">{booking.guest_phone}</p>
               </div>
             )}
             {booking.guest_email && (
               <div>
-                <p className="text-muted-foreground">{isAr ? 'البريد الإلكتروني' : 'Email'}</p>
+                <p className="text-muted-foreground">{pick(locale, 'البريد الإلكتروني', 'Email', 'E-posta')}</p>
                 <p className="font-medium" dir="ltr">{booking.guest_email}</p>
               </div>
             )}
@@ -156,11 +157,11 @@ export default function AdminPackageBookingDetail() {
               <span className="font-bold">{fmt(Number(booking.total_amount))}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{isAr ? 'العمولة' : 'Commission'}</span>
+              <span className="text-muted-foreground">{pick(locale, 'العمولة', 'Commission', 'Komisyon')}</span>
               <span className="font-medium">{fmt(Number(booking.commission_amount))} ({booking.commission_rate}%)</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{isAr ? 'صافي المزود' : 'Provider payout'}</span>
+              <span className="text-muted-foreground">{pick(locale, 'صافي المزود', 'Provider payout', 'Tedarikçi ödemesi')}</span>
               <span className="font-medium">{fmt(Number(booking.provider_payout))}</span>
             </div>
           </div>
@@ -168,12 +169,12 @@ export default function AdminPackageBookingDetail() {
 
         {timeline.length > 0 && (
           <div className="bg-white rounded-xl border p-6">
-            <h3 className="font-semibold mb-3">{isAr ? 'سير الحالة' : 'Status Timeline'}</h3>
+            <h3 className="font-semibold mb-3">{pick(locale, 'سير الحالة', 'Status Timeline', 'Durum Zaman Çizelgesi')}</h3>
             <ul className="space-y-2 text-sm">
               {timeline.map((item, i) => (
                 <li key={i} className="flex items-center justify-between">
                   <span className="text-muted-foreground">{item.label}</span>
-                  <span className="font-medium" dir="ltr">{new Date(item.value as string).toLocaleString(isAr ? 'ar-SA' : 'en-US')}</span>
+                  <span className="font-medium" dir="ltr">{new Date(item.value as string).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</span>
                 </li>
               ))}
             </ul>

@@ -12,6 +12,7 @@ interface ReviewFormProps {
   tripId?: string
   roomId?: string
   carId?: string
+  packageId?: string
   itemType?: 'trip' | 'room' | 'car' | 'package'
   onSuccess?: () => void
 }
@@ -22,6 +23,7 @@ export function ReviewForm({
   tripId,
   roomId,
   carId,
+  packageId,
   itemType = 'trip',
   onSuccess,
 }: ReviewFormProps) {
@@ -52,6 +54,7 @@ export function ReviewForm({
           trip_id: tripId || null,
           room_id: roomId || null,
           car_id: carId || null,
+          package_id: packageId || null,
           item_type: itemType,
           rating,
           comment: comment.trim() || null,

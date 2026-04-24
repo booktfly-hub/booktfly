@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Row, Column, Hr } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -5,7 +6,7 @@ import BaseLayout from './base-layout'
 type BookingRefundedProps = {
   bookingRef: string
   amount: number
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const t = {
@@ -34,7 +35,7 @@ export default function BookingRefunded({
   amount = 0,
   locale = 'ar',
 }: BookingRefundedProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview(bookingRef)}>

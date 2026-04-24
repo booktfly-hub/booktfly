@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Button, Section } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -5,7 +6,7 @@ import BaseLayout from './base-layout'
 type ApplicationRejectedProps = {
   companyName: string
   comment?: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://booktfly.com'
@@ -38,7 +39,7 @@ export default function ApplicationRejected({
   comment,
   locale = 'ar',
 }: ApplicationRejectedProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   return (
     <BaseLayout previewText={strings.preview}>

@@ -271,7 +271,16 @@
     "post_room": "إضافة غرفة",
     "active_rooms": "الغرف النشطة",
     "no_rooms_yet": "لم تقم بإضافة أي غرف بعد",
-    "post_first_room": "أضف غرفتك الأولى"
+    "post_first_room": "أضف غرفتك الأولى",
+    "reviews": "تقييماتي",
+    "group_reputation": "السمعة",
+    "analytics": "الإحصاءات",
+    "total_revenue": "إجمالي الإيرادات",
+    "confirmed_bookings": "الحجوزات المؤكدة",
+    "conversion_rate": "معدل التحويل",
+    "monthly_bookings": "الحجوزات الشهرية",
+    "booking_status_breakdown": "توزيع حالات الحجز",
+    "product_breakdown": "حسب نوع المنتج"
   },
   "become_provider": {
     "title": "انضم كمزود خدمة",
@@ -351,6 +360,7 @@
     "rooms": "الغرف",
     "room_bookings": "حجوزات الغرف",
     "flight_requests": "طلبات الرحلات",
+    "email_leads": "قائمة البريد الإلكتروني",
     "users": "المستخدمون",
     "activity_logs": "سجل النشاطات",
     "alerts": "التنبيهات",
@@ -792,6 +802,11 @@
     "title": "عروض اللحظة الأخيرة",
     "subtitle": "أسرع! هذه العروض تنتهي قريباً",
     "badge": "لحظة أخيرة",
+    "tabs": {
+      "trips": "رحلات",
+      "rooms": "فنادق",
+      "cars": "سيارات"
+    },
     "departing_in": "المغادرة خلال {hours} ساعة",
     "expires_in": "ينتهي خلال {hours} ساعة",
     "only_left": "متبقي {count} فقط!",
@@ -1119,6 +1134,7 @@
   "mobile_nav": {
     "home": "الرئيسية",
     "search": "بحث",
+    "saved": "المحفوظات",
     "bookings": "حجوزاتي",
     "profile": "حسابي"
   },

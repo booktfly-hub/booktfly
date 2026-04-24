@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -61,7 +62,7 @@ export default function AdminPackages() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'إدارة الباقات' : 'Packages Management'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'إدارة الباقات', 'Packages Management', 'Paket Yönetimi')}</h1>
 
       <div className="flex gap-2 mb-6 flex-wrap">
         {statuses.map((s) => (
@@ -72,7 +73,7 @@ export default function AdminPackages() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? t(`status.${s}`) : isAr ? 'الكل' : 'All'}
+            {s ? t(`status.${s}`) : pick(locale, 'الكل', 'All', 'Tümü')}
           </button>
         ))}
       </div>
@@ -82,11 +83,11 @@ export default function AdminPackages() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'الباقة' : 'Package'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الوجهة' : 'Destination'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الباقة', 'Package', 'Paket')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الوجهة', 'Destination', 'Varış')}</th>
                 <th className="text-start p-3 font-medium">{t('admin.providers')}</th>
                 <th className="text-start p-3 font-medium">{t('common.price')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'يشمل' : 'Includes'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'يشمل', 'Includes', 'İçerir')}</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
                 <th className="text-start p-3 font-medium">{t('common.date')}</th>
                 <th className="text-start p-3 font-medium">{t('common.actions')}</th>
@@ -107,7 +108,7 @@ export default function AdminPackages() {
                       <td className="p-3">{destination}</td>
                       <td className="p-3">{(pkg.provider as any)?.company_name_ar}</td>
                       <td className="p-3">
-                        {pkg.total_price} {isAr ? 'ر.س' : 'SAR'}
+                        {pkg.total_price} {pick(locale, 'ر.س', 'SAR', 'SAR')}
                         {pkg.original_price && pkg.original_price > pkg.total_price && (
                           <span className="text-xs text-muted-foreground line-through ms-2">
                             {pkg.original_price}
@@ -126,7 +127,7 @@ export default function AdminPackages() {
                           {t(`status.${pkg.status}`)}
                         </span>
                       </td>
-                      <td className="p-3">{new Date(pkg.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                      <td className="p-3">{new Date(pkg.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</td>
                       <td className="p-3">
                         {pkg.status === 'active' && (
                           <>
@@ -135,7 +136,7 @@ export default function AdminPackages() {
                                 <input
                                   value={removeReason}
                                   onChange={(e) => setRemoveReason(e.target.value)}
-                                  placeholder={isAr ? 'سبب الإزالة' : 'Remove reason'}
+                                  placeholder={pick(locale, 'سبب الإزالة', 'Remove reason', 'Kaldırma nedeni')}
                                   className="p-1.5 text-xs border rounded w-32"
                                 />
                                 <button onClick={() => handleRemove(pkg.id)} className="text-xs text-destructive hover:underline">
@@ -151,7 +152,7 @@ export default function AdminPackages() {
                                 className="inline-flex items-center gap-1 text-destructive hover:underline text-xs"
                               >
                                 <Trash2 className="h-3 w-3" />
-                                {isAr ? 'إزالة' : 'Remove'}
+                                {pick(locale, 'إزالة', 'Remove', 'Kaldır')}
                               </button>
                             )}
                           </>
@@ -173,7 +174,7 @@ export default function AdminPackages() {
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'السابق' : 'Previous'}
+            {pick(locale, 'السابق', 'Previous', 'Önceki')}
           </button>
           <span className="text-sm text-muted-foreground">
             {page} / {totalPages}
@@ -183,7 +184,7 @@ export default function AdminPackages() {
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'التالي' : 'Next'}
+            {pick(locale, 'التالي', 'Next', 'İleri')}
           </button>
         </div>
       )}

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale } from 'next-intl'
 import Link from 'next/link'
@@ -59,7 +60,7 @@ export default function AdminReports() {
       body: JSON.stringify({ status }),
     })
     if (!res.ok) {
-      toast({ title: isAr ? 'فشل التحديث' : 'Update failed', variant: 'destructive' })
+      toast({ title: pick(locale, 'فشل التحديث', 'Update failed', 'Güncelleme başarısız'), variant: 'destructive' })
       return
     }
     const data = (await res.json()) as TripReport
@@ -68,14 +69,14 @@ export default function AdminReports() {
         ? prev.filter((r) => r.id !== id)
         : prev.map((r) => (r.id === id ? { ...r, ...data } : r))
     )
-    toast({ title: isAr ? 'تم التحديث' : 'Updated', variant: 'success' })
+    toast({ title: pick(locale, 'تم التحديث', 'Updated', 'Güncellendi'), variant: 'success' })
   }
 
   return (
     <div>
       <div className="flex items-center gap-2 mb-6">
         <Flag className="h-6 w-6 text-destructive" />
-        <h1 className="text-2xl font-bold">{isAr ? 'بلاغات الرحلات' : 'Trip Reports'}</h1>
+        <h1 className="text-2xl font-bold">{pick(locale, 'بلاغات الرحلات', 'Trip Reports', 'Gezi Raporları')}</h1>
       </div>
 
       <div className="flex gap-2 mb-6 flex-wrap">
@@ -97,29 +98,27 @@ export default function AdminReports() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'الرحلة' : 'Trip'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'السبب' : 'Reason'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'التفاصيل' : 'Details'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المبلّغ' : 'Reporter'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'تاريخ' : 'Date'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الحالة' : 'Status'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'إجراءات' : 'Actions'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الرحلة', 'Trip', 'Gezi')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'السبب', 'Reason', 'Neden')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'التفاصيل', 'Details', 'Ayrıntılar')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المبلّغ', 'Reporter', 'Raporlayan')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'تاريخ', 'Date', 'Tarih')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الحالة', 'Status', 'Durum')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'إجراءات', 'Actions', 'İşlemler')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{isAr ? 'جاري التحميل...' : 'Loading...'}</td></tr>
+                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{pick(locale, 'جاري التحميل...', 'Loading...', 'Yükleniyor...')}</td></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{isAr ? 'لا توجد بلاغات' : 'No reports'}</td></tr>
+                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">{pick(locale, 'لا توجد بلاغات', 'No reports', 'Rapor yok')}</td></tr>
               ) : (
                 rows.map((r) => (
                   <tr key={r.id} className="border-b hover:bg-muted/30 align-top">
                     <td className="p-3">
                       {r.trip ? (
                         <Link href={`/${locale}/trips/${r.trip.id}`} target="_blank" className="text-primary hover:underline font-medium">
-                          {isAr
-                            ? `${r.trip.origin_city_ar} → ${r.trip.destination_city_ar}`
-                            : `${r.trip.origin_city_en || r.trip.origin_city_ar} → ${r.trip.destination_city_en || r.trip.destination_city_ar}`}
+                          {pick(locale, `${r.trip.origin_city_ar} → ${r.trip.destination_city_ar}`, `${r.trip.origin_city_en || r.trip.origin_city_ar} → ${r.trip.destination_city_en || r.trip.destination_city_ar}`)}
                         </Link>
                       ) : <span className="text-muted-foreground">—</span>}
                     </td>
@@ -131,7 +130,7 @@ export default function AdminReports() {
                     <td className="p-3 max-w-xs text-muted-foreground">{r.details || '—'}</td>
                     <td className="p-3 text-xs">{r.reporter_email || (r.reporter_id ? 'User' : 'Anon')}</td>
                     <td className="p-3 text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
+                      {new Date(r.created_at).toLocaleString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
                     <td className="p-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -149,7 +148,7 @@ export default function AdminReports() {
                           <button
                             onClick={() => patchStatus(r.id, 'reviewing')}
                             className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border hover:bg-muted"
-                            title={isAr ? 'قيد المراجعة' : 'Start reviewing'}
+                            title={pick(locale, 'قيد المراجعة', 'Start reviewing', 'İncelemeye başla')}
                           >
                             <Eye className="h-3 w-3" />
                           </button>
@@ -161,14 +160,14 @@ export default function AdminReports() {
                               className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                             >
                               <CheckCircle2 className="h-3 w-3" />
-                              {isAr ? 'حل' : 'Resolve'}
+                              {pick(locale, 'حل', 'Resolve', 'Çöz')}
                             </button>
                             <button
                               onClick={() => patchStatus(r.id, 'dismissed')}
                               className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-slate-200 text-slate-600 hover:bg-muted"
                             >
                               <XCircle className="h-3 w-3" />
-                              {isAr ? 'رفض' : 'Dismiss'}
+                              {pick(locale, 'رفض', 'Dismiss', 'Kapat')}
                             </button>
                           </>
                         )}

@@ -36,7 +36,7 @@ function pickTrip(b: BookingRow): TripRow | null {
   return Array.isArray(b.trip) ? b.trip[0] ?? null : b.trip
 }
 
-function fmtRoute(trip: TripRow, locale: 'ar' | 'en') {
+function fmtRoute(trip: TripRow, locale: 'ar' | 'en' | 'tr') {
   const origin = locale === 'ar'
     ? trip.origin_city_ar || trip.origin_code || ''
     : trip.origin_city_en || trip.origin_code || ''
@@ -46,13 +46,13 @@ function fmtRoute(trip: TripRow, locale: 'ar' | 'en') {
   return { origin, destination }
 }
 
-function fmtDate(iso: string, locale: 'ar' | 'en') {
+function fmtDate(iso: string, locale: 'ar' | 'en' | 'tr') {
   return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   })
 }
 
-function claimUrlFor(b: BookingRow, locale: 'ar' | 'en') {
+function claimUrlFor(b: BookingRow, locale: 'ar' | 'en' | 'tr') {
   if (b.buyer_id || !b.guest_token) return undefined
   return `${baseUrl}/${locale}/claim/${b.guest_token}`
 }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
   }
 
   const now = Date.now()
-  const locale: 'ar' | 'en' = 'ar'
+  const locale: 'ar' | 'en' | 'tr' = 'ar'
   let sent7d = 0, sentDay = 0, sentReview = 0, sentSimilar = 0
   const errors: string[] = []
 

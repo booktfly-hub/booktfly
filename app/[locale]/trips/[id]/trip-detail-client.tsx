@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useRef, useState, use } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -53,24 +54,21 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const [previewFareTier, setPreviewFareTier] = useState<string | null>(null)
 
   const Back = isAr ? ChevronRight : ChevronLeft
-  const fetchedForRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (fetchedForRef.current === tripId) return
-    fetchedForRef.current = tripId
     const controller = new AbortController()
     ;(async () => {
       try {
         const res = await fetch(`/api/trips/${tripId}`, { signal: controller.signal })
         const data = await res.json()
+        if (controller.signal.aborted) return
         if (data.trip) {
           setTrip(data.trip)
           setBookingType(data.trip.trip_type === 'one_way' ? 'one_way' : 'round_trip')
         }
-      } catch {
-        // aborted or network error
-      } finally {
         setLoading(false)
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') setLoading(false)
       }
     })()
     return () => controller.abort()
@@ -112,17 +110,17 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
   const isSoldOut = trip.status === 'sold_out' || remaining <= 0
 
   const departureDate = new Date(trip.departure_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   )
   const departureTime = new Date(trip.departure_at).toLocaleTimeString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { hour: '2-digit', minute: '2-digit' }
   )
 
   const returnDate = trip.return_at
     ? new Date(trip.return_at).toLocaleDateString(
-        isAr ? 'ar-SA' : 'en-US',
+        pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
         { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
       )
     : null
@@ -134,10 +132,10 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
     ? trip.description_ar
     : (trip.description_en || trip.description_ar)
   const tripBenefits = [
-    trip.checked_baggage_kg ? (isAr ? `أمتعة مشحونة ${trip.checked_baggage_kg} كجم` : `Checked baggage ${trip.checked_baggage_kg} kg`) : null,
-    trip.cabin_baggage_kg ? (isAr ? `أمتعة يدوية ${trip.cabin_baggage_kg} كجم` : `Cabin baggage ${trip.cabin_baggage_kg} kg`) : null,
-    trip.meal_included ? (isAr ? 'تشمل وجبة' : 'Meal included') : null,
-    trip.seat_selection_included ? (isAr ? 'يشمل اختيار المقعد' : 'Seat selection included') : null,
+    trip.checked_baggage_kg ? (pick(locale, `أمتعة مشحونة ${trip.checked_baggage_kg} كجم`, `Checked baggage ${trip.checked_baggage_kg} kg`)) : null,
+    trip.cabin_baggage_kg ? (pick(locale, `أمتعة يدوية ${trip.cabin_baggage_kg} كجم`, `Cabin baggage ${trip.cabin_baggage_kg} kg`)) : null,
+    trip.meal_included ? (pick(locale, 'تشمل وجبة', 'Meal included', 'Yemek dahil')) : null,
+    trip.seat_selection_included ? (pick(locale, 'يشمل اختيار المقعد', 'Seat selection included', 'Koltuk seçimi dahil')) : null,
   ].filter(Boolean) as string[]
 
   const originCountry = getCountryCode(trip.origin_code, trip.origin_city_en || trip.origin_city_ar)
@@ -145,7 +143,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
 
   return (
     <>
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 md:pt-32 lg:pt-36 lg:pb-12 animate-fade-in-up">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-40 md:pt-8 lg:pt-12 lg:pb-12 animate-fade-in-up">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -193,90 +191,77 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         {/* Main content */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6 md:space-y-8">
-          <div className="overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)]">
-            <div className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.12),transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8fbfd_100%)] p-6 md:p-10">
+          <div className="overflow-hidden rounded-2xl md:rounded-[2.5rem] border border-slate-200 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)]">
+            <div className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.12),transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8fbfd_100%)] p-4 md:p-10">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-200 to-transparent" />
 
-              <div className="relative flex flex-col gap-8">
-                <div className="space-y-6">
+              <div className="relative flex flex-col gap-4 md:gap-8">
+                <div className="space-y-4 md:space-y-6">
                   <div className="min-w-0">
-                    <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                    <div className="mb-3 flex flex-wrap items-center gap-1.5 md:gap-2.5">
                       <TripStatusBadge status={trip.status} className="hover:scale-100" />
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500 backdrop-blur">
-                        <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-2 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-500 backdrop-blur">
+                        <Sparkles className="h-3 w-3 text-accent" />
                         {cabinLabel}
                       </span>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-500">
                         <TripDirectionIndicator
                           tripType={trip.trip_type}
                           isAr={isAr}
-                          className="h-3.5 w-3.5"
+                          className="h-3 w-3"
                         />
                         {tripTypeLabel}
                       </span>
                     </div>
 
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/15">
-                        <Plane className="h-5 w-5" />
+                    <div className="mb-3 flex items-center gap-2.5 md:gap-3">
+                      <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl md:rounded-2xl bg-primary text-white shadow-lg shadow-primary/15 shrink-0">
+                        <Plane className="h-4 w-4 md:h-5 md:w-5" />
                       </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.28em] text-slate-400">{t('trips.airline')}</p>
-                        <h1 className="text-2xl font-black tracking-tight text-slate-950 md:text-4xl">{trip.airline}</h1>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider md:tracking-[0.28em] text-slate-400">{t('trips.airline')}</p>
+                        <h1 className="text-lg md:text-4xl font-black tracking-tight text-slate-950 truncate">{trip.airline}{trip.flight_number ? <span className="ms-2 text-sm md:text-base font-semibold text-slate-500">· {trip.flight_number}</span> : null}</h1>
                       </div>
                     </div>
 
-                    {trip.flight_number && (
-                      <p className="mb-6 inline-flex items-center rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-semibold text-slate-600">
-                        {t('trips.flight_number')}: <span className="ms-2 font-black text-slate-900">{trip.flight_number}</span>
-                      </p>
-                    )}
-
-                    <div className="rounded-[1.75rem] border border-slate-200 bg-white/90 p-5 shadow-sm md:p-6">
-                      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-center">
+                    <div className="rounded-2xl md:rounded-[1.75rem] border border-slate-200 bg-white/90 p-3 md:p-6 shadow-sm">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 md:gap-4">
                         <div className="min-w-0">
-                          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-slate-400">{t('common.from')}</p>
-                          <p className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl [overflow-wrap:anywhere]">{originCity}</p>
-                          <div className="mt-3 flex items-center gap-2">
+                          <p className="mb-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.28em] text-slate-400">{t('common.from')}</p>
+                          <p className="text-base md:text-5xl font-black leading-tight tracking-tight text-slate-950 [overflow-wrap:anywhere]">{originCity}</p>
+                          <div className="mt-1.5 md:mt-3 flex items-center gap-1.5">
                             {originCountry && (
-                              <Image src={`https://flagcdn.com/w40/${originCountry}.png`} alt={originCountry} width={40} height={27} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                              <Image src={`https://flagcdn.com/w40/${originCountry}.png`} alt={originCountry} width={40} height={27} className="h-3 w-4 md:h-4 md:w-6 rounded-sm object-cover shadow-sm" />
                             )}
                             {trip.origin_code && (
-                              <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.22em] text-slate-500">{trip.origin_code?.toUpperCase()}</span>
+                              <span className="inline-flex rounded-full bg-slate-100 px-1.5 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-[0.22em] text-slate-500">{trip.origin_code?.toUpperCase()}</span>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center gap-2 py-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-px w-10 bg-slate-200 md:w-12" />
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-sky-100 bg-sky-50 text-primary shadow-sm">
+                        <div className="flex flex-col items-center justify-center gap-1 md:gap-2">
+                          <div className="flex items-center gap-1 md:gap-2">
+                            <div className="h-px w-4 md:w-12 bg-slate-200" />
+                            <div className="flex h-8 w-8 md:h-11 md:w-11 items-center justify-center rounded-full border border-sky-100 bg-sky-50 text-primary shadow-sm">
                               <TripDirectionIndicator
                                 tripType={trip.trip_type}
                                 isAr={isAr}
-                                orientation="vertical"
-                                className="h-4 w-4 md:hidden"
-                              />
-                              <TripDirectionIndicator
-                                tripType={trip.trip_type}
-                                isAr={isAr}
-                                className="hidden h-4 w-4 md:block"
+                                className="h-3.5 w-3.5 md:h-4 md:w-4"
                               />
                             </div>
-                            <div className="h-px w-10 bg-slate-200 md:w-12" />
+                            <div className="h-px w-4 md:w-12 bg-slate-200" />
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">{tripTypeLabel}</span>
                         </div>
 
-                        <div className="min-w-0 text-start md:text-end">
-                          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-slate-400">{t('common.to')}</p>
-                          <p className="text-3xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl [overflow-wrap:anywhere]">{destCity}</p>
-                          <div className="mt-3 flex items-center gap-2 md:justify-end">
+                        <div className="min-w-0 text-end">
+                          <p className="mb-1 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.28em] text-slate-400">{t('common.to')}</p>
+                          <p className="text-base md:text-5xl font-black leading-tight tracking-tight text-slate-950 [overflow-wrap:anywhere]">{destCity}</p>
+                          <div className="mt-1.5 md:mt-3 flex items-center gap-1.5 justify-end">
                             {trip.destination_code && (
-                              <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-[0.22em] text-slate-500">{trip.destination_code?.toUpperCase()}</span>
+                              <span className="inline-flex rounded-full bg-slate-100 px-1.5 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-[0.22em] text-slate-500">{trip.destination_code?.toUpperCase()}</span>
                             )}
                             {destCountry && (
-                              <Image src={`https://flagcdn.com/w40/${destCountry}.png`} alt={destCountry} width={40} height={27} className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                              <Image src={`https://flagcdn.com/w40/${destCountry}.png`} alt={destCountry} width={40} height={27} className="h-3 w-4 md:h-4 md:w-6 rounded-sm object-cover shadow-sm" />
                             )}
                           </div>
                         </div>
@@ -284,39 +269,39 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                     </div>
                   </div>
 
-                  <div className="grid gap-3 grid-cols-2">
-                    <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                      <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                        <Calendar className="h-3.5 w-3.5" />
+                  <div className="grid gap-2 md:gap-3 grid-cols-2">
+                    <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                        <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5" />
                         {t('trips.departure')}
                       </p>
-                      <p className="text-sm font-bold leading-tight text-slate-900">{departureDate}</p>
-                      <p className="mt-1 text-sm font-semibold text-primary">{departureTime}</p>
+                      <p className="text-xs md:text-sm font-bold leading-tight text-slate-900">{departureDate}</p>
+                      <p className="mt-0.5 md:mt-1 text-xs md:text-sm font-semibold text-primary">{departureTime}</p>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                      <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                        <Clock className="h-3.5 w-3.5" />
+                    <div className="rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                        <Clock className="h-3 w-3 md:h-3.5 md:w-3.5" />
                         {returnDate ? t('trips.return_date') : t('trips.trip_type')}
                       </p>
-                      <p className="text-sm font-bold leading-tight text-slate-900">{returnDate || tripTypeLabel}</p>
+                      <p className="text-xs md:text-sm font-bold leading-tight text-slate-900">{returnDate || tripTypeLabel}</p>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm min-w-0">
-                      <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                        <Users className="h-3.5 w-3.5" />
+                    <div className="col-span-2 rounded-xl md:rounded-2xl border border-slate-200 bg-white/90 p-3 md:p-4 shadow-sm min-w-0">
+                      <p className="mb-1.5 flex items-center gap-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-wider md:tracking-[0.22em] text-slate-400">
+                        <Users className="h-3 w-3 md:h-3.5 md:w-3.5" />
                         {t('trips.cabin_class')}
                       </p>
-                      <p className="text-sm font-bold leading-tight text-slate-900">{cabinLabel}</p>
+                      <p className="text-xs md:text-sm font-bold leading-tight text-slate-900">{cabinLabel}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
+                <div className="hidden md:block rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/15">
                     <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">{t('trips.price_per_seat')}</p>
                     <p className="text-3xl font-black tracking-tight md:text-4xl">{fmt(selectedPrice)}</p>
                     <p className="mt-2 text-sm font-semibold text-accent">
-                      {isAr ? 'نوع الحجز المحدد: ' : 'Selected fare: '}{bookingTypeLabel}
+                      {pick(locale, 'نوع الحجز المحدد: ', 'Selected fare: ', 'Seçilen ücret: ')}{bookingTypeLabel}
                     </p>
                 </div>
               </div>
@@ -332,7 +317,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-950 md:text-xl">{t('common.description')}</h3>
-                  <p className="text-sm font-medium text-slate-500">{isAr ? 'معلومات إضافية عن هذه الرحلة' : 'Additional trip details'}</p>
+                  <p className="text-sm font-medium text-slate-500">{pick(locale, 'معلومات إضافية عن هذه الرحلة', 'Additional trip details', 'Ek gezi ayrıntıları')}</p>
                 </div>
               </div>
               <p className="text-sm font-medium leading-7 text-slate-600 md:text-base">{tripDesc}</p>
@@ -346,8 +331,8 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-950 md:text-xl">{isAr ? 'مزايا الرحلة' : 'Trip Benefits'}</h3>
-                  <p className="text-sm font-medium text-slate-500">{isAr ? 'تفاصيل إضافية عن الخدمة' : 'Extra service details'}</p>
+                  <h3 className="text-lg font-black text-slate-950 md:text-xl">{pick(locale, 'مزايا الرحلة', 'Trip Benefits', 'Gezi Avantajları')}</h3>
+                  <p className="text-sm font-medium text-slate-500">{pick(locale, 'تفاصيل إضافية عن الخدمة', 'Extra service details', 'Ek hizmet ayrıntıları')}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -370,9 +355,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                 currency={trip.currency}
               />
               <p className="mt-3 text-xs font-medium text-slate-500">
-                {isAr
-                  ? 'سيتم تأكيد فئة التذكرة عند الحجز.'
-                  : 'Your fare will be confirmed on the booking page.'}
+                {pick(locale, 'سيتم تأكيد فئة التذكرة عند الحجز.', 'Your fare will be confirmed on the booking page.', 'Ücretiniz rezervasyon sayfasında onaylanacak.')}
               </p>
             </div>
           )}
@@ -407,7 +390,7 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
                 )}
               </div>
               <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-3">
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{isAr ? 'نوع الحجز' : 'Booking Type'}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{pick(locale, 'نوع الحجز', 'Booking Type', 'Rezervasyon Türü')}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -533,69 +516,69 @@ export default function TripDetailClient({ params }: { params: Promise<{ id: str
       {trip.provider_id && (
         <div className="mt-12 max-w-4xl">
           <h3 className="text-lg font-bold mb-4">
-            {isAr ? 'التقييمات' : 'Reviews'}
+            {pick(locale, 'التقييمات', 'Reviews', 'Yorumlar')}
           </h3>
           <ReviewList providerId={trip.provider_id} tripId={trip.id} />
         </div>
       )}
     </div>
 
-    {/* Mobile Sticky Bottom Bar (Moved outside animating wrapper) */}
+    {/* Mobile Sticky Bottom Bar */}
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
-        <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">
+        <div className="flex gap-1 p-1.5 border-b border-slate-800">
           <button
             type="button"
             onClick={() => setBookingType('round_trip')}
             className={cn(
-              'rounded-xl px-3 py-2 text-xs font-bold transition-colors text-center',
+              'flex-1 rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors text-center',
               bookingType === 'round_trip'
                 ? 'bg-white text-slate-950'
-                : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                : 'bg-white/10 text-slate-300'
             )}
           >
-            <span className="block">{isAr ? BOOKING_TYPES.round_trip.ar : BOOKING_TYPES.round_trip.en}</span>
-            <span className="block opacity-70 font-semibold">{fmt(trip.price_per_seat)}</span>
+            {isAr ? BOOKING_TYPES.round_trip.ar : BOOKING_TYPES.round_trip.en}
+            <span className="ms-1 opacity-70">{fmt(trip.price_per_seat)}</span>
           </button>
           <button
             type="button"
             onClick={() => setBookingType('one_way')}
             className={cn(
-              'rounded-xl px-3 py-2 text-xs font-bold transition-colors text-center',
+              'flex-1 rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors text-center',
               bookingType === 'one_way'
                 ? 'bg-white text-slate-950'
-                : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                : 'bg-white/10 text-slate-300'
             )}
           >
-            <span className="block">{isAr ? BOOKING_TYPES.one_way.ar : BOOKING_TYPES.one_way.en}</span>
-            <span className="block opacity-70 font-semibold">{fmt(oneWayPrice)}</span>
+            {isAr ? BOOKING_TYPES.one_way.ar : BOOKING_TYPES.one_way.en}
+            <span className="ms-1 opacity-70">{fmt(oneWayPrice)}</span>
           </button>
         </div>
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 p-4 pb-safe">
+        <div className="flex items-center justify-between gap-3 px-3 py-2.5 pb-safe">
             <button
               type="button"
               onClick={() => setShowDetailSheet(true)}
-              className="flex flex-col items-start text-start"
+              className="flex flex-col items-start text-start min-w-0 shrink-0"
             >
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest underline decoration-dotted">
-                  {isAr ? 'تفاصيل الرحلة' : 'Flight details'}
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider underline decoration-dotted">
+                  {pick(locale, 'التفاصيل', 'Details', 'Ayrıntılar')}
                 </span>
-                <span className="text-2xl font-black text-white">{fmt(selectedPrice)}</span>
+                <span className="text-lg font-black text-white leading-tight">{fmt(selectedPrice)}</span>
             </button>
 
             {isBookable ? (
                 <Link
                 href={`/${locale}/trips/${trip.id}/book?seats=${seatsCount}&bookingType=${bookingType}`}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-white font-bold text-base active:scale-[0.98] transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-primary text-white font-bold text-sm active:scale-[0.98] transition-all"
                 >
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-4 w-4" />
                 {t('trips.book_now')}
                 </Link>
             ) : isSoldOut ? (
-                <button disabled className="flex-1 py-3.5 rounded-xl bg-white/5 text-slate-500 font-bold text-base border border-white/5">
+                <button disabled className="flex-1 py-3 rounded-xl bg-white/5 text-slate-500 font-bold text-sm border border-white/5">
                 {t('trips.sold_out')}
                 </button>
             ) : (
-                <button disabled className="flex-1 py-3.5 rounded-xl bg-destructive/20 text-destructive font-bold text-base border border-destructive/20">
+                <button disabled className="flex-1 py-3 rounded-xl bg-destructive/20 text-destructive font-bold text-sm border border-destructive/20">
                 {t('trips.not_available')}
                 </button>
             )}

@@ -11,9 +11,10 @@ interface ReviewListProps {
   tripId?: string
   roomId?: string
   carId?: string
+  packageId?: string
 }
 
-export function ReviewList({ providerId, tripId, roomId, carId }: ReviewListProps) {
+export function ReviewList({ providerId, tripId, roomId, carId, packageId }: ReviewListProps) {
   const locale = useLocale()
   const t = useTranslations('reviews')
   const [reviews, setReviews] = useState<Review[]>([])
@@ -27,6 +28,7 @@ export function ReviewList({ providerId, tripId, roomId, carId }: ReviewListProp
         if (tripId) params.set('trip_id', tripId)
         if (roomId) params.set('room_id', roomId)
         if (carId) params.set('car_id', carId)
+        if (packageId) params.set('package_id', packageId)
 
         const res = await fetch(`/api/reviews?${params}`)
         if (res.ok) {
@@ -41,7 +43,7 @@ export function ReviewList({ providerId, tripId, roomId, carId }: ReviewListProp
       }
     }
     fetchReviews()
-  }, [providerId, tripId, roomId, carId])
+  }, [providerId, tripId, roomId, carId, packageId])
 
   if (loading) {
     return (

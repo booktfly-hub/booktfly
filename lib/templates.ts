@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
 
-type Locale = 'ar' | 'en'
+type Locale = 'ar' | 'en' | 'tr'
 
 function renderVars(text: string, vars: Record<string, string | number>) {
   return text.replace(/\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g, (_m, key) => {

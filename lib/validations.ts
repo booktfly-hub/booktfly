@@ -3,12 +3,13 @@ import { z } from 'zod'
 import ar from '@/messages/ar.json'
 import en from '@/messages/en.json'
 
-type Locale = 'ar' | 'en'
+type Locale = 'ar' | 'en' | 'tr'
 
 const messages = { ar, en } as const
 
 function v(locale: Locale, key: keyof typeof ar.validation): string {
-  return messages[locale].validation[key]
+  const k = locale === 'ar' ? 'ar' : 'en'
+  return messages[k].validation[key]
 }
 
 const seatMapConfigSchema = z.object({
@@ -183,6 +184,17 @@ export function getRoomSchema(locale: Locale = 'ar') {
     instant_book: z.boolean(),
     available_from: z.string().optional(),
     available_to: z.string().optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
+    cancellation_policy: z.enum(['free', 'partial', 'non_refundable']).optional(),
+    cancellation_penalty_nights: z.number().min(0).optional(),
+    breakfast_included: z.boolean().optional(),
+    contact_phone: z.string().optional(),
+    bedroom_count: z.number().min(1).optional(),
+    bathroom_count: z.number().min(1).optional(),
+    has_view: z.boolean().optional(),
+    has_balcony: z.boolean().optional(),
+    has_kitchen: z.boolean().optional(),
     name_change_allowed: z.boolean().optional(),
     name_change_fee: z.number().min(0).optional(),
     name_change_is_refundable: z.boolean().optional(),
@@ -263,6 +275,7 @@ export function getCarSchema(locale: Locale = 'ar') {
     pickup_hour_to: z.string().optional(),
     return_hour_from: z.string().optional(),
     return_hour_to: z.string().optional(),
+    contact_phone: z.string().optional(),
     name_change_allowed: z.boolean().optional(),
     name_change_fee: z.number().min(0).optional(),
     name_change_is_refundable: z.boolean().optional(),

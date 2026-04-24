@@ -84,7 +84,7 @@ export function hijriToGregorian(h: HijriDate): Date {
   return new Date(y, m - 1, d)
 }
 
-export function formatHijri(h: HijriDate, locale: 'ar' | 'en' = 'ar'): string {
+export function formatHijri(h: HijriDate, locale: 'ar' | 'en' | 'tr' = 'ar'): string {
   const monthName = locale === 'ar' ? HIJRI_MONTHS_AR[h.month - 1] : HIJRI_MONTHS_EN[h.month - 1]
   if (locale === 'ar') {
     return `${h.day} ${monthName} ${h.year}`
@@ -92,7 +92,7 @@ export function formatHijri(h: HijriDate, locale: 'ar' | 'en' = 'ar'): string {
   return `${h.day} ${monthName} ${h.year} AH`
 }
 
-export function hijriMonths(locale: 'ar' | 'en' = 'ar'): readonly string[] {
+export function hijriMonths(locale: 'ar' | 'en' | 'tr' = 'ar'): readonly string[] {
   return locale === 'ar' ? HIJRI_MONTHS_AR : HIJRI_MONTHS_EN
 }
 

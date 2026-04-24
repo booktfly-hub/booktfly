@@ -1,3 +1,4 @@
+import { pick } from '@/lib/i18n-helpers'
 import { Plane, Building2, Users } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -18,25 +19,19 @@ export function StatsSection({ tripsCount, providersCount, bookingsCount }: Stat
       icon: Plane, 
       value: tripsCount, 
       label: t('stats_trips'),
-      desc: isAr
-        ? 'رحلات جاهزة للحجز الآن مع عرض أوضح للخيارات.'
-        : 'Fresh flight listings travelers can book right now.'
+      desc: pick(locale, 'رحلات جاهزة للحجز الآن مع عرض أوضح للخيارات.', 'Fresh flight listings travelers can book right now.', 'Yolcuların şu anda rezerve edebileceği yeni uçuş listeleri.')
     },
     { 
       icon: Building2, 
       value: providersCount, 
       label: t('stats_providers'),
-      desc: isAr
-        ? 'شركات موثقة تدير العروض عبر مواسم ومسارات متعددة.'
-        : 'Verified companies powering the marketplace across routes and seasons.'
+      desc: pick(locale, 'شركات موثقة تدير العروض عبر مواسم ومسارات متعددة.', 'Verified companies powering the marketplace across routes and seasons.', 'Rotalar ve sezonlar boyunca pazar yerine güç veren doğrulanmış şirketler.')
     },
     { 
       icon: Users, 
       value: bookingsCount, 
       label: t('stats_travelers'),
-      desc: isAr
-        ? 'مسافرون أكدوا حجوزاتهم ويستخدمون المنصة بثقة.'
-        : 'Confirmed passengers who already trust the platform with their plans.'
+      desc: pick(locale, 'مسافرون أكدوا حجوزاتهم ويستخدمون المنصة بثقة.', 'Confirmed passengers who already trust the platform with their plans.', 'Planları için platforma güvenen onaylı yolcular.')
     },
   ]
 
@@ -47,17 +42,13 @@ export function StatsSection({ tripsCount, providersCount, bookingsCount }: Stat
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-sky-700">
-              {isAr ? 'أرقام المنصة' : 'Platform snapshot'}
+              {pick(locale, 'أرقام المنصة', 'Platform snapshot', 'Platform anlık görünümü')}
             </p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
-              {isAr
-                ? 'نمو واضح في الرحلات والمزودين وحجوزات المسافرين'
-                : 'A stronger marketplace across routes, providers, and confirmed travelers'}
+              {pick(locale, 'نمو واضح في الرحلات والمزودين وحجوزات المسافرين', 'A stronger marketplace across routes, providers, and confirmed travelers', 'Rotalar, tedarikçiler ve onaylı yolcular genelinde daha güçlü bir pazar yeri')}
             </h2>
             <p className="mt-3 text-base leading-relaxed text-slate-600 md:text-lg">
-              {isAr
-                ? 'الواجهة الجديدة تبرز الثقة والحجم الفعلي للمنصة بسرعة.'
-                : 'The updated landing flow now surfaces trust and marketplace scale at a glance.'}
+              {pick(locale, 'الواجهة الجديدة تبرز الثقة والحجم الفعلي للمنصة بسرعة.', 'The updated landing flow now surfaces trust and marketplace scale at a glance.', 'Güncellenen iniş akışı artık güveni ve pazar yeri ölçeğini bir bakışta ortaya koyuyor.')}
             </p>
           </div>
           <div className="rounded-full border border-sky-100 bg-[linear-gradient(135deg,#ffffff_0%,#eff6ff_100%)] px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm">

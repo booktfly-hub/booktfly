@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -380,28 +381,28 @@ export default function AdminActivityLogs() {
 
   const summaryCards = [
     {
-      label: isAr ? 'أحداث اليوم' : 'Events Today',
+      label: pick(locale, 'أحداث اليوم', 'Events Today', 'Bugünkü Olaylar'),
       value: eventsToday,
       icon: Activity,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
     },
     {
-      label: isAr ? 'أحداث الأسبوع' : 'Events This Week',
+      label: pick(locale, 'أحداث الأسبوع', 'Events This Week', 'Bu Haftaki Olaylar'),
       value: eventsWeek,
       icon: TrendingUp,
       color: 'text-purple-600',
       bg: 'bg-purple-50',
     },
     {
-      label: isAr ? 'مستخدمون نشطون اليوم' : 'Unique Users Today',
+      label: pick(locale, 'مستخدمون نشطون اليوم', 'Unique Users Today', 'Bugün Benzersiz Kullanıcılar'),
       value: uniqueUsersToday,
       icon: Users,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
     },
     {
-      label: isAr ? 'أكثر حدث تكراراً' : 'Most Active Event',
+      label: pick(locale, 'أكثر حدث تكراراً', 'Most Active Event', 'En Aktif Olay'),
       value: topEventType.replace(/_/g, ' '),
       icon: Shield,
       color: 'text-amber-600',
@@ -412,15 +413,15 @@ export default function AdminActivityLogs() {
   const eventTypeLabel = (type: string) => type.replace(/_/g, ' ')
 
   const dateRangeOptions: { key: DateRange; label: string }[] = [
-    { key: 'today', label: isAr ? 'اليوم' : 'Today' },
-    { key: 'week', label: isAr ? 'آخر 7 أيام' : 'Last 7 Days' },
-    { key: 'month', label: isAr ? 'آخر 30 يوم' : 'Last 30 Days' },
-    { key: 'custom', label: isAr ? 'مخصص' : 'Custom' },
+    { key: 'today', label: pick(locale, 'اليوم', 'Today', 'Bugün') },
+    { key: 'week', label: pick(locale, 'آخر 7 أيام', 'Last 7 Days', 'Son 7 Gün') },
+    { key: 'month', label: pick(locale, 'آخر 30 يوم', 'Last 30 Days', 'Son 30 Gün') },
+    { key: 'custom', label: pick(locale, 'مخصص', 'Custom', 'Özel') },
   ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{isAr ? 'سجل النشاط' : 'Activity Logs'}</h1>
+      <h1 className="text-2xl font-bold">{pick(locale, 'سجل النشاط', 'Activity Logs', 'Etkinlik Kayıtları')}</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading && logs.length === 0
@@ -441,7 +442,7 @@ export default function AdminActivityLogs() {
       <div className="bg-white rounded-2xl border p-4 space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
           <Filter className="h-4 w-4" />
-          {isAr ? 'التصفية' : 'Filters'}
+          {pick(locale, 'التصفية', 'Filters', 'Filtreler')}
         </div>
         <div className="flex flex-wrap gap-3">
           <select
@@ -449,7 +450,7 @@ export default function AdminActivityLogs() {
             onChange={(e) => { setEventFilter(e.target.value); setPage(0) }}
             className="rounded-lg border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <option value="">{isAr ? 'كل الأحداث' : 'All Events'}</option>
+            <option value="">{pick(locale, 'كل الأحداث', 'All Events', 'Tüm Etkinlikler')}</option>
             {EVENT_TYPES.map((type) => (
               <option key={type} value={type}>
                 {eventTypeLabel(type)}
@@ -482,7 +483,7 @@ export default function AdminActivityLogs() {
                   customFrom ? 'text-foreground' : 'text-muted-foreground'
                 )}>
                   <CalendarDays className="h-4 w-4 shrink-0" />
-                  {customFrom && isValid(parseISO(customFrom)) ? format(parseISO(customFrom), 'd MMM yyyy') : (isAr ? 'من' : 'From')}
+                  {customFrom && isValid(parseISO(customFrom)) ? format(parseISO(customFrom), 'd MMM yyyy') : (pick(locale, 'من', 'From', 'Kimden'))}
                   <ChevronDown className="h-3.5 w-3.5" />
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -494,14 +495,14 @@ export default function AdminActivityLogs() {
                   />
                 </PopoverContent>
               </Popover>
-              <span className="text-muted-foreground text-sm">{isAr ? 'إلى' : 'to'}</span>
+              <span className="text-muted-foreground text-sm">{pick(locale, 'إلى', 'to', '-')}</span>
               <Popover>
                 <PopoverTrigger className={cn(
                   'flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-muted/50',
                   customTo ? 'text-foreground' : 'text-muted-foreground'
                 )}>
                   <CalendarDays className="h-4 w-4 shrink-0" />
-                  {customTo && isValid(parseISO(customTo)) ? format(parseISO(customTo), 'd MMM yyyy') : (isAr ? 'إلى' : 'To')}
+                  {customTo && isValid(parseISO(customTo)) ? format(parseISO(customTo), 'd MMM yyyy') : (pick(locale, 'إلى', 'To', 'Kime'))}
                   <ChevronDown className="h-3.5 w-3.5" />
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -521,7 +522,7 @@ export default function AdminActivityLogs() {
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder={isAr ? 'بحث بمعرف المستخدم...' : 'Search by user ID...'}
+              placeholder={pick(locale, 'بحث بمعرف المستخدم...', 'Search by user ID...', 'Kullanıcı kimliğine göre ara...')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -540,7 +541,7 @@ export default function AdminActivityLogs() {
               className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 hover:bg-red-100 transition-colors"
             >
               <X className="h-3.5 w-3.5" />
-              {isAr ? 'مسح' : 'Clear'}
+              {pick(locale, 'مسح', 'Clear', 'Temizle')}
             </button>
           )}
         </div>
@@ -552,9 +553,7 @@ export default function AdminActivityLogs() {
           className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
         >
           <Activity className="h-4 w-4" />
-          {isAr
-            ? `${newEventsCount} أحداث جديدة — اضغط للعرض`
-            : `${newEventsCount} new events — click to show`}
+          {pick(locale, `${newEventsCount} أحداث جديدة — اضغط للعرض`, `${newEventsCount} new events — click to show`)}
         </button>
       )}
 
@@ -568,17 +567,17 @@ export default function AdminActivityLogs() {
         ) : logs.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             <Activity className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p>{isAr ? 'لا توجد أحداث' : 'No events found'}</p>
+            <p>{pick(locale, 'لا توجد أحداث', 'No events found', 'Olay bulunamadı')}</p>
           </div>
         ) : (
           <div className="divide-y">
             <div className="hidden lg:grid grid-cols-[44px_100px_160px_1fr_1fr_120px] gap-2 px-4 py-3 bg-muted/50 text-xs font-medium text-muted-foreground">
               <span />
-              <span>{isAr ? 'الوقت' : 'Time'}</span>
-              <span>{isAr ? 'نوع الحدث' : 'Event Type'}</span>
-              <span>{isAr ? 'المستخدم' : 'User'}</span>
-              <span>{isAr ? 'التفاصيل' : 'Details'}</span>
-              <span>{isAr ? 'IP' : 'IP Address'}</span>
+              <span>{pick(locale, 'الوقت', 'Time', 'Zaman')}</span>
+              <span>{pick(locale, 'نوع الحدث', 'Event Type', 'Olay Türü')}</span>
+              <span>{pick(locale, 'المستخدم', 'User', 'Kullanıcı')}</span>
+              <span>{pick(locale, 'التفاصيل', 'Details', 'Ayrıntılar')}</span>
+              <span>{pick(locale, 'IP', 'IP Address', 'IP Adresi')}</span>
             </div>
             {logs.map((log, index) => {
               const colors = EVENT_COLORS[log.event_type] || DEFAULT_COLOR
@@ -625,13 +624,13 @@ export default function AdminActivityLogs() {
                     <div className="text-sm truncate">
                       {log.profile ? (
                         <span>
-                          <span className="font-medium">{log.profile.full_name || (isAr ? 'بدون اسم' : 'No name')}</span>
+                          <span className="font-medium">{log.profile.full_name || (pick(locale, 'بدون اسم', 'No name', 'Ad yok'))}</span>
                           <span className="text-muted-foreground ms-1.5 text-xs">{log.profile.email}</span>
                         </span>
                       ) : log.user_id ? (
                         <span className="text-xs text-muted-foreground font-mono">{log.user_id.slice(0, 8)}...</span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">{isAr ? 'زائر' : 'Anonymous'}</span>
+                        <span className="text-xs text-muted-foreground">{pick(locale, 'زائر', 'Anonymous', 'Anonim')}</span>
                       )}
                     </div>
 
@@ -659,22 +658,22 @@ export default function AdminActivityLogs() {
                       <div className="bg-muted/40 rounded-xl p-4 space-y-3 text-sm">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">{isAr ? 'الوقت الكامل' : 'Full Timestamp'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">{pick(locale, 'الوقت الكامل', 'Full Timestamp', 'Tam Zaman Damgası')}</p>
                             <p className="font-mono text-xs">{formatAbsoluteTime(log.created_at, locale)}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">{isAr ? 'معرف الحدث' : 'Event ID'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">{pick(locale, 'معرف الحدث', 'Event ID', 'Olay Kimliği')}</p>
                             <p className="font-mono text-xs">{log.id}</p>
                           </div>
                           {log.user_id && (
                             <div>
-                              <p className="text-xs text-muted-foreground mb-0.5">{isAr ? 'معرف المستخدم' : 'User ID'}</p>
+                              <p className="text-xs text-muted-foreground mb-0.5">{pick(locale, 'معرف المستخدم', 'User ID', 'Kullanıcı Kimliği')}</p>
                               <p className="font-mono text-xs">{log.user_id}</p>
                             </div>
                           )}
                           {log.ip_address && (
                             <div>
-                              <p className="text-xs text-muted-foreground mb-0.5">{isAr ? 'عنوان IP' : 'IP Address'}</p>
+                              <p className="text-xs text-muted-foreground mb-0.5">{pick(locale, 'عنوان IP', 'IP Address', 'IP Adresi')}</p>
                               <p className="font-mono text-xs">{log.ip_address}</p>
                             </div>
                           )}
@@ -682,14 +681,14 @@ export default function AdminActivityLogs() {
 
                         {log.user_agent && (
                           <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">{isAr ? 'المتصفح' : 'User Agent'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">{pick(locale, 'المتصفح', 'User Agent', 'Kullanıcı Aracısı')}</p>
                             <p className="font-mono text-xs break-all">{log.user_agent}</p>
                           </div>
                         )}
 
                         {log.metadata && Object.keys(log.metadata).length > 0 && (
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1.5">{isAr ? 'البيانات الإضافية' : 'Metadata'}</p>
+                            <p className="text-xs text-muted-foreground mb-1.5">{pick(locale, 'البيانات الإضافية', 'Metadata', 'Meta veri')}</p>
                             {renderMetadata(log.metadata)}
                           </div>
                         )}
@@ -705,9 +704,7 @@ export default function AdminActivityLogs() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              {isAr
-                ? `${page * ITEMS_PER_PAGE + 1}-${Math.min((page + 1) * ITEMS_PER_PAGE, totalCount)} من ${totalCount}`
-                : `${page * ITEMS_PER_PAGE + 1}-${Math.min((page + 1) * ITEMS_PER_PAGE, totalCount)} of ${totalCount}`}
+              {pick(locale, `${page * ITEMS_PER_PAGE + 1}-${Math.min((page + 1) * ITEMS_PER_PAGE, totalCount)} من ${totalCount}`, `${page * ITEMS_PER_PAGE + 1}-${Math.min((page + 1) * ITEMS_PER_PAGE, totalCount)} of ${totalCount}`)}
             </p>
             <div className="flex items-center gap-1">
               <button

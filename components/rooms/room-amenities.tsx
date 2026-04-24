@@ -50,9 +50,10 @@ export function RoomAmenities({ amenities, compact, className }: RoomAmenitiesPr
             <div
               key={key}
               title={label}
-              className="h-7 w-7 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-slate-600"
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+              <span className="text-[11px] font-semibold leading-none">{label}</span>
             </div>
           )
         }

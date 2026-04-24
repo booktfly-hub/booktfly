@@ -1,3 +1,4 @@
+import { lkey } from '@/lib/i18n-helpers'
 import { Text, Section, Row, Column, Hr, Link } from '@react-email/components'
 import * as React from 'react'
 import BaseLayout from './base-layout'
@@ -12,7 +13,7 @@ type LastMinuteDealProps = {
   discountPercent: number
   hoursLeft: number
   bookingUrl: string
-  locale?: 'ar' | 'en'
+  locale?: 'ar' | 'en' | 'tr'
 }
 
 const t = {
@@ -60,7 +61,7 @@ export default function LastMinuteDeal({
   bookingUrl = 'https://booktfly.com',
   locale = 'ar',
 }: LastMinuteDealProps) {
-  const strings = t[locale]
+  const strings = t[lkey(locale)]
 
   const typeLabel =
     listingType === 'flight'

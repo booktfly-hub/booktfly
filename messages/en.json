@@ -271,7 +271,16 @@
     "post_room": "Post a Room",
     "active_rooms": "Active Rooms",
     "no_rooms_yet": "You haven't posted any rooms yet.",
-    "post_first_room": "Post Your First Room"
+    "post_first_room": "Post Your First Room",
+    "reviews": "My Reviews",
+    "group_reputation": "Reputation",
+    "analytics": "Analytics",
+    "total_revenue": "Total Revenue",
+    "confirmed_bookings": "Confirmed Bookings",
+    "conversion_rate": "Conversion Rate",
+    "monthly_bookings": "Monthly Bookings",
+    "booking_status_breakdown": "Booking Status Breakdown",
+    "product_breakdown": "By Product Type"
   },
   "become_provider": {
     "title": "Become a Provider",
@@ -351,6 +360,7 @@
     "rooms": "Rooms",
     "room_bookings": "Room Bookings",
     "flight_requests": "Flight Requests",
+    "email_leads": "Email Leads",
     "users": "Users",
     "activity_logs": "Activity Logs",
     "alerts": "Alerts",
@@ -792,6 +802,11 @@
     "title": "Last Minute Deals",
     "subtitle": "Hurry! These deals are expiring soon",
     "badge": "Last Minute",
+    "tabs": {
+      "trips": "Trips",
+      "rooms": "Hotels",
+      "cars": "Cars"
+    },
     "departing_in": "Departing in {hours}h",
     "expires_in": "Expires in {hours}h",
     "only_left": "Only {count} left!",
@@ -1119,6 +1134,7 @@
   "mobile_nav": {
     "home": "Home",
     "search": "Search",
+    "saved": "Saved",
     "bookings": "Bookings",
     "profile": "Profile"
   },

@@ -126,6 +126,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       pickup_hour_to: (formData.get('pickup_hour_to') as string) || existingCar.pickup_hour_to,
       return_hour_from: (formData.get('return_hour_from') as string) || existingCar.return_hour_from,
       return_hour_to: (formData.get('return_hour_to') as string) || existingCar.return_hour_to,
+      contact_phone: (formData.get('contact_phone') as string) || existingCar.contact_phone,
       name_change_allowed: formData.get('name_change_allowed') !== null
         ? formData.get('name_change_allowed') === 'true'
         : existingCar.name_change_allowed,
@@ -223,6 +224,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         pickup_hour_to: parsed.data.pickup_hour_to || null,
         return_hour_from: parsed.data.return_hour_from || null,
         return_hour_to: parsed.data.return_hour_to || null,
+        contact_phone: parsed.data.contact_phone || null,
         name_change_allowed: parsed.data.name_change_allowed ?? false,
         name_change_fee: parsed.data.name_change_fee ?? 0,
         name_change_is_refundable: parsed.data.name_change_is_refundable ?? true,

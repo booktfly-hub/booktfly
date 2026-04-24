@@ -1,4 +1,5 @@
 'use client'
+import { lkey } from '@/lib/i18n-helpers'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -84,7 +85,7 @@ export default function AdminProviderDetail() {
               <h1 className="text-xl font-bold">{provider.company_name_ar}</h1>
               {provider.company_name_en && <p className="text-muted-foreground">{provider.company_name_en}</p>}
               <p className="text-sm text-muted-foreground mt-1">
-                {PROVIDER_TYPES[provider.provider_type][locale as 'ar' | 'en']}
+                {PROVIDER_TYPES[provider.provider_type][lkey(locale)]}
               </p>
             </div>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${

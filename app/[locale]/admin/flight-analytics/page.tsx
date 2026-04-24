@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -78,7 +79,7 @@ export default function FlightAnalyticsPage() {
   const locale = useLocale()
   const supabase = createClient()
   const isAr = locale === 'ar'
-  const cur = isAr ? 'ر.س' : 'SAR'
+  const cur = pick(locale, 'ر.س', 'SAR', 'SAR')
 
   const [trips, setTrips] = useState<TripWithStats[]>([])
   const [allBookings, setAllBookings] = useState<Booking[]>([])
@@ -250,7 +251,7 @@ export default function FlightAnalyticsPage() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+    return new Date(dateStr).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -320,7 +321,7 @@ export default function FlightAnalyticsPage() {
 
   return (
     <div className="space-y-6 p-1">
-      <h1 className="text-2xl font-bold">{isAr ? 'تحليلات الرحلات' : 'Flight Analytics'}</h1>
+      <h1 className="text-2xl font-bold">{pick(locale, 'تحليلات الرحلات', 'Flight Analytics', 'Uçuş Analitikleri')}</h1>
 
       {(alerts.almostSoldOut.length > 0 || alerts.lowBooking.length > 0 || alerts.recentlySoldOut.length > 0) && (
         <div className="space-y-2">
@@ -329,11 +330,11 @@ export default function FlightAnalyticsPage() {
               <Flame className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-amber-800 text-sm">
-                  {isAr ? 'رحلات قاربت على الامتلاء' : 'Almost Sold Out'}
+                  {pick(locale, 'رحلات قاربت على الامتلاء', 'Almost Sold Out', 'Neredeyse Tükendi')}
                 </p>
                 <p className="text-amber-700 text-sm mt-0.5">
                   {alerts.almostSoldOut.map((t) => routeShort(t)).join(' , ')}
-                  {' '}{isAr ? `(${alerts.almostSoldOut.length} رحلة بنسبة إشغال أكثر من 90%)` : `(${alerts.almostSoldOut.length} flights with >90% occupancy)`}
+                  {' '}{pick(locale, `(${alerts.almostSoldOut.length} رحلة بنسبة إشغال أكثر من 90%)`, `(${alerts.almostSoldOut.length} flights with >90% occupancy)`)}
                 </p>
               </div>
             </div>
@@ -343,7 +344,7 @@ export default function FlightAnalyticsPage() {
               <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-red-800 text-sm">
-                  {isAr ? 'حجوزات منخفضة - مغادرة خلال 48 ساعة' : 'Low Bookings - Departing Within 48h'}
+                  {pick(locale, 'حجوزات منخفضة - مغادرة خلال 48 ساعة', 'Low Bookings - Departing Within 48h', 'Düşük Rezervasyon - 48 Saat İçinde Kalkış')}
                 </p>
                 <p className="text-red-700 text-sm mt-0.5">
                   {alerts.lowBooking.map((t) => `${routeShort(t)} (${Math.round(t.occupancy)}%)`).join(' , ')}
@@ -356,11 +357,11 @@ export default function FlightAnalyticsPage() {
               <PartyPopper className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-emerald-800 text-sm">
-                  {isAr ? 'رحلات مكتملة الحجز' : 'Sold Out Flights'}
+                  {pick(locale, 'رحلات مكتملة الحجز', 'Sold Out Flights', 'Tükenen Uçuşlar')}
                 </p>
                 <p className="text-emerald-700 text-sm mt-0.5">
                   {alerts.recentlySoldOut.map((t) => routeShort(t)).join(' , ')}
-                  {' '}{isAr ? `(${alerts.recentlySoldOut.length} رحلة)` : `(${alerts.recentlySoldOut.length} flights)`}
+                  {' '}{pick(locale, `(${alerts.recentlySoldOut.length} رحلة)`, `(${alerts.recentlySoldOut.length} flights)`)}
                 </p>
               </div>
             </div>
@@ -371,42 +372,42 @@ export default function FlightAnalyticsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
           {
-            label: isAr ? 'المقاعد المتاحة' : 'Available Seats',
+            label: pick(locale, 'المقاعد المتاحة', 'Available Seats', 'Müsait Koltuklar'),
             value: summary.totalAvailable.toLocaleString(),
             icon: Armchair,
             color: 'text-blue-600',
             bg: 'bg-blue-50',
           },
           {
-            label: isAr ? 'المقاعد المحجوزة' : 'Booked Seats',
+            label: pick(locale, 'المقاعد المحجوزة', 'Booked Seats', 'Rezerve Edilen Koltuklar'),
             value: summary.totalBooked.toLocaleString(),
             icon: Users,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
           },
           {
-            label: isAr ? 'متوسط الإشغال' : 'Avg Occupancy',
+            label: pick(locale, 'متوسط الإشغال', 'Avg Occupancy', 'Ortalama Doluluk'),
             value: `${summary.avgOccupancy.toFixed(1)}%`,
             icon: BarChart3,
             color: 'text-violet-600',
             bg: 'bg-violet-50',
           },
           {
-            label: isAr ? 'الرحلات النشطة' : 'Active Flights',
+            label: pick(locale, 'الرحلات النشطة', 'Active Flights', 'Aktif Uçuşlar'),
             value: summary.activeFlights.toLocaleString(),
             icon: Plane,
             color: 'text-sky-600',
             bg: 'bg-sky-50',
           },
           {
-            label: isAr ? 'إيرادات الرحلات' : 'Flight Revenue',
+            label: pick(locale, 'إيرادات الرحلات', 'Flight Revenue', 'Uçuş Geliri'),
             value: `${summary.revenue.toLocaleString()} ${cur}`,
             icon: DollarSign,
             color: 'text-amber-600',
             bg: 'bg-amber-50',
           },
           {
-            label: isAr ? 'رحلات مكتملة' : 'Sold Out',
+            label: pick(locale, 'رحلات مكتملة', 'Sold Out', 'Tükendi'),
             value: summary.soldOutCount.toLocaleString(),
             icon: CheckCircle2,
             color: 'text-purple-600',
@@ -428,10 +429,10 @@ export default function FlightAnalyticsPage() {
       </div>
 
       <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">{isAr ? 'توزيع المقاعد' : 'Seat Distribution'}</h2>
+        <h2 className="text-lg font-semibold mb-4">{pick(locale, 'توزيع المقاعد', 'Seat Distribution', 'Koltuk Dağılımı')}</h2>
         {chartTrips.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center py-8">
-            {isAr ? 'لا توجد رحلات' : 'No trips available'}
+            {pick(locale, 'لا توجد رحلات', 'No trips available', 'Mevcut gezi yok')}
           </p>
         ) : (
           <div className="space-y-3">
@@ -464,10 +465,10 @@ export default function FlightAnalyticsPage() {
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            <option value="all_active">{isAr ? 'نشط + مكتمل' : 'All Active'}</option>
-            <option value="active">{isAr ? 'نشط' : 'Active'}</option>
-            <option value="sold_out">{isAr ? 'مكتمل' : 'Sold Out'}</option>
-            <option value="expired">{isAr ? 'منتهي' : 'Expired'}</option>
+            <option value="all_active">{pick(locale, 'نشط + مكتمل', 'All Active', 'Tümü Aktif')}</option>
+            <option value="active">{pick(locale, 'نشط', 'Active', 'Aktif')}</option>
+            <option value="sold_out">{pick(locale, 'مكتمل', 'Sold Out', 'Tükendi')}</option>
+            <option value="expired">{pick(locale, 'منتهي', 'Expired', 'Süresi Dolmuş')}</option>
           </select>
 
           <select
@@ -475,7 +476,7 @@ export default function FlightAnalyticsPage() {
             onChange={(e) => setProviderFilter(e.target.value)}
             className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            <option value="all">{isAr ? 'جميع المزودين' : 'All Providers'}</option>
+            <option value="all">{pick(locale, 'جميع المزودين', 'All Providers', 'Tüm Tedarikçiler')}</option>
             {providers.map((p) => (
               <option key={p.id} value={p.id}>
                 {isAr ? p.company_name_ar : p.company_name_en}
@@ -490,7 +491,7 @@ export default function FlightAnalyticsPage() {
                 dateFrom ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 <CalendarDays className="h-4 w-4 shrink-0" />
-                {dateFrom && isValid(parseISO(dateFrom)) ? format(parseISO(dateFrom), 'd MMM yyyy') : (isAr ? 'من' : 'From')}
+                {dateFrom && isValid(parseISO(dateFrom)) ? format(parseISO(dateFrom), 'd MMM yyyy') : (pick(locale, 'من', 'From', 'Kimden'))}
                 <ChevronDown className="h-3.5 w-3.5" />
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -502,14 +503,14 @@ export default function FlightAnalyticsPage() {
                 />
               </PopoverContent>
             </Popover>
-            <span className="text-muted-foreground text-sm">{isAr ? 'إلى' : 'to'}</span>
+            <span className="text-muted-foreground text-sm">{pick(locale, 'إلى', 'to', '-')}</span>
             <Popover>
               <PopoverTrigger className={cn(
                 'flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm transition-colors hover:bg-slate-50',
                 dateTo ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 <CalendarDays className="h-4 w-4 shrink-0" />
-                {dateTo && isValid(parseISO(dateTo)) ? format(parseISO(dateTo), 'd MMM yyyy') : (isAr ? 'إلى' : 'To')}
+                {dateTo && isValid(parseISO(dateTo)) ? format(parseISO(dateTo), 'd MMM yyyy') : (pick(locale, 'إلى', 'To', 'Kime'))}
                 <ChevronDown className="h-3.5 w-3.5" />
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -531,10 +532,10 @@ export default function FlightAnalyticsPage() {
               onChange={(e) => setSortBy(e.target.value as SortKey)}
               className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="occupancy">{isAr ? 'نسبة الإشغال' : 'Occupancy %'}</option>
-              <option value="revenue">{isAr ? 'الإيرادات' : 'Revenue'}</option>
-              <option value="departure">{isAr ? 'تاريخ المغادرة' : 'Departure Date'}</option>
-              <option value="available">{isAr ? 'المقاعد المتاحة' : 'Seats Available'}</option>
+              <option value="occupancy">{pick(locale, 'نسبة الإشغال', 'Occupancy %', 'Doluluk %')}</option>
+              <option value="revenue">{pick(locale, 'الإيرادات', 'Revenue', 'Gelir')}</option>
+              <option value="departure">{pick(locale, 'تاريخ المغادرة', 'Departure Date', 'Kalkış Tarihi')}</option>
+              <option value="available">{pick(locale, 'المقاعد المتاحة', 'Seats Available', 'Müsait Koltuklar')}</option>
             </select>
           </div>
         </div>
@@ -545,16 +546,16 @@ export default function FlightAnalyticsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'المسار' : 'Route'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الناقل' : 'Airline'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المغادرة' : 'Departure'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الإجمالي' : 'Total'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'محجوز' : 'Booked'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'متاح' : 'Available'}</th>
-                <th className="text-start p-3 font-medium min-w-[160px]">{isAr ? 'الإشغال' : 'Occupancy'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الإيرادات' : 'Revenue'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الحالة' : 'Status'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'المزود' : 'Provider'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المسار', 'Route', 'Rota')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الناقل', 'Airline', 'Havayolu')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المغادرة', 'Departure', 'Kalkış')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الإجمالي', 'Total', 'Toplam')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'محجوز', 'Booked', 'Rezerve Edildi')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'متاح', 'Available', 'Mevcut')}</th>
+                <th className="text-start p-3 font-medium min-w-[160px]">{pick(locale, 'الإشغال', 'Occupancy', 'Doluluk')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الإيرادات', 'Revenue', 'Gelir')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الحالة', 'Status', 'Durum')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'المزود', 'Provider', 'Tedarikçi')}</th>
                 <th className="p-3 w-8" />
               </tr>
             </thead>
@@ -562,7 +563,7 @@ export default function FlightAnalyticsPage() {
               <tbody>
                 <tr>
                   <td colSpan={11} className="p-12 text-center text-muted-foreground">
-                    {isAr ? 'لا توجد رحلات مطابقة' : 'No matching flights'}
+                    {pick(locale, 'لا توجد رحلات مطابقة', 'No matching flights', 'Eşleşen uçuş yok')}
                   </td>
                 </tr>
               </tbody>
@@ -624,19 +625,19 @@ export default function FlightAnalyticsPage() {
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-white rounded-lg border p-4">
                                   <p className="text-sm text-muted-foreground mb-1">
-                                    {isAr ? 'إجمالي الحجوزات' : 'Total Bookings'}
+                                    {pick(locale, 'إجمالي الحجوزات', 'Total Bookings', 'Toplam Rezervasyon')}
                                   </p>
                                   <p className="text-2xl font-bold">{trip.bookings.length}</p>
                                 </div>
                                 <div className="bg-white rounded-lg border p-4">
                                   <p className="text-sm text-muted-foreground mb-1">
-                                    {isAr ? 'الحجوزات المؤكدة' : 'Confirmed Bookings'}
+                                    {pick(locale, 'الحجوزات المؤكدة', 'Confirmed Bookings', 'Onaylı Rezervasyonlar')}
                                   </p>
                                   <p className="text-2xl font-bold text-emerald-600">{tripConfirmedBookings.length}</p>
                                 </div>
                                 <div className="bg-white rounded-lg border p-4">
                                   <p className="text-sm text-muted-foreground mb-1">
-                                    {isAr ? 'إجمالي المسافرين' : 'Total Passengers'}
+                                    {pick(locale, 'إجمالي المسافرين', 'Total Passengers', 'Toplam Yolcu')}
                                   </p>
                                   <p className="text-2xl font-bold">
                                     {tripConfirmedBookings.reduce((s, b) => s + b.seats_count, 0)}
@@ -647,26 +648,26 @@ export default function FlightAnalyticsPage() {
                               {trip.bookings.length > 0 ? (
                                 <div>
                                   <h4 className="font-medium text-sm mb-2">
-                                    {isAr ? 'سجل الحجوزات' : 'Booking Timeline'}
+                                    {pick(locale, 'سجل الحجوزات', 'Booking Timeline', 'Rezervasyon Zaman Çizelgesi')}
                                   </h4>
                                   <div className="bg-white rounded-lg border overflow-hidden">
                                     <table className="w-full text-sm">
                                       <thead>
                                         <tr className="border-b bg-muted/30">
                                           <th className="text-start p-2.5 font-medium text-xs">
-                                            {isAr ? 'التاريخ' : 'Date'}
+                                            {pick(locale, 'التاريخ', 'Date', 'Tarih')}
                                           </th>
                                           <th className="text-start p-2.5 font-medium text-xs">
-                                            {isAr ? 'المقاعد' : 'Seats'}
+                                            {pick(locale, 'المقاعد', 'Seats', 'Koltuklar')}
                                           </th>
                                           <th className="text-start p-2.5 font-medium text-xs">
-                                            {isAr ? 'المبلغ' : 'Amount'}
+                                            {pick(locale, 'المبلغ', 'Amount', 'Tutar')}
                                           </th>
                                           <th className="text-start p-2.5 font-medium text-xs">
-                                            {isAr ? 'العمولة' : 'Commission'}
+                                            {pick(locale, 'العمولة', 'Commission', 'Komisyon')}
                                           </th>
                                           <th className="text-start p-2.5 font-medium text-xs">
-                                            {isAr ? 'الحالة' : 'Status'}
+                                            {pick(locale, 'الحالة', 'Status', 'Durum')}
                                           </th>
                                         </tr>
                                       </thead>
@@ -731,14 +732,14 @@ export default function FlightAnalyticsPage() {
                                 </div>
                               ) : (
                                 <p className="text-sm text-muted-foreground text-center py-4">
-                                  {isAr ? 'لا توجد حجوزات لهذه الرحلة' : 'No bookings for this flight'}
+                                  {pick(locale, 'لا توجد حجوزات لهذه الرحلة', 'No bookings for this flight', 'Bu uçuş için rezervasyon yok')}
                                 </p>
                               )}
 
                               {tripConfirmedBookings.length >= 2 && (
                                 <div>
                                   <h4 className="font-medium text-sm mb-2">
-                                    {isAr ? 'اتجاه عدد المسافرين' : 'Passenger Count Trend'}
+                                    {pick(locale, 'اتجاه عدد المسافرين', 'Passenger Count Trend', 'Yolcu Sayısı Trendi')}
                                   </h4>
                                   <div className="bg-white rounded-lg border p-4">
                                     <div className="flex items-end gap-1 h-24">
@@ -747,7 +748,7 @@ export default function FlightAnalyticsPage() {
                                         .reduce<{ date: string; cumulative: number }[]>((acc, b) => {
                                           const prev = acc.length > 0 ? acc[acc.length - 1].cumulative : 0
                                           acc.push({
-                                            date: new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
+                                            date: new Date(b.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), {
                                               month: 'short',
                                               day: 'numeric',
                                             }),
@@ -794,9 +795,7 @@ export default function FlightAnalyticsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t">
             <p className="text-sm text-muted-foreground">
-              {isAr
-                ? `عرض ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} من ${filtered.length}`
-                : `Showing ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+              {pick(locale, `عرض ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} من ${filtered.length}`, `Showing ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, filtered.length)} of ${filtered.length}`)}
             </p>
             <div className="flex items-center gap-1">
               <button
@@ -804,7 +803,7 @@ export default function FlightAnalyticsPage() {
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-50 hover:bg-muted/50 transition-colors"
               >
-                {isAr ? 'السابق' : 'Previous'}
+                {pick(locale, 'السابق', 'Previous', 'Önceki')}
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((page) => {
@@ -843,7 +842,7 @@ export default function FlightAnalyticsPage() {
                 disabled={currentPage === totalPages}
                 className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-50 hover:bg-muted/50 transition-colors"
               >
-                {isAr ? 'التالي' : 'Next'}
+                {pick(locale, 'التالي', 'Next', 'İleri')}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -62,7 +63,7 @@ export default function AdminCarBookings() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{isAr ? 'حجوزات السيارات' : 'Car Bookings'}</h1>
+      <h1 className="text-2xl font-bold mb-6">{pick(locale, 'حجوزات السيارات', 'Car Bookings', 'Araç Rezervasyonları')}</h1>
 
       <div className="flex gap-2 mb-3 flex-wrap">
         {statuses.map((s) => (
@@ -73,14 +74,14 @@ export default function AdminCarBookings() {
               statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {s ? t(`status.${s}`) : isAr ? 'الكل' : 'All'}
+            {s ? t(`status.${s}`) : pick(locale, 'الكل', 'All', 'Tümü')}
           </button>
         ))}
       </div>
 
       <div className="flex gap-2 mb-6 flex-wrap items-center">
         <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          {isAr ? 'العقد:' : 'Contract:'}
+          {pick(locale, 'العقد:', 'Contract:', 'Sözleşme:')}
         </span>
         {(['all', 'signed', 'unsigned'] as const).map((f) => (
           <button
@@ -90,12 +91,12 @@ export default function AdminCarBookings() {
               contractFilter === f ? 'bg-primary text-white border-primary' : 'bg-white hover:bg-muted border-border'
             }`}
           >
-            {f === 'all' ? (isAr ? 'الكل' : 'All') : f === 'signed' ? (isAr ? 'موقّع' : 'Signed') : (isAr ? 'غير موقّع' : 'Unsigned')}
+            {f === 'all' ? (pick(locale, 'الكل', 'All', 'Tümü')) : f === 'signed' ? (pick(locale, 'موقّع', 'Signed', 'İmzalandı')) : (pick(locale, 'غير موقّع', 'Unsigned', 'İmzasız'))}
           </button>
         ))}
         {unsignedCount > 0 && contractFilter !== 'signed' && (
           <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
-            {unsignedCount} {isAr ? 'غير موقّعة' : 'unsigned'}
+            {unsignedCount} {pick(locale, 'غير موقّعة', 'unsigned', 'imzasız')}
           </span>
         )}
       </div>
@@ -105,15 +106,15 @@ export default function AdminCarBookings() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-start p-3 font-medium">{isAr ? 'اسم الضيف' : 'Guest Name'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'السيارة' : 'Car'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'اسم الضيف', 'Guest Name', 'Misafir Adı')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'السيارة', 'Car', 'Araç')}</th>
                 <th className="text-start p-3 font-medium">{t('admin.providers')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'تاريخ الاستلام' : 'Pickup'}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'الأيام' : 'Days'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'تاريخ الاستلام', 'Pickup', 'Alım')}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'الأيام', 'Days', 'Gün')}</th>
                 <th className="text-start p-3 font-medium">{t('common.total')}</th>
                 <th className="text-start p-3 font-medium">{t('admin.commissions')}</th>
                 <th className="text-start p-3 font-medium">{t('common.status')}</th>
-                <th className="text-start p-3 font-medium">{isAr ? 'العقد' : 'Contract'}</th>
+                <th className="text-start p-3 font-medium">{pick(locale, 'العقد', 'Contract', 'Sözleşme')}</th>
                 <th className="text-start p-3 font-medium">{t('common.date')}</th>
                 <th className="text-start p-3 font-medium">{t('common.actions')}</th>
               </tr>
@@ -126,9 +127,7 @@ export default function AdminCarBookings() {
               ) : (
                 bookings.map((b) => {
                   const carName = b.car
-                    ? isAr
-                      ? `${b.car.brand_ar} ${b.car.model_ar}`
-                      : `${b.car.brand_en || b.car.brand_ar} ${b.car.model_en || b.car.model_ar}`
+                    ? pick(locale, `${b.car.brand_ar} ${b.car.model_ar}`, `${b.car.brand_en || b.car.brand_ar} ${b.car.model_en || b.car.model_ar}`)
                     : '-'
                   return (
                     <tr key={b.id} className="border-b hover:bg-muted/30">
@@ -137,8 +136,8 @@ export default function AdminCarBookings() {
                       <td className="p-3">{b.provider?.company_name_ar}</td>
                       <td className="p-3">{b.pickup_date}</td>
                       <td className="p-3">{b.number_of_days}</td>
-                      <td className="p-3">{b.total_amount} {isAr ? 'ر.س' : 'SAR'}</td>
-                      <td className="p-3">{b.commission_amount} {isAr ? 'ر.س' : 'SAR'}</td>
+                      <td className="p-3">{b.total_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
+                      <td className="p-3">{b.commission_amount} {pick(locale, 'ر.س', 'SAR', 'SAR')}</td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${BOOKING_STATUS_COLORS[b.status]}`}>
                           {t(`status.${b.status}`)}
@@ -152,23 +151,23 @@ export default function AdminCarBookings() {
                             className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-100 hover:bg-emerald-100"
                           >
                             <FileSignature className="h-3 w-3" />
-                            {isAr ? 'موقّع' : 'Signed'}
+                            {pick(locale, 'موقّع', 'Signed', 'İmzalandı')}
                             <Printer className="h-3 w-3 opacity-70" />
                           </Link>
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-0.5 text-xs font-bold text-slate-500 border border-slate-200">
-                            {isAr ? 'غير موقّع' : 'Unsigned'}
+                            {pick(locale, 'غير موقّع', 'Unsigned', 'İmzasız')}
                           </span>
                         )}
                       </td>
-                      <td className="p-3">{new Date(b.created_at).toLocaleDateString(isAr ? 'ar-SA' : 'en-US')}</td>
+                      <td className="p-3">{new Date(b.created_at).toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'))}</td>
                       <td className="p-3">
                         <Link
                           href={`/${locale}/admin/car-bookings/${b.id}`}
                           className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 font-medium text-primary transition-colors hover:bg-muted"
                         >
                           <Eye className="h-4 w-4" />
-                          {isAr ? 'تفاصيل' : 'Details'}
+                          {pick(locale, 'تفاصيل', 'Details', 'Ayrıntılar')}
                         </Link>
                       </td>
                     </tr>
@@ -187,7 +186,7 @@ export default function AdminCarBookings() {
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'السابق' : 'Previous'}
+            {pick(locale, 'السابق', 'Previous', 'Önceki')}
           </button>
           <span className="text-sm text-muted-foreground">
             {page} / {totalPages}
@@ -197,7 +196,7 @@ export default function AdminCarBookings() {
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg text-sm border bg-white hover:bg-muted disabled:opacity-50 transition-colors"
           >
-            {isAr ? 'التالي' : 'Next'}
+            {pick(locale, 'التالي', 'Next', 'İleri')}
           </button>
         </div>
       )}

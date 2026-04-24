@@ -1,5 +1,6 @@
 'use client'
 
+import { pick } from '@/lib/i18n-helpers'
 import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -78,7 +79,7 @@ export default function ProfilePage() {
   }
 
   const memberSince = new Date(profile.created_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
+    pick(locale, 'ar-SA', 'en-US', 'tr-TR'),
     { year: 'numeric', month: 'long', day: 'numeric' }
   )
 
@@ -223,7 +224,7 @@ export default function ProfilePage() {
                   )}
                 >
                   {copied ? <CheckCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
+                  {copied ? (pick(locale, 'تم', 'Copied', 'Kopyalandı')) : (pick(locale, 'نسخ', 'Copy', 'Kopyala'))}
                 </button>
               </div>
             </div>
@@ -263,7 +264,7 @@ export default function ProfilePage() {
               {t('profile.full_name')}
             </label>
             <div className="relative">
-              <User className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isAr ? "right-3" : "left-3")} />
+              <User className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", pick(locale, "right-3", "left-3", "left-3"))} />
               <input
                 type="text"
                 value={fullName}
@@ -281,7 +282,7 @@ export default function ProfilePage() {
               {t('profile.email')}
             </label>
             <div className="relative">
-              <Mail className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", isAr ? "right-3" : "left-3")} />
+              <Mail className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground", pick(locale, "right-3", "left-3", "left-3"))} />
               <input
                 type="email"
                 value={profile.email}

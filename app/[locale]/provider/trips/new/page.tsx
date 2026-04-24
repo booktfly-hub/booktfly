@@ -54,7 +54,7 @@ const TIME_HOURS_12 = Array.from({ length: 12 }, (_, index) =>
 type TimeSelectProps = {
   value: string
   onChange: (value: string) => void
-  locale: 'ar' | 'en'
+  locale: 'ar' | 'en' | 'tr'
 }
 
 const to12HourParts = (
@@ -176,7 +176,7 @@ export default function NewTripPage() {
   const tt = useTranslations('trips')
   const tc = useTranslations('common')
   const te = useTranslations('errors')
-  const locale = useLocale() as 'ar' | 'en'
+  const locale = useLocale() as 'ar' | 'en' | 'tr'
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
