@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { lkey } from '@/lib/i18n-helpers'
 import { Cairo } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
@@ -58,8 +59,19 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages()
   const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
+  const tpMarker = process.env.NEXT_PUBLIC_TRAVELPAYOUTS_MARKER
+
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
+      <head>
+        {tpMarker && (
+          <Script
+            id="travelpayouts-drive"
+            strategy="afterInteractive"
+            src={`https://emrldtp.cc/${Buffer.from(tpMarker).toString('base64')}.js?t=${tpMarker}`}
+          />
+        )}
+      </head>
       <body className={`min-h-screen flex flex-col font-sans antialiased ${cairo.variable}`}>
         <NextIntlClientProvider messages={messages}>
           <a href="#main-content" className="skip-nav">

@@ -26,6 +26,8 @@ import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { StaleSearchModal } from '@/components/ui/stale-search-modal'
 import { CategoryHero } from '@/components/shared/category-hero'
 import type { Trip } from '@/types'
+import type { LiveOffer } from '@/lib/travelpayouts-server'
+import { LiveTripCard } from '@/components/trips/live-trip-card'
 import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -64,9 +66,15 @@ interface TripsContentProps {
   initialTrips: Trip[]
   initialTotalPages: number
   initialFilters: Filters
+  liveOffers?: LiveOffer[]
 }
 
-export function TripsContent({ initialTrips, initialTotalPages, initialFilters }: TripsContentProps) {
+export function TripsContent({
+  initialTrips,
+  initialTotalPages,
+  initialFilters,
+  liveOffers = [],
+}: TripsContentProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -500,10 +508,11 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
       />
 
       {/* Results Count */}
-      {!loading && trips.length > 0 && (
+      {!loading && (trips.length > 0 || liveOffers.length > 0) && (
         <div className="mb-4" role="status" aria-live="polite">
           <span className="text-sm font-medium text-muted-foreground">
-            {trips.length} {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
+            {trips.length + liveOffers.length}{' '}
+            {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
           </span>
         </div>
       )}
@@ -515,7 +524,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : trips.length === 0 ? (
+      ) : trips.length === 0 && liveOffers.length === 0 ? (
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <EmptyState
             icon={Plane}
@@ -527,8 +536,21 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {liveOffers.map((offer, idx) => (
+              <div
+                key={offer.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+              >
+                <LiveTripCard offer={offer} />
+              </div>
+            ))}
             {trips.map((trip, idx) => (
-              <div key={trip.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}>
+              <div
+                key={trip.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${((idx + liveOffers.length) % 6) * 100}ms` }}
+              >
                 <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
               </div>
             ))}

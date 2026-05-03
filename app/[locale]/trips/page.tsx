@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
+import {
+  fetchLiveFlights,
+  fetchLiveFlightsByName,
+} from '@/lib/travelpayouts-server'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -62,10 +66,30 @@ export default async function TripsPage({
 
   const { data: trips, count } = await query
 
+  // Travelpayouts (Aviasales) — live affiliate flight offers.
+  // Showed for the user's search if origin/destination are filled, otherwise
+  // a curated set of popular Saudi/MENA routes so the page never feels empty.
+  const liveOffers = origin && destination
+    ? await fetchLiveFlightsByName({
+        origin,
+        destination,
+        departure_date: dateFrom || undefined,
+        return_date: tripType !== 'one_way' && dateTo ? dateTo : undefined,
+        limit: 10,
+      })
+    : (
+        await Promise.all([
+          fetchLiveFlights({ origin: 'RUH', destination: 'DXB', limit: 2 }),
+          fetchLiveFlights({ origin: 'JED', destination: 'CAI', limit: 2 }),
+          fetchLiveFlights({ origin: 'JED', destination: 'IST', limit: 2 }),
+        ])
+      ).flat()
+
   return (
     <TripsContent
       initialTrips={(trips as Trip[]) || []}
       initialTotalPages={Math.ceil((count || 0) / 12)}
+      liveOffers={liveOffers}
       initialFilters={{
         origin,
         destination,
