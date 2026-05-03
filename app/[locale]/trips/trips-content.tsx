@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   CalendarIcon,
   Plane,
+  Zap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TripCard } from '@/components/trips/trip-card'
@@ -26,6 +27,8 @@ import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { StaleSearchModal } from '@/components/ui/stale-search-modal'
 import { CategoryHero } from '@/components/shared/category-hero'
 import type { Trip } from '@/types'
+import type { LiveOffer } from '@/lib/duffel-server'
+import { LiveTripCard } from '@/components/trips/live-trip-card'
 import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -64,9 +67,10 @@ interface TripsContentProps {
   initialTrips: Trip[]
   initialTotalPages: number
   initialFilters: Filters
+  liveOffers?: LiveOffer[]
 }
 
-export function TripsContent({ initialTrips, initialTotalPages, initialFilters }: TripsContentProps) {
+export function TripsContent({ initialTrips, initialTotalPages, initialFilters, liveOffers = [] }: TripsContentProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -499,11 +503,55 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
         onNewSearch={() => clearFilters()}
       />
 
+      {/* Live flights CTA banner — when no live results yet */}
+      {!loading && liveOffers.length === 0 && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="w-full mb-6 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 text-start hover:from-amber-100 hover:to-orange-100 hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-white shrink-0">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">
+                {filters.origin && filters.destination
+                  ? pick(
+                      locale,
+                      'اختر تاريخ السفر لرؤية رحلات مباشرة',
+                      'Pick a departure date to see live flights',
+                      'Canlı uçuşları görmek için tarih seçin'
+                    )
+                  : pick(
+                      locale,
+                      'ابحث عن رحلات مباشرة من شركات الطيران',
+                      'Search for live flights from real airlines',
+                      'Havayollarından canlı uçuşları arayın'
+                    )}
+              </div>
+              <div className="text-xs text-slate-600 mt-0.5">
+                {pick(
+                  locale,
+                  'مدعوم من Duffel — أسعار وأوقات مباشرة',
+                  'Powered by Duffel — real prices and times',
+                  'Duffel ile — gerçek fiyatlar ve saatler'
+                )}
+              </div>
+            </div>
+          </div>
+          <span className="text-sm font-bold text-amber-700 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform shrink-0">
+            {pick(locale, 'ابحث ←', 'Search →', 'Ara →')}
+          </span>
+        </button>
+      )}
+
       {/* Results Count */}
-      {!loading && trips.length > 0 && (
+      {!loading && (trips.length > 0 || liveOffers.length > 0) && (
         <div className="mb-4" role="status" aria-live="polite">
           <span className="text-sm font-medium text-muted-foreground">
-            {trips.length} {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
+            {trips.length + liveOffers.length}{' '}
+            {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
           </span>
         </div>
       )}
@@ -515,7 +563,7 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : trips.length === 0 ? (
+      ) : trips.length === 0 && liveOffers.length === 0 ? (
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <EmptyState
             icon={Plane}
@@ -527,8 +575,21 @@ export function TripsContent({ initialTrips, initialTotalPages, initialFilters }
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {liveOffers.map((offer, idx) => (
+              <div
+                key={offer.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+              >
+                <LiveTripCard offer={offer} />
+              </div>
+            ))}
             {trips.map((trip, idx) => (
-              <div key={trip.id} className="animate-fade-in-up" style={{ animationDelay: `${(idx % 6) * 100}ms` }}>
+              <div
+                key={trip.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${((idx + liveOffers.length) % 6) * 100}ms` }}
+              >
                 <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
               </div>
             ))}
