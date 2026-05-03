@@ -7,6 +7,7 @@ import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Zap } from 'lucide-react
 import { cn } from '@/lib/utils'
 import { getCountryCode } from '@/lib/countries'
 import { pick } from '@/lib/i18n-helpers'
+import { localizeCity, localizeAirline } from '@/lib/airports-i18n'
 import type { LiveOffer } from '@/lib/duffel-server'
 
 function fmtDuration(d: string) {
@@ -34,6 +35,9 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
   const originCountry = getCountryCode(offer.origin_iata, offer.origin_city)
   const destCountry = getCountryCode(offer.destination_iata, offer.destination_city)
   const formattedPrice = `${offer.total_currency} ${parseFloat(offer.total_amount).toFixed(0)}`
+  const originCityLabel = localizeCity(offer.origin_iata, offer.origin_city, locale)
+  const destCityLabel = localizeCity(offer.destination_iata, offer.destination_city, locale)
+  const airlineLabel = localizeAirline(offer.airline.iata_code, offer.airline.name, locale)
 
   return (
     <div className="relative h-full">
@@ -61,7 +65,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground transition-colors duration-200 group-hover:border-primary/20 group-hover:bg-primary/10 group-hover:text-primary overflow-hidden">
                   {offer.airline.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={offer.airline.logo} alt={offer.airline.name} className="h-7 w-7 object-contain" />
+                    <img src={offer.airline.logo} alt={airlineLabel} className="h-7 w-7 object-contain" />
                   ) : (
                     <Plane className="h-5 w-5 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
                   )}
@@ -69,7 +73,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-bold text-slate-900 leading-none">
-                      {offer.airline.name}
+                      {airlineLabel}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
@@ -90,7 +94,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
                   {t('common.from')}
                 </p>
-                <p className="font-black text-slate-900 sm:text-2xl truncate">{offer.origin_city}</p>
+                <p className="font-black text-slate-900 sm:text-2xl truncate">{originCityLabel}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   {originCountry && (
                     <Image
@@ -118,7 +122,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
                   {t('common.to')}
                 </p>
                 <p className="font-black text-slate-900 sm:text-2xl truncate">
-                  {offer.destination_city}
+                  {destCityLabel}
                 </p>
                 <div className="flex items-center justify-end gap-1.5 mt-1">
                   {destCountry && (

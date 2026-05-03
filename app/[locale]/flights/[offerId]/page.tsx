@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Plane, Calendar, Clock, ArrowRight, ArrowLeft, Zap, ShieldCheck } from 'lucide-react'
 import { getCountryCode } from '@/lib/countries'
+import { localizeCity, localizeAirline } from '@/lib/airports-i18n'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,7 +56,7 @@ export default async function FlightOfferDetailPage({
               )}
             </div>
             <div>
-              <div className="font-bold text-lg">{offer.owner.name}</div>
+              <div className="font-bold text-lg">{localizeAirline(offer.owner.iata_code, offer.owner.name, locale)}</div>
               <div className="text-xs text-slate-500">{offer.owner.iata_code}</div>
             </div>
           </div>
@@ -108,7 +109,7 @@ export default async function FlightOfferDetailPage({
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-6">
                 <div>
                   <p className="text-3xl font-black">{departureTime}</p>
-                  <p className="text-sm font-semibold mt-1">{s.origin.city}</p>
+                  <p className="text-sm font-semibold mt-1">{localizeCity(s.origin.iata_code, s.origin.city, locale)}</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     {originCountry && (
                       <Image
@@ -140,7 +141,7 @@ export default async function FlightOfferDetailPage({
 
                 <div className="text-end">
                   <p className="text-3xl font-black">{arrivalTime}</p>
-                  <p className="text-sm font-semibold mt-1">{s.destination.city}</p>
+                  <p className="text-sm font-semibold mt-1">{localizeCity(s.destination.iata_code, s.destination.city, locale)}</p>
                   <div className="flex items-center justify-end gap-1.5 mt-1">
                     {destCountry && (
                       <Image
@@ -169,7 +170,7 @@ export default async function FlightOfferDetailPage({
                       <div className="flex items-center gap-2">
                         <Plane className="h-3.5 w-3.5 text-slate-400" />
                         <span className="font-mono font-semibold">{seg.flight_number}</span>
-                        <span className="text-slate-500">· {seg.marketing_carrier}</span>
+                        <span className="text-slate-500">· {localizeAirline(seg.flight_number?.slice(0, 2), seg.marketing_carrier, locale)}</span>
                       </div>
                       <div className="text-slate-500">
                         {seg.origin} → {seg.destination}
