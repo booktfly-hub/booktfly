@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
-import { fetchLiveFlights } from '@/lib/duffel-server'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -63,35 +62,10 @@ export default async function TripsPage({
 
   const { data: trips, count } = await query
 
-  // Show live offers for the user's search if filled, otherwise show featured
-  // suggestions for popular Saudi routes so the page never feels empty.
-  const inThirtyDays = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10)
-
-  const liveOffers =
-    origin && destination
-      ? await fetchLiveFlights({
-          origin,
-          destination,
-          departure_date: dateFrom || inThirtyDays,
-          return_date: tripType !== 'one_way' && dateTo ? dateTo : undefined,
-          cabin_class: (cabinClass as any) || 'economy',
-          adults: 1,
-        })
-      : (
-          await Promise.all([
-            fetchLiveFlights({ origin: 'RUH', destination: 'DXB', departure_date: inThirtyDays }),
-            fetchLiveFlights({ origin: 'JED', destination: 'CAI', departure_date: inThirtyDays }),
-            fetchLiveFlights({ origin: 'JED', destination: 'IST', departure_date: inThirtyDays }),
-          ])
-        ).flatMap((arr) => arr.slice(0, 2))
-
   return (
     <TripsContent
       initialTrips={(trips as Trip[]) || []}
       initialTotalPages={Math.ceil((count || 0) / 12)}
-      liveOffers={liveOffers}
       initialFilters={{
         origin,
         destination,
