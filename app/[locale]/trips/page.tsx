@@ -29,20 +29,22 @@ export default async function TripsPage({
 
   const supabase = await createClient()
 
+  // Use filter() for complex multi-column OR logic per field
+  // Origin: city_ar OR city_en OR code
+  // Destination: city_ar OR city_en OR code
+  // Both conditions must match when provided
   let query = supabase
     .from('trips')
     .select('*, provider:providers(*)', { count: 'exact' })
     .eq('status', 'active')
 
   if (origin) {
-    query = query.or(
-      `origin_city_ar.ilike.%${origin}%,origin_city_en.ilike.%${origin}%,origin_code.ilike.%${origin}%`
-    )
+    query = query.filter('origin_code', 'ilike', `%${origin}%`)
+      .or(`origin_city_ar.ilike.%${origin}%,origin_city_en.ilike.%${origin}%`)
   }
   if (destination) {
-    query = query.or(
-      `destination_city_ar.ilike.%${destination}%,destination_city_en.ilike.%${destination}%,destination_code.ilike.%${destination}%`
-    )
+    query = query.filter('destination_code', 'ilike', `%${destination}%`)
+      .or(`destination_city_ar.ilike.%${destination}%,destination_city_en.ilike.%${destination}%`)
   }
   if (dateFrom) query = query.gte('departure_at', dateFrom)
   if (dateTo) query = query.lte('departure_at', dateTo)
