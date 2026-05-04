@@ -9,6 +9,12 @@ import { logActivity } from '@/lib/activity-log'
 
 export async function GET(request: NextRequest) {
   try {
+    const escapeLike = (value: string) => value.replace(/[%_,()]/g, '')
+    const buildLocationGroup = (prefix: 'origin' | 'destination', raw: string) => {
+      const term = escapeLike(raw)
+      return `or(${prefix}_city_ar.ilike.%${term}%,${prefix}_city_en.ilike.%${term}%,${prefix}_code.ilike.%${term}%)`
+    }
+
     const limited = rateLimit(request, { limit: 30, windowMs: 60_000 })
     if (limited) return limited
 
@@ -40,16 +46,12 @@ export async function GET(request: NextRequest) {
       query = query.eq('provider_id', providerId)
     }
 
-    if (origin) {
-      query = query.or(
-        `origin_city_ar.ilike.%${origin}%,origin_city_en.ilike.%${origin}%,origin_code.ilike.%${origin}%`
-      )
-    }
-
-    if (destination) {
-      query = query.or(
-        `destination_city_ar.ilike.%${destination}%,destination_city_en.ilike.%${destination}%,destination_code.ilike.%${destination}%`
-      )
+    if (origin && destination) {
+      query = query.or(`and(${buildLocationGroup('origin', origin)},${buildLocationGroup('destination', destination)})`)
+    } else if (origin) {
+      query = query.or(buildLocationGroup('origin', origin))
+    } else if (destination) {
+      query = query.or(buildLocationGroup('destination', destination))
     }
 
     if (dateFrom) {

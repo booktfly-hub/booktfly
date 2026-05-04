@@ -1,0 +1,66 @@
+import 'server-only'
+
+import { searchDuffelFlights } from './duffel-server'
+import {
+  fetchLiveFlights,
+  fetchLiveFlightsByName,
+  resolveIata,
+  type LiveOffer,
+} from './travelpayouts-server'
+
+export async function fetchPartnerLiveOffers(opts: {
+  origin?: string
+  destination?: string
+  departure_date?: string
+  return_date?: string
+  trip_type?: string
+}): Promise<LiveOffer[]> {
+  const origin = opts.origin?.trim() || ''
+  const destination = opts.destination?.trim() || ''
+
+  if (origin && destination) {
+    const [originIata, destinationIata] = await Promise.all([
+      resolveIata(origin),
+      resolveIata(destination),
+    ])
+
+    const [tpOffers, duffelOffers] = await Promise.all([
+      fetchLiveFlightsByName({
+        origin,
+        destination,
+        departure_date: opts.departure_date || undefined,
+        return_date:
+          opts.trip_type !== 'one_way' && opts.return_date
+            ? opts.return_date
+            : undefined,
+        limit: 10,
+      }),
+      originIata && destinationIata
+        ? searchDuffelFlights({
+            origin: originIata,
+            destination: destinationIata,
+            departure_date: opts.departure_date || undefined,
+            limit: 8,
+          })
+        : Promise.resolve([]),
+    ])
+
+    return [...tpOffers, ...duffelOffers].sort(
+      (a, b) => a.price_amount - b.price_amount
+    )
+  }
+
+  // Avoid showing unrelated fallback routes while the user has only filled one side
+  // of the search. That looked like "the same results every time" in the UI.
+  if (origin || destination) {
+    return []
+  }
+
+  return (
+    await Promise.all([
+      fetchLiveFlights({ origin: 'RUH', destination: 'DXB', limit: 2 }),
+      fetchLiveFlights({ origin: 'JED', destination: 'CAI', limit: 2 }),
+      fetchLiveFlights({ origin: 'JED', destination: 'IST', limit: 2 }),
+    ])
+  ).flat()
+}
