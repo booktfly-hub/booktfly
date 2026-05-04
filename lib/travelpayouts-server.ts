@@ -68,6 +68,7 @@ export interface LiveOffer {
   transfers: number
   duration_minutes: number | null
   affiliate_url: string
+  source?: 'travelpayouts' | 'duffel'
 }
 
 const ttl = 60_000
@@ -145,6 +146,7 @@ export async function fetchLiveFlights(opts: {
           adults: 1,
           sub_id: 'trips_grid',
         }),
+    source: 'travelpayouts',
   }))
 
   cache.set(cacheKey, { at: Date.now(), offers })

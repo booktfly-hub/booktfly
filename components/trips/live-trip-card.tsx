@@ -43,10 +43,17 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
   return (
     <div className="relative h-full">
       <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-          <Zap className="h-3 w-3" />
-          {pick(locale, 'مباشر', 'Live', 'Canlı')}
-        </span>
+        {offer.source === 'duffel' ? (
+          <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+            <Zap className="h-3 w-3" />
+            Duffel
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            <Zap className="h-3 w-3" />
+            Travelpayouts
+          </span>
+        )}
       </div>
       <a
         href={offer.affiliate_url}

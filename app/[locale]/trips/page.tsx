@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
-import {
-  fetchLiveFlights,
-  fetchLiveFlightsByName,
-} from '@/lib/travelpayouts-server'
+import { fetchPartnerLiveOffers } from '@/lib/live-offers-server'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -11,6 +8,11 @@ export default async function TripsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
+  const escapeLike = (value: string) => value.replace(/[%_,()]/g, '')
+  const buildLocationGroup = (prefix: 'origin' | 'destination', raw: string) => {
+    const term = escapeLike(raw)
+    return `or(${prefix}_city_ar.ilike.%${term}%,${prefix}_city_en.ilike.%${term}%,${prefix}_code.ilike.%${term}%)`
+  }
   const params = await searchParams
   const str = (key: string) => {
     const v = params[key]
@@ -29,20 +31,21 @@ export default async function TripsPage({
 
   const supabase = await createClient()
 
+  // Use filter() for complex multi-column OR logic per field
+  // Origin: city_ar OR city_en OR code
+  // Destination: city_ar OR city_en OR code
+  // Both conditions must match when provided
   let query = supabase
     .from('trips')
     .select('*, provider:providers(*)', { count: 'exact' })
     .eq('status', 'active')
 
-  if (origin) {
-    query = query.or(
-      `origin_city_ar.ilike.%${origin}%,origin_city_en.ilike.%${origin}%,origin_code.ilike.%${origin}%`
-    )
-  }
-  if (destination) {
-    query = query.or(
-      `destination_city_ar.ilike.%${destination}%,destination_city_en.ilike.%${destination}%,destination_code.ilike.%${destination}%`
-    )
+  if (origin && destination) {
+    query = query.or(`and(${buildLocationGroup('origin', origin)},${buildLocationGroup('destination', destination)})`)
+  } else if (origin) {
+    query = query.or(buildLocationGroup('origin', origin))
+  } else if (destination) {
+    query = query.or(buildLocationGroup('destination', destination))
   }
   if (dateFrom) query = query.gte('departure_at', dateFrom)
   if (dateTo) query = query.lte('departure_at', dateTo)
@@ -66,24 +69,13 @@ export default async function TripsPage({
 
   const { data: trips, count } = await query
 
-  // Travelpayouts (Aviasales) — live affiliate flight offers.
-  // Showed for the user's search if origin/destination are filled, otherwise
-  // a curated set of popular Saudi/MENA routes so the page never feels empty.
-  const liveOffers = origin && destination
-    ? await fetchLiveFlightsByName({
-        origin,
-        destination,
-        departure_date: dateFrom || undefined,
-        return_date: tripType !== 'one_way' && dateTo ? dateTo : undefined,
-        limit: 10,
-      })
-    : (
-        await Promise.all([
-          fetchLiveFlights({ origin: 'RUH', destination: 'DXB', limit: 2 }),
-          fetchLiveFlights({ origin: 'JED', destination: 'CAI', limit: 2 }),
-          fetchLiveFlights({ origin: 'JED', destination: 'IST', limit: 2 }),
-        ])
-      ).flat()
+  const liveOffers = await fetchPartnerLiveOffers({
+    origin,
+    destination,
+    departure_date: dateFrom || undefined,
+    return_date: dateTo || undefined,
+    trip_type: tripType,
+  })
 
   return (
     <TripsContent

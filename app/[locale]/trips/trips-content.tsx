@@ -80,6 +80,7 @@ export function TripsContent({
   const isAr = locale === 'ar'
 
   const [trips, setTrips] = useState<Trip[]>(initialTrips)
+  const [partnerOffers, setPartnerOffers] = useState<LiveOffer[]>(liveOffers)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -104,14 +105,35 @@ export function TripsContent({
   const [searchDestination, setSearchDestination] = useState(initialFilters.destination)
   const departureDate = parseDateValue(filters.date_from)
   const returnDate = parseDateValue(filters.date_to)
+  const liveOfferCounts = useMemo(() => {
+    return partnerOffers.reduce(
+      (acc, offer) => {
+        if (offer.source === 'duffel') acc.duffel += 1
+        else acc.travelpayouts += 1
+        return acc
+      },
+      { travelpayouts: 0, duffel: 0 }
+    )
+  }, [partnerOffers])
+
+  useEffect(() => {
+    setPartnerOffers(liveOffers)
+  }, [liveOffers])
 
   const fetchTrips = useCallback(
-    async (pageNum: number, append = false, overrideOrigin?: string, overrideDestination?: string) => {
+    async (
+      pageNum: number,
+      append = false,
+      overrideOrigin?: string,
+      overrideDestination?: string,
+      overrideFilters?: Partial<Filters>
+    ) => {
       if (!append) setLoading(true)
       else setLoadingMore(true)
 
       const origin = overrideOrigin ?? searchOrigin
       const destination = overrideDestination ?? searchDestination
+      const activeFilters = { ...filters, ...overrideFilters }
 
       try {
         const params = new URLSearchParams()
@@ -119,21 +141,26 @@ export function TripsContent({
         params.set('limit', '12')
         if (origin) params.set('origin', origin)
         if (destination) params.set('destination', destination)
-        if (filters.date_from) params.set('date_from', filters.date_from)
-        if (filters.trip_type !== 'one_way' && filters.date_to) params.set('date_to', filters.date_to)
-        if (filters.price_min) params.set('price_min', filters.price_min)
-        if (filters.price_max) params.set('price_max', filters.price_max)
-        if (filters.trip_type) params.set('trip_type', filters.trip_type)
-        if (filters.cabin_class) params.set('cabin_class', filters.cabin_class)
-        if (filters.sort) params.set('sort', filters.sort)
+        if (activeFilters.date_from) params.set('date_from', activeFilters.date_from)
+        if (activeFilters.trip_type !== 'one_way' && activeFilters.date_to) params.set('date_to', activeFilters.date_to)
+        if (activeFilters.price_min) params.set('price_min', activeFilters.price_min)
+        if (activeFilters.price_max) params.set('price_max', activeFilters.price_max)
+        if (activeFilters.trip_type) params.set('trip_type', activeFilters.trip_type)
+        if (activeFilters.cabin_class) params.set('cabin_class', activeFilters.cabin_class)
+        if (activeFilters.sort) params.set('sort', activeFilters.sort)
 
-        const res = await fetch(`/api/trips?${params.toString()}`)
-        const data = await res.json()
+        const tripsPromise = fetch(`/api/trips?${params.toString()}`).then((res) => res.json())
+        const partnerOffersPromise = append
+          ? Promise.resolve<{ offers: LiveOffer[] } | null>(null)
+          : fetch(`/api/trips/live-offers?${params.toString()}`).then((res) => res.json())
+
+        const [data, liveData] = await Promise.all([tripsPromise, partnerOffersPromise])
 
         if (append) {
           setTrips((prev) => [...prev, ...(data.trips || [])])
         } else {
           setTrips(data.trips || [])
+          setPartnerOffers(liveData?.offers || [])
         }
         setTotalPages(data.totalPages || 1)
       } catch {
@@ -248,6 +275,8 @@ export function TripsContent({
     setFilters(emptyFilters)
     setSearchOrigin('')
     setSearchDestination('')
+    setPage(1)
+    fetchTrips(1, false, '', '', emptyFilters)
   }
 
   const hasActiveFilters = Object.entries(filters).some(([key, val]) => key !== 'sort' && val !== '')
@@ -480,6 +509,17 @@ export function TripsContent({
         </div>
       )}
 
+      {(filters.origin || filters.destination) && !(filters.origin && filters.destination) && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          {pick(
+            locale,
+            'حدّد مدينة المغادرة والوصول معًا لعرض مقارنة الأسعار والعروض المباشرة.',
+            'Select both departure and destination to show live offers and price comparison.',
+            'Canli teklifler ve fiyat karşılaştırmasını görmek için kalkış ve varışı birlikte seçin.'
+          )}
+        </div>
+      )}
+
       {/* Sort tabs (P1-17) */}
       {!loading && trips.length > 0 && (
         <div className="mb-4">
@@ -514,10 +554,10 @@ export function TripsContent({
       />
 
       {/* Results Count */}
-      {!loading && (trips.length > 0 || liveOffers.length > 0) && (
+      {!loading && (trips.length > 0 || partnerOffers.length > 0) && (
         <div className="mb-4" role="status" aria-live="polite">
           <span className="text-sm font-medium text-muted-foreground">
-            {trips.length + liveOffers.length}{' '}
+            {trips.length + partnerOffers.length}{' '}
             {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
           </span>
         </div>
@@ -530,7 +570,7 @@ export function TripsContent({
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : trips.length === 0 && liveOffers.length === 0 ? (
+      ) : trips.length === 0 && partnerOffers.length === 0 ? (
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <EmptyState
             icon={Plane}
@@ -557,7 +597,7 @@ export function TripsContent({
           )}
 
           {/* Partner options — clearly separated section */}
-          {liveOffers.length > 0 && (
+          {partnerOffers.length > 0 && (
             <div className={trips.length > 0 ? 'mt-12 md:mt-16' : ''}>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
@@ -579,12 +619,24 @@ export function TripsContent({
                   </p>
                 </div>
                 <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
-                  {liveOffers.length}{' '}
+                  {partnerOffers.length}{' '}
                   {pick(locale, 'عرض', 'offers', 'teklif')}
                 </span>
               </div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {liveOfferCounts.travelpayouts > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700">
+                    Travelpayouts: {liveOfferCounts.travelpayouts}
+                  </span>
+                )}
+                {liveOfferCounts.duffel > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-50 px-3 py-1 text-[11px] font-semibold text-sky-700">
+                    Duffel: {liveOfferCounts.duffel}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {liveOffers.map((offer, idx) => (
+                {partnerOffers.map((offer, idx) => (
                   <div
                     key={offer.id}
                     className="animate-fade-in-up"

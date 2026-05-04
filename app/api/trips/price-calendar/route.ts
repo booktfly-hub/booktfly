@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
-import { fetchMonthCalendar } from '@/lib/travelpayouts-server'
+import { fetchMonthCalendar, resolveIata } from '@/lib/travelpayouts-server'
 
 type DayEntry = {
   price: number
@@ -10,14 +10,22 @@ type DayEntry = {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const originCode = searchParams.get('origin')
-  const destinationCode = searchParams.get('destination')
+  const originInput = (searchParams.get('origin') || '').trim()
+  const destinationInput = (searchParams.get('destination') || '').trim()
   const month = searchParams.get('month') // YYYY-MM format
   const cabinClass = searchParams.get('cabin_class')
 
-  if (!originCode || !destinationCode || !month) {
+  if (!originInput || !destinationInput || !month) {
     return NextResponse.json({ error: 'origin, destination, and month are required' }, { status: 400 })
   }
+
+  const [originResolved, destinationResolved] = await Promise.all([
+    originInput === 'ANY' ? Promise.resolve('ANY') : resolveIata(originInput),
+    destinationInput === 'ANY' ? Promise.resolve('ANY') : resolveIata(destinationInput),
+  ])
+
+  const originCode = originResolved || originInput.toUpperCase()
+  const destinationCode = destinationResolved || destinationInput.toUpperCase()
 
   const startDate = `${month}-01`
   const [year, mon] = month.split('-').map(Number)
