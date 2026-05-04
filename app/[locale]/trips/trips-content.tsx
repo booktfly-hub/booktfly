@@ -671,27 +671,31 @@ export function TripsContent({
             </div>
           )}
 
-          {/* Hotel offers — Booking.com */}
-          {hotelOffers.length > 0 && (
+          {/* Hotel offers — only show when user has searched a destination */}
+          {hotelOffers.length > 0 && filters.destination && (
             <div className={trips.length > 0 || partnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg md:text-2xl font-bold text-slate-900 flex items-center gap-2">
                     <Hotel className="h-5 w-5 text-blue-600" />
-                    {pick(locale, 'فنادق في وجهتك', 'Hotels at your destination', 'Varış noktanızdaki oteller')}
+                    {pick(locale,
+                      `أكمل رحلتك — فنادق في ${hotelOffers[0]?.city ?? filters.destination}`,
+                      `Complete your trip — Hotels in ${hotelOffers[0]?.city ?? filters.destination}`,
+                      `Seyahatinizi tamamlayın — ${hotelOffers[0]?.city ?? filters.destination} Otelleri`
+                    )}
                   </h2>
                   <p className="mt-1 text-xs md:text-sm text-slate-500">
                     {pick(
                       locale,
-                      'احجز إقامتك عبر Booking.com — أكثر من 28 مليون خيار إقامة',
-                      'Book your stay via Booking.com — over 28 million accommodation options',
+                      'احجز إقامتك عبر Booking.com — أكثر من 28 مليون خيار، اختر ما يناسبك',
+                      'Book your stay via Booking.com — 28M+ options, pick what suits you',
                       'Booking.com üzerinden konaklamanızı rezerve edin — 28 milyondan fazla seçenek'
                     )}
                   </p>
                 </div>
                 <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-[11px] font-semibold text-blue-700 border border-blue-200">
-                  {hotelOffers.length}{' '}
-                  {pick(locale, 'وجهة', 'destination', 'destinasyon')}
+                  <Hotel className="h-3 w-3" />
+                  {pick(locale, 'فئات الإقامة', 'Stay tiers', 'Konaklama seçenekleri')}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -699,7 +703,7 @@ export function TripsContent({
                   <div
                     key={offer.id}
                     className="animate-fade-in-up"
-                    style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+                    style={{ animationDelay: `${idx * 100}ms` }}
                   >
                     <HotelCard offer={offer} />
                   </div>
