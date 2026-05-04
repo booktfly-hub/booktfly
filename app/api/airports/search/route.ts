@@ -28,7 +28,9 @@ type TPPlace = {
 
 async function fetchTP(term: string, locale: 'ar' | 'en'): Promise<TPPlace[]> {
   try {
-    const url = `https://autocomplete.travelpayouts.com/places2?term=${encodeURIComponent(term)}&locale=${locale}&types[]=city&types[]=airport`
+    // If Arabic input, try English first (Travelpayouts works better with Latin)
+    const searchLocale = locale === 'ar' && /[؀-ۿ]/.test(term) ? 'en' : locale
+    const url = `https://autocomplete.travelpayouts.com/places2?term=${encodeURIComponent(term)}&locale=${searchLocale}&types[]=city&types[]=airport`
     const res = await fetch(url, { next: { revalidate: 86400 } })
     if (!res.ok) return []
     return (await res.json()) as TPPlace[]
@@ -103,9 +105,34 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ results: list })
   }
 
-  const [tpResults, dbCities] = await Promise.all([
+  // If Arabic script detected, try searching DB first (Arabic queries don't work well with Travelpayouts)
+  const isArabic = /[؀-ۿ]/.test(term)
+
+  const dbCities = await fetchDbCities()
+
+  // If Arabic input, try DB first. If no match, fall through to Travelpayouts.
+  if (isArabic) {
+    const q = term.toLowerCase()
+    const dbMatches = Array.from(dbCities.values())
+      .filter(c => c.ar.toLowerCase().includes(q) || c.code.toUpperCase().includes(q.toUpperCase()))
+    if (dbMatches.length > 0) {
+      const list: Suggestion[] = dbMatches.map(c => ({
+        code: c.code,
+        name_ar: c.ar,
+        name_en: c.en,
+        city_ar: c.ar,
+        city_en: c.en,
+        type: 'city' as const,
+        has_trips: true,
+        score: 90,
+      }))
+      return NextResponse.json({ results: list })
+    }
+    // Fall through to search English Travelpayouts with the Arabic term (low chance but let the API try)
+  }
+
+  const [tpResults] = await Promise.all([
     fetchTP(term, locale),
-    fetchDbCities(),
   ])
 
   // Also fetch the other locale so we can show both names in the UI.
