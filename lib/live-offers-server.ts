@@ -61,6 +61,11 @@ export async function fetchPartnerLiveOffers(opts: {
       fetchLiveFlights({ origin: 'RUH', destination: 'DXB', limit: 2 }),
       fetchLiveFlights({ origin: 'JED', destination: 'CAI', limit: 2 }),
       fetchLiveFlights({ origin: 'JED', destination: 'IST', limit: 2 }),
+      fetchLiveFlights({ origin: 'RUH', destination: 'IST', limit: 2 }),
+      fetchLiveFlights({ origin: 'RUH', destination: 'DOH', limit: 2 }),
+      fetchLiveFlights({ origin: 'JED', destination: 'KWI', limit: 2 }),
+      fetchLiveFlights({ origin: 'RUH', destination: 'AMM', limit: 2 }),
+      fetchLiveFlights({ origin: 'JED', destination: 'MCT', limit: 2 }),
     ])
   ).flat()
 }
