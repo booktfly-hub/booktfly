@@ -469,7 +469,13 @@ export function TripsContent({
             destinationCode={filters.destination}
             cabinClass={filters.cabin_class || undefined}
             selectedDate={departureDate}
-            onDateSelect={(d) => updateFilter('date_from', format(d, 'yyyy-MM-dd'))}
+            onDateSelect={(d, meta) => {
+              if (meta?.source === 'partner' && meta.affiliateUrl) {
+                window.open(meta.affiliateUrl, '_blank', 'noopener,noreferrer')
+                return
+              }
+              updateFilter('date_from', format(d, 'yyyy-MM-dd'))
+            }}
           />
         </div>
       )}
@@ -535,26 +541,61 @@ export function TripsContent({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {liveOffers.map((offer, idx) => (
-              <div
-                key={offer.id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${(idx % 6) * 100}ms` }}
-              >
-                <LiveTripCard offer={offer} />
+          {/* Platform trips first */}
+          {trips.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {trips.map((trip, idx) => (
+                <div
+                  key={trip.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+                >
+                  <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Partner options — clearly separated section */}
+          {liveOffers.length > 0 && (
+            <div className={trips.length > 0 ? 'mt-12 md:mt-16' : ''}>
+              <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-lg md:text-2xl font-bold text-slate-900">
+                    {pick(
+                      locale,
+                      'خيارات إضافية من شركاء السفر',
+                      'More travel options',
+                      'Daha fazla seyahat seçeneği'
+                    )}
+                  </h2>
+                  <p className="mt-1 text-xs md:text-sm text-slate-500">
+                    {pick(
+                      locale,
+                      'عروض رحلات من مزودي خدمات سفر موثوقين خارج منصتنا',
+                      'Flight offers from trusted travel providers outside our platform',
+                      'Platformumuz dışındaki güvenilir sağlayıcılardan uçuş teklifleri'
+                    )}
+                  </p>
+                </div>
+                <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
+                  {liveOffers.length}{' '}
+                  {pick(locale, 'عرض', 'offers', 'teklif')}
+                </span>
               </div>
-            ))}
-            {trips.map((trip, idx) => (
-              <div
-                key={trip.id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${((idx + liveOffers.length) % 6) * 100}ms` }}
-              >
-                <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {liveOffers.map((offer, idx) => (
+                  <div
+                    key={offer.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+                  >
+                    <LiveTripCard offer={offer} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
 
           {page < totalPages && (
             <div className="flex justify-center mt-12 md:mt-16">

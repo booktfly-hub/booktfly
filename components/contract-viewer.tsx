@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import { SignaturePad } from './signature-pad'
-import { FileText, Loader2, ShieldCheck } from 'lucide-react'
+import { FileText, Loader2, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ContractRole } from '@/lib/contracts/version'
 
@@ -19,25 +18,39 @@ type Props = {
   submitLabel?: string
 }
 
+function generateAgreementImage(acceptedAt: string): string {
+  const canvas = document.createElement('canvas')
+  canvas.width = 400
+  canvas.height = 80
+  const ctx = canvas.getContext('2d')!
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, 400, 80)
+  ctx.fillStyle = '#1e293b'
+  ctx.font = 'bold 14px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('✓ Agreed / موافق', 200, 30)
+  ctx.font = '12px sans-serif'
+  ctx.fillStyle = '#64748b'
+  ctx.fillText(acceptedAt, 200, 55)
+  return canvas.toDataURL('image/png')
+}
+
 export function ContractViewer({ role, titleAr, titleEn, bodyAr, bodyEn, version, onSigned, submitting, submitLabel }: Props) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [accepted, setAccepted] = useState(false)
-  const [signature, setSignature] = useState<string | null>(null)
   const [showEnAlso, setShowEnAlso] = useState(false)
 
-  const canSign = accepted && !!signature && !submitting
+  const canSubmit = accepted && !submitting
   const title = isAr ? titleAr : titleEn
   const body = isAr ? bodyAr : bodyEn
 
   const handleSubmit = async () => {
-    if (!canSign || !signature) return
-    await onSigned({
-      signatureDataUrl: signature,
-      acceptedAt: new Date().toISOString(),
-      version,
-    })
+    if (!canSubmit) return
+    const acceptedAt = new Date().toISOString()
+    const signatureDataUrl = generateAgreementImage(acceptedAt)
+    await onSigned({ signatureDataUrl, acceptedAt, version })
   }
 
   return (
@@ -77,45 +90,40 @@ export function ContractViewer({ role, titleAr, titleEn, bodyAr, bodyEn, version
         )}
       </div>
 
-      <label className="flex items-start gap-3 cursor-pointer select-none rounded-xl bg-slate-50 p-3">
+      <label className="flex items-start gap-3 cursor-pointer select-none rounded-xl bg-primary/5 border border-primary/10 p-4">
         <input
           type="checkbox"
           checked={accepted}
           onChange={(e) => setAccepted(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary"
+          className="mt-0.5 h-5 w-5 rounded border-slate-300 accent-primary"
           disabled={submitting}
         />
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-sm font-semibold text-foreground">
           {t('contract.accept_label')}
         </span>
       </label>
 
-      <div className="space-y-2">
-        <label className="text-sm font-bold text-foreground flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          {t('signature.label')}
-        </label>
-        <SignaturePad onChange={setSignature} disabled={!accepted || submitting} />
-      </div>
-
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={!canSign}
+        disabled={!canSubmit}
         className={cn(
-          'w-full rounded-xl py-3 text-sm font-bold transition-all',
-          canSign
+          'w-full rounded-xl py-3.5 text-sm font-bold transition-all flex items-center justify-center gap-2',
+          canSubmit
             ? 'bg-primary text-white shadow-md hover:brightness-95 active:scale-[0.98]'
             : 'bg-slate-100 text-slate-400 cursor-not-allowed'
         )}
       >
         {submitting ? (
-          <span className="inline-flex items-center gap-2 justify-center">
+          <>
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('contract.signing')}
-          </span>
+          </>
         ) : (
-          submitLabel || t('contract.sign_and_continue')
+          <>
+            <CheckCircle2 className="h-4 w-4" />
+            {submitLabel || t('contract.sign_and_continue')}
+          </>
         )}
       </button>
     </div>

@@ -6,12 +6,18 @@ import { useLocale, useTranslations } from 'next-intl'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+type DayEntry = {
+  price: number
+  source: 'platform' | 'partner'
+  affiliate_url?: string
+}
+
 interface PriceStripProps {
   originCode: string
   destinationCode: string
   cabinClass?: string
   selectedDate?: Date
-  onDateSelect: (date: Date) => void
+  onDateSelect: (date: Date, meta?: { source: 'platform' | 'partner'; affiliateUrl?: string }) => void
   className?: string
   /** how many days to show */
   daysToShow?: number
@@ -44,6 +50,7 @@ export function PriceStrip({
   })
 
   const [prices, setPrices] = useState<Record<string, number>>({})
+  const [entries, setEntries] = useState<Record<string, DayEntry>>({})
   const [loading, setLoading] = useState(false)
 
   const days = useMemo(() => {
@@ -71,6 +78,7 @@ export function PriceStrip({
       if (res.ok) {
         const data = await res.json()
         setPrices(data.prices ?? {})
+        setEntries(data.entries ?? {})
       }
     } catch {
       /* silent */
@@ -121,6 +129,8 @@ export function PriceStrip({
           {days.map((d) => {
             const ymd = formatYMD(d)
             const price = prices[ymd]
+            const entry = entries[ymd]
+            const isPartner = entry?.source === 'partner'
             const selected = isSelected(d)
             const today = isToday(d)
             const isCheapest = price != null && minPrice != null && price === minPrice
@@ -129,9 +139,16 @@ export function PriceStrip({
                 key={ymd}
                 type="button"
                 disabled={!price}
-                onClick={() => onDateSelect(d)}
+                onClick={() =>
+                  onDateSelect(
+                    d,
+                    entry
+                      ? { source: entry.source, affiliateUrl: entry.affiliate_url }
+                      : undefined
+                  )
+                }
                 className={cn(
-                  'flex flex-col items-center justify-center rounded-lg px-1 py-2 text-xs transition-colors min-h-[64px]',
+                  'flex flex-col items-center justify-center rounded-lg px-1 py-2 text-xs transition-colors min-h-[64px] relative',
                   selected
                     ? 'bg-primary text-primary-foreground'
                     : price
@@ -147,18 +164,23 @@ export function PriceStrip({
                   {d.getDate()} {d.toLocaleDateString(pick(locale, 'ar-SA', 'en-US', 'tr-TR'), { month: 'short' })}
                 </span>
                 {price != null ? (
-                  <span
-                    className={cn(
-                      'text-[11px] mt-1 font-bold tabular-nums',
-                      selected
-                        ? 'text-primary-foreground'
-                        : isCheapest
-                        ? 'text-emerald-600'
-                        : 'text-foreground',
+                  <>
+                    <span
+                      className={cn(
+                        'text-[11px] mt-1 font-bold tabular-nums',
+                        selected
+                          ? 'text-primary-foreground'
+                          : isCheapest
+                          ? 'text-emerald-600'
+                          : 'text-foreground',
+                      )}
+                    >
+                      {price >= 1000 ? `${(price / 1000).toFixed(1)}k` : price}
+                    </span>
+                    {isPartner && !selected && (
+                      <span className="absolute top-1 end-1 h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden="true" />
                     )}
-                  >
-                    {price >= 1000 ? `${(price / 1000).toFixed(1)}k` : price}
-                  </span>
+                  </>
                 ) : (
                   <span className="text-[10px] mt-1 text-muted-foreground">—</span>
                 )}
