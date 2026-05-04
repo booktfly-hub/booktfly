@@ -170,7 +170,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
                     {formattedPrice}
                   </span>
                   <span className="text-[10px] font-medium text-slate-400 mt-1.5">
-                    {pick(locale, 'مدعوم من Aviasales', 'Powered by Aviasales', 'Aviasales ile')}
+                    {pick(locale, 'عرض خارجي', 'External offer', 'Harici teklif')}
                   </span>
                 </div>
 

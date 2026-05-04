@@ -65,8 +65,8 @@ export function Footer() {
             
             <p className="text-xl font-medium text-slate-400 leading-relaxed max-w-md">
               {locale === 'ar'
-                ? 'الوجهة الأولى لحجز رحلات الطيران الموثوقة بأسعار تنافسية في جميع أنحاء المملكة العربية السعودية والشرق الأوسط.'
-                : 'The premier destination for reliable flight bookings at competitive prices across Saudi Arabia and the Middle East.'}
+                ? 'وجهتك الأولى لعروض السفر الحصرية — رحلات، فنادق، سيارات، وباقات بأفضل الأسعار في المملكة العربية السعودية والشرق الأوسط.'
+                : 'Your premier destination for exclusive travel deals — flights, hotels, cars, and packages at the best prices across Saudi Arabia and the Middle East.'}
             </p>
 
             <div className="flex items-center gap-4">

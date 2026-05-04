@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { fetchMonthCalendar } from '@/lib/travelpayouts-server'
+
+type DayEntry = {
+  price: number
+  source: 'platform' | 'partner'
+  affiliate_url?: string
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -28,28 +35,54 @@ export async function GET(request: NextRequest) {
   if (destinationCode !== 'ANY') query = query.eq('destination_code', destinationCode)
   if (cabinClass) query = query.eq('cabin_class', cabinClass)
 
-  const { data: trips, error } = await query
+  // Fetch DB + partner calendar in parallel.
+  // Partner lookup only when both endpoints are real IATA codes.
+  const partnerEnabled = originCode !== 'ANY' && destinationCode !== 'ANY'
+  const [dbResult, partnerCalendar] = await Promise.all([
+    query,
+    partnerEnabled
+      ? fetchMonthCalendar({ origin: originCode, destination: destinationCode, month })
+      : Promise.resolve({} as Record<string, { price: number; affiliate_url: string }>),
+  ])
 
-  if (error) {
+  if (dbResult.error) {
     return NextResponse.json({ error: 'Failed to fetch price data' }, { status: 500 })
   }
 
-  // Group by date and get minimum price
-  const priceMap: Record<string, number> = {}
-  for (const trip of trips || []) {
+  // Per-day entries: take the cheaper of platform vs partner.
+  const entries: Record<string, DayEntry> = {}
+  for (const trip of dbResult.data || []) {
     const date = trip.departure_at.split('T')[0]
-    if (!priceMap[date] || trip.price_per_seat < priceMap[date]) {
-      priceMap[date] = trip.price_per_seat
+    const existing = entries[date]
+    if (!existing || trip.price_per_seat < existing.price) {
+      entries[date] = { price: trip.price_per_seat, source: 'platform' }
+    }
+  }
+  for (const [date, partner] of Object.entries(partnerCalendar)) {
+    if (date < startDate || date > endDate) continue
+    const existing = entries[date]
+    if (!existing || partner.price < existing.price) {
+      entries[date] = {
+        price: partner.price,
+        source: 'partner',
+        affiliate_url: partner.affiliate_url,
+      }
     }
   }
 
-  // Find min and max for color coding
+  // Backwards-compatible flat priceMap + new `entries` shape.
+  const priceMap: Record<string, number> = {}
+  for (const [date, e] of Object.entries(entries)) {
+    priceMap[date] = e.price
+  }
+
   const prices = Object.values(priceMap)
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0
 
   return NextResponse.json({
     prices: priceMap,
+    entries,
     min_price: minPrice,
     max_price: maxPrice,
     total_days_with_flights: Object.keys(priceMap).length,

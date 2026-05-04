@@ -1,10 +1,56 @@
 import 'server-only'
 import {
   getCheapFlights,
+  getMonthCalendar,
   buildOfferDeepLink,
   buildSearchDeepLink,
   getAirlineName,
 } from './travelpayouts'
+
+const calendarCache = new Map<string, { at: number; data: Record<string, { price: number; affiliate_url: string }> }>()
+const CALENDAR_TTL = 30 * 60 * 1000
+
+export async function fetchMonthCalendar(opts: {
+  origin: string
+  destination: string
+  month: string // YYYY-MM
+  currency?: string
+}): Promise<Record<string, { price: number; affiliate_url: string }>> {
+  const origin = opts.origin?.trim().toUpperCase()
+  const destination = opts.destination?.trim().toUpperCase()
+  if (!origin || !destination) return {}
+  if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination)) return {}
+
+  const key = `${origin}-${destination}-${opts.month}-${opts.currency ?? 'usd'}`
+  const hit = calendarCache.get(key)
+  if (hit && Date.now() - hit.at < CALENDAR_TTL) return hit.data
+
+  const raw = await getMonthCalendar({
+    origin,
+    destination,
+    month: opts.month,
+    currency: opts.currency || 'usd',
+  })
+
+  const out: Record<string, { price: number; affiliate_url: string }> = {}
+  for (const [day, info] of Object.entries(raw)) {
+    out[day] = {
+      price: info.price,
+      affiliate_url: info.link
+        ? buildOfferDeepLink(info.link, 'price_strip')
+        : buildSearchDeepLink({
+            origin,
+            destination,
+            departure_at: day,
+            adults: 1,
+            sub_id: 'price_strip',
+          }),
+    }
+  }
+
+  calendarCache.set(key, { at: Date.now(), data: out })
+  return out
+}
 
 export interface LiveOffer {
   id: string
@@ -40,7 +86,7 @@ export async function fetchLiveFlights(opts: {
   if (!origin || !destination) return []
   if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination)) return []
 
-  const cacheKey = `${origin}-${destination}-${opts.departure_date ?? ''}-${opts.return_date ?? ''}-${opts.currency ?? 'usd'}-${opts.limit ?? 10}`
+  const cacheKey = `${origin}-${destination}-${opts.departure_date ?? ''}-${opts.return_date ?? ''}-${opts.currency ?? 'usd'}-${opts.limit ?? 30}`
   const hit = cache.get(cacheKey)
   if (hit && Date.now() - hit.at < ttl) return hit.offers
 
@@ -51,11 +97,22 @@ export async function fetchLiveFlights(opts: {
     return_at: opts.return_date,
     currency: opts.currency || 'usd',
     one_way: !opts.return_date,
-    limit: opts.limit ?? 10,
+    limit: opts.limit ?? 30,
+    sorting: 'price',
+    unique: false,
+  })
+
+  // De-duplicate near-identical offers (same airline + flight number + date + price)
+  const seen = new Set<string>()
+  const deduped = raw.filter((r) => {
+    const k = `${r.airline}-${r.flight_number}-${r.departure_at?.slice(0, 10)}-${r.price}`
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
   })
 
   // Resolve airline names in parallel
-  const airlineCodes = Array.from(new Set(raw.map((r) => r.airline)))
+  const airlineCodes = Array.from(new Set(deduped.map((r) => r.airline)))
   const airlineNames = new Map<string, string>()
   await Promise.all(
     airlineCodes.map(async (code) => {
@@ -63,7 +120,7 @@ export async function fetchLiveFlights(opts: {
     })
   )
 
-  const offers: LiveOffer[] = raw.map((r, i) => ({
+  const offers: LiveOffer[] = deduped.map((r, i) => ({
     id: `${r.origin}-${r.destination}-${r.departure_at}-${r.airline}-${r.flight_number}-${i}`,
     origin_iata: r.origin,
     destination_iata: r.destination,

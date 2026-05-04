@@ -247,10 +247,10 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
               <div className="grid gap-1">
                 <Button
                   variant={!filters.category ? 'secondary' : 'ghost'}
-                  className="h-10 justify-start rounded-xl"
+                  className="h-10 justify-start rounded-xl font-bold"
                   onClick={() => updateFilter('category', '')}
                 >
-                  {t('rooms.filter_category')}
+                  {isAr ? 'جميع التصنيفات' : 'All Categories'}
                 </Button>
                 {Object.entries(ROOM_CATEGORIES).map(([key, val]) => (
                   <Button

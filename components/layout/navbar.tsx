@@ -417,7 +417,27 @@ export function Navbar() {
 
                 <div className="flex items-center justify-between px-4 py-2">
                   <span className="text-sm font-medium text-muted-foreground">{locale === 'ar' ? 'اللغة' : 'Language'}</span>
-                  <LanguageSwitcher />
+                  <div className="flex items-center gap-1">
+                    {(['ar', 'en', 'tr'] as const).map((lang) => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => {
+                          const { pathname, search, hash } = window.location
+                          const next = pathname.replace(/^\/(ar|en|tr)(?=\/|$)/, `/${lang}`)
+                          window.location.href = `${next}${search}${hash}`
+                        }}
+                        className={cn(
+                          'rounded-md px-2.5 py-1 text-xs font-semibold transition-colors',
+                          locale === lang
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:text-foreground'
+                        )}
+                      >
+                        {lang.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {user && (

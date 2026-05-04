@@ -19,7 +19,9 @@ export function MobileBottomNav() {
     pathname.match(/\/trips\/[^/]+/) ||
     pathname.match(/\/rooms\/[^/]+/) ||
     pathname.match(/\/cars\/[^/]+/) ||
-    pathname.match(/\/packages\/[^/]+/)
+    pathname.match(/\/packages\/[^/]+/) ||
+    pathname.includes('/checkout') ||
+    pathname.includes('/book')
   ) {
     return null
   }

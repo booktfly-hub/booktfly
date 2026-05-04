@@ -34,6 +34,10 @@ export async function getCheapFlights(opts: {
   currency?: string
   one_way?: boolean
   limit?: number
+  sorting?: 'price' | 'route'
+  unique?: boolean
+  direct?: boolean
+  market?: string
 }): Promise<CheapFlight[]> {
   const params = new URLSearchParams()
   params.set('origin', opts.origin.toUpperCase())
@@ -42,7 +46,12 @@ export async function getCheapFlights(opts: {
   if (opts.return_at) params.set('return_at', opts.return_at)
   params.set('currency', opts.currency || 'usd')
   params.set('one_way', String(opts.one_way ?? true))
-  params.set('limit', String(opts.limit ?? 10))
+  params.set('limit', String(opts.limit ?? 30))
+  params.set('sorting', opts.sorting || 'price')
+  // unique=false returns all variants (different airlines/transfer counts) instead of one per route
+  params.set('unique', String(opts.unique ?? false))
+  if (opts.direct) params.set('direct', 'true')
+  params.set('market', opts.market || 'sa')
   params.set('token', token || '')
 
   const res = await fetch(
@@ -54,6 +63,42 @@ export async function getCheapFlights(opts: {
   }
   const json = await res.json()
   return (json?.data || []) as CheapFlight[]
+}
+
+// Cheapest fare per day across a given month.
+// Uses grouped_prices with group_by=departure_at to get one row per day.
+export async function getMonthCalendar(opts: {
+  origin: string
+  destination: string
+  month: string // YYYY-MM
+  currency?: string
+  market?: string
+}): Promise<Record<string, { price: number; link?: string; airline: string }>> {
+  const params = new URLSearchParams()
+  params.set('origin', opts.origin.toUpperCase())
+  params.set('destination', opts.destination.toUpperCase())
+  params.set('departure_at', opts.month)
+  params.set('group_by', 'departure_at')
+  params.set('currency', opts.currency || 'usd')
+  params.set('market', opts.market || 'sa')
+  params.set('token', token || '')
+
+  const res = await fetch(
+    `${API}/aviasales/v3/grouped_prices?${params.toString()}`,
+    { next: { revalidate: 1800 } } // 30 min
+  )
+  if (!res.ok) return {}
+  const json = await res.json()
+  const data = (json?.data || {}) as Record<
+    string,
+    { price: number; airline: string; flight_number?: string | number; departure_at: string; transfers?: number }
+  >
+  const out: Record<string, { price: number; link?: string; airline: string }> = {}
+  for (const [day, row] of Object.entries(data)) {
+    if (!row || typeof row.price !== 'number') continue
+    out[day] = { price: row.price, airline: row.airline }
+  }
+  return out
 }
 
 // Deep link to Aviasales search results page with the affiliate marker attached.

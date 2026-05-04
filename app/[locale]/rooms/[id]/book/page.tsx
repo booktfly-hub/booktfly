@@ -70,6 +70,7 @@ function BookRoomContent() {
 
   const initialRoomsCount = Math.min(parseInt(searchParams.get('rooms') || '1', 10), MAX_ROOMS_PER_BOOKING)
   const initialDays = Math.max(parseInt(searchParams.get('days') || '1', 10), 1)
+  const initialPassengers = Math.max(parseInt(searchParams.get('passengers') || '1', 10), 1)
 
   const Back = isAr ? ChevronRight : ChevronLeft
 
@@ -91,7 +92,7 @@ function BookRoomContent() {
       guest_email: '',
       check_in_date: '',
       number_of_days: initialDays,
-      number_of_people: 1,
+      number_of_people: initialPassengers,
       rooms_count: initialRoomsCount,
     },
   })
