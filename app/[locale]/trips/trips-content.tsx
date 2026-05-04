@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   CalendarIcon,
   Plane,
+  Hotel,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TripCard } from '@/components/trips/trip-card'
@@ -28,6 +29,8 @@ import { CategoryHero } from '@/components/shared/category-hero'
 import type { Trip } from '@/types'
 import type { LiveOffer } from '@/lib/travelpayouts-server'
 import { LiveTripCard } from '@/components/trips/live-trip-card'
+import { HotelCard } from '@/components/trips/hotel-card'
+import type { HotelOffer } from '@/lib/booking-hotels'
 import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -67,6 +70,7 @@ interface TripsContentProps {
   initialTotalPages: number
   initialFilters: Filters
   liveOffers?: LiveOffer[]
+  hotelOffers?: HotelOffer[]
 }
 
 export function TripsContent({
@@ -74,6 +78,7 @@ export function TripsContent({
   initialTotalPages,
   initialFilters,
   liveOffers = [],
+  hotelOffers: initialHotelOffers = [],
 }: TripsContentProps) {
   const t = useTranslations()
   const locale = useLocale()
@@ -81,6 +86,7 @@ export function TripsContent({
 
   const [trips, setTrips] = useState<Trip[]>(initialTrips)
   const [partnerOffers, setPartnerOffers] = useState<LiveOffer[]>(liveOffers)
+  const [hotelOffers, setHotelOffers] = useState<HotelOffer[]>(initialHotelOffers)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -116,9 +122,15 @@ export function TripsContent({
     )
   }, [partnerOffers])
 
+  const totalResultsCount = trips.length + partnerOffers.length + hotelOffers.length
+
   useEffect(() => {
     setPartnerOffers(liveOffers)
   }, [liveOffers])
+
+  useEffect(() => {
+    setHotelOffers(initialHotelOffers)
+  }, [initialHotelOffers])
 
   const fetchTrips = useCallback(
     async (
@@ -153,14 +165,18 @@ export function TripsContent({
         const partnerOffersPromise = append
           ? Promise.resolve<{ offers: LiveOffer[] } | null>(null)
           : fetch(`/api/trips/live-offers?${params.toString()}`).then((res) => res.json())
+        const hotelOffersPromise = append
+          ? Promise.resolve<{ offers: HotelOffer[] } | null>(null)
+          : fetch(`/api/trips/hotel-offers?${params.toString()}`).then((res) => res.json())
 
-        const [data, liveData] = await Promise.all([tripsPromise, partnerOffersPromise])
+        const [data, liveData, hotelData] = await Promise.all([tripsPromise, partnerOffersPromise, hotelOffersPromise])
 
         if (append) {
           setTrips((prev) => [...prev, ...(data.trips || [])])
         } else {
           setTrips(data.trips || [])
           setPartnerOffers(liveData?.offers || [])
+          setHotelOffers(hotelData?.offers || [])
         }
         setTotalPages(data.totalPages || 1)
       } catch {
@@ -292,7 +308,7 @@ export function TripsContent({
         description={t('category_heroes.trips.description')}
         image="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2400&q=85"
       />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Main Search Bar */}
         <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
 
@@ -554,11 +570,11 @@ export function TripsContent({
       />
 
       {/* Results Count */}
-      {!loading && (trips.length > 0 || partnerOffers.length > 0) && (
+      {!loading && totalResultsCount > 0 && (
         <div className="mb-4" role="status" aria-live="polite">
           <span className="text-sm font-medium text-muted-foreground">
-            {trips.length + partnerOffers.length}{' '}
-            {pick(locale, 'رحلة وُجدت', 'flights found', 'uçuş bulundu')}
+            {totalResultsCount}{' '}
+            {pick(locale, 'نتيجة وُجدت', 'results found', 'sonuç bulundu')}
           </span>
         </div>
       )}
@@ -570,7 +586,7 @@ export function TripsContent({
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : trips.length === 0 && partnerOffers.length === 0 ? (
+      ) : trips.length === 0 && partnerOffers.length === 0 && hotelOffers.length === 0 ? (
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <EmptyState
             icon={Plane}
@@ -634,6 +650,12 @@ export function TripsContent({
                     Duffel: {liveOfferCounts.duffel}
                   </span>
                 )}
+                {hotelOffers.length > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-700">
+                    <Hotel className="h-3 w-3" />
+                    Booking.com: {hotelOffers.length}
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 {partnerOffers.map((offer, idx) => (
@@ -643,6 +665,43 @@ export function TripsContent({
                     style={{ animationDelay: `${(idx % 6) * 100}ms` }}
                   >
                     <LiveTripCard offer={offer} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hotel offers — Booking.com */}
+          {hotelOffers.length > 0 && (
+            <div className={trips.length > 0 || partnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
+              <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-lg md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <Hotel className="h-5 w-5 text-blue-600" />
+                    {pick(locale, 'فنادق في وجهتك', 'Hotels at your destination', 'Varış noktanızdaki oteller')}
+                  </h2>
+                  <p className="mt-1 text-xs md:text-sm text-slate-500">
+                    {pick(
+                      locale,
+                      'احجز إقامتك عبر Booking.com — أكثر من 28 مليون خيار إقامة',
+                      'Book your stay via Booking.com — over 28 million accommodation options',
+                      'Booking.com üzerinden konaklamanızı rezerve edin — 28 milyondan fazla seçenek'
+                    )}
+                  </p>
+                </div>
+                <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-[11px] font-semibold text-blue-700 border border-blue-200">
+                  {hotelOffers.length}{' '}
+                  {pick(locale, 'وجهة', 'destination', 'destinasyon')}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {hotelOffers.map((offer, idx) => (
+                  <div
+                    key={offer.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+                  >
+                    <HotelCard offer={offer} />
                   </div>
                 ))}
               </div>

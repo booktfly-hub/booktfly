@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
 import { fetchPartnerLiveOffers } from '@/lib/live-offers-server'
+import { getHotelOffers, getPopularHotelOffers } from '@/lib/booking-hotels'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -69,19 +70,25 @@ export default async function TripsPage({
 
   const { data: trips, count } = await query
 
-  const liveOffers = await fetchPartnerLiveOffers({
-    origin,
-    destination,
-    departure_date: dateFrom || undefined,
-    return_date: dateTo || undefined,
-    trip_type: tripType,
-  })
+  const [liveOffers, hotelOffers] = await Promise.all([
+    fetchPartnerLiveOffers({
+      origin,
+      destination,
+      departure_date: dateFrom || undefined,
+      return_date: dateTo || undefined,
+      trip_type: tripType,
+    }),
+    destination
+      ? getHotelOffers({ destination_iata: destination, checkin: dateFrom || undefined, checkout: dateTo || undefined })
+      : getPopularHotelOffers(),
+  ])
 
   return (
     <TripsContent
       initialTrips={(trips as Trip[]) || []}
       initialTotalPages={Math.ceil((count || 0) / 12)}
       liveOffers={liveOffers}
+      hotelOffers={hotelOffers}
       initialFilters={{
         origin,
         destination,
