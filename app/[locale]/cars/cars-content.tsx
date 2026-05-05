@@ -164,7 +164,7 @@ export function CarsContent({ initialCars, initialTotalPages, initialFilters }: 
         description={t('category_heroes.cars.description')}
         image="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2400&q=85"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Main Search Bar */}
         <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
         {/* Row 1: Pickup Location */}

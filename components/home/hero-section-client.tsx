@@ -190,13 +190,15 @@ export function HeroSectionClient({
   const renderHotelSearchForm = () => (
     <>
       {/* Row 1: City | Category */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <Input
-          type="text"
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <CityAutocomplete
+          locale={locale}
           value={hotelCity}
-          onChange={(e) => setHotelCity(e.target.value)}
+          onChange={setHotelCity}
           placeholder={t('rooms.filter_city')}
-          className="h-12 rounded-lg border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none hover:bg-muted md:h-14"
+          className="h-12 w-full rounded-lg border-input bg-surface text-sm shadow-none transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15 md:h-14"
+          showLocateButton
+          myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
         />
 
         <Popover>
@@ -240,7 +242,7 @@ export function HeroSectionClient({
       </div>
 
       {/* Row 2: Check-in | Nights */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Popover>
           <PopoverTrigger
             className={cn(
@@ -281,7 +283,7 @@ export function HeroSectionClient({
       </div>
 
       {/* Row 3: Rooms | Guests */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="relative">
           <DoorOpen className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
           <Input
@@ -308,7 +310,7 @@ export function HeroSectionClient({
       </div>
 
       {/* Row 4: Sort | Filter */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Popover>
           <PopoverTrigger className="flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface px-4 text-sm font-semibold text-foreground shadow-none transition-colors hover:bg-muted md:h-14">
             <span className="flex items-center gap-2 truncate">
@@ -364,7 +366,7 @@ export function HeroSectionClient({
 
       {/* Row 5 (filters): Price Min | Price Max */}
       {showHotelFilters && (
-        <div className="grid grid-cols-2 gap-3 mb-3 animate-fade-in-up">
+        <div className="mb-3 grid grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-2">
           <div className="relative">
             <Input
               type="number"
@@ -390,7 +392,7 @@ export function HeroSectionClient({
 
       {/* Row 6 (filters): Capacity | Reset */}
       {showHotelFilters && (
-        <div className="grid grid-cols-2 gap-3 mb-3 animate-fade-in-up">
+        <div className="mb-3 grid grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-2">
           <div className="relative">
             <Input
               type="number"
@@ -569,17 +571,19 @@ export function HeroSectionClient({
           <MapPin className="h-4 w-4 text-primary" />
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pick(locale, 'الوجهة', 'Destination', 'Varış')}</span>
         </div>
-        <Input
-          type="text"
+        <CityAutocomplete
+          locale={locale}
           value={pkgDestination}
-          onChange={(e) => setPkgDestination(e.target.value)}
+          onChange={setPkgDestination}
           placeholder={pick(locale, 'مدينة الوجهة', 'Destination City', 'Varış Şehri')}
-          className="h-14 rounded-lg border-input bg-surface px-5 text-sm font-semibold text-foreground shadow-sm hover:bg-muted"
+          className="h-14 w-full rounded-lg border-input bg-surface text-sm shadow-sm transition-colors hover:bg-muted focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15"
+          showLocateButton
+          myLocationLabel={pick(locale, 'موقعي الحالي', 'My location', 'Konumum')}
         />
       </div>
 
       {/* Date range */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Popover>
           <PopoverTrigger className={cn(inputClass, 'flex items-center justify-between', !pkgStartDate ? 'text-muted-foreground' : 'text-foreground')}>
             {pkgStartDate ? format(pkgStartDate, 'd MMM yyyy', { locale: enUS }) : <span>{pick(locale, 'تاريخ البداية', 'Start Date', 'Başlangıç Tarihi')}</span>}
@@ -773,10 +777,10 @@ export function HeroSectionClient({
   }
 
   return (
-    <section className="relative flex min-h-[100svh] flex-col items-center overflow-hidden bg-background pb-20 pt-24 sm:pt-28">
+    <section className="relative flex min-h-[100svh] flex-col items-center overflow-hidden bg-background pb-20 pt-20 sm:pt-28">
       {/* Image-led hero backdrop inspired by travel marketplaces; the search form below is unchanged. */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-x-0 top-0 h-[52svh] min-h-[420px] overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-[64svh] min-h-[520px] overflow-hidden sm:h-[68svh] sm:min-h-[620px]">
           {Object.entries(heroBackgrounds).map(([mode, src]) => (
             <Image
               key={mode}
@@ -792,23 +796,23 @@ export function HeroSectionClient({
             />
           ))}
           <div className="absolute inset-0 bg-slate-950/45" />
-          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent to-background" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-background/25 to-background" />
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto mt-10 flex w-full max-w-7xl flex-col items-center px-3 sm:mt-0 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto mt-6 flex w-full max-w-7xl flex-col items-center px-3 sm:mt-0 sm:px-6 lg:px-8">
         
-        <div className="mx-auto mb-8 max-w-4xl text-center text-white sm:mb-10">
+        <div className="mx-auto mb-6 max-w-4xl px-1 text-center text-white sm:mb-10">
           <p className="animate-fade-in-up text-xs font-black uppercase tracking-[0.28em] text-white/80" style={{ animationDelay: '180ms', animationFillMode: 'both' }}>
             {heroTitle}
           </p>
-          <h1 className="mx-auto mt-5 max-w-3xl animate-fade-in-up text-2xl font-black leading-[1.15] tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-6xl lg:text-7xl" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+          <h1 className="mx-auto mt-4 max-w-3xl animate-fade-in-up text-2xl font-black leading-[1.15] tracking-tight text-white drop-shadow-sm sm:mt-5 sm:text-4xl md:text-6xl lg:text-7xl" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
             {heroSubtitle}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl animate-fade-in-up text-sm font-semibold leading-6 text-white/85 sm:text-base" style={{ animationDelay: '360ms', animationFillMode: 'both' }}>
+          <p className="mx-auto mt-4 max-w-2xl animate-fade-in-up text-sm font-semibold leading-6 text-white/85 sm:mt-5 sm:text-base" style={{ animationDelay: '360ms', animationFillMode: 'both' }}>
             {pick(locale, 'قارن الخيارات، اختر وقتك، واحجز رحلتك التالية في مكان واحد.', 'Compare options, choose your timing, and book the next part of your trip in one place.', 'Seçenekleri karşılaştır, zamanını seç ve bir sonraki yolculuğunu tek bir yerden rezerve et.')}
           </p>
-          <div className="mx-auto mt-6 flex max-w-full items-center gap-2 overflow-x-auto rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-md animate-fade-in-up [-ms-overflow-style:none] [scrollbar-width:none] sm:inline-flex sm:w-auto sm:text-sm [&::-webkit-scrollbar]:hidden" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
+          <div className="mx-auto mt-5 flex max-w-full items-center gap-2 overflow-x-auto rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[11px] font-bold text-white shadow-lg backdrop-blur-md animate-fade-in-up [-ms-overflow-style:none] [scrollbar-width:none] sm:mt-6 sm:inline-flex sm:w-auto sm:px-4 sm:text-sm [&::-webkit-scrollbar]:hidden" style={{ animationDelay: '420ms', animationFillMode: 'both' }}>
             <span className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.15)]" />
             <span className="whitespace-nowrap">{pick(locale, 'مقترحات السفر', 'Travel picks', 'Seyahat önerileri')}</span>
             <span className="whitespace-nowrap text-white/70">{pick(locale, 'اكتشف أحدث الوجهات', 'Discover latest destinations', 'En yeni destinasyonları keşfet')}</span>
@@ -819,40 +823,40 @@ export function HeroSectionClient({
         <div className="relative z-20 w-full max-w-4xl animate-fade-in-up group" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
           
           {/* Tabs */}
-          <div className="mb-6 flex overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:justify-center [&::-webkit-scrollbar]:hidden">
+          <div className="mb-5 flex overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:mb-6 sm:justify-center [&::-webkit-scrollbar]:hidden">
             <div className="inline-flex shrink-0 rounded-lg border border-border bg-surface p-1.5 shadow-sm">
               <button
                 type="button"
                 onClick={() => setSearchMode('flights')}
-                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'flights' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+                className={cn("flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:gap-2 sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'flights' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
                 <Plane className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'flights' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'طيران', 'Flights', 'Uçuşlar')}
               </button>
               <button
                 type="button"
                 onClick={() => setSearchMode('hotels')}
-                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'hotels' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+                className={cn("flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:gap-2 sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'hotels' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
                 <Building className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'hotels' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'فنادق', 'Hotels', 'Oteller')}
               </button>
               <button
                 type="button"
                 onClick={() => setSearchMode('cars')}
-                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'cars' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+                className={cn("flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:gap-2 sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'cars' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
                 <CarFront className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'cars' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'سيارات', 'Cars', 'Araçlar')}
               </button>
               <button
                 type="button"
                 onClick={() => setSearchMode('packages')}
-                className={cn("flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'packages' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
+                className={cn("flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-colors sm:gap-2 sm:px-8 sm:py-2.5 sm:text-base", searchMode === 'packages' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground")}
               >
                 <Package className={cn("h-4 w-4 sm:h-5 sm:w-5", searchMode === 'packages' ? 'text-primary-foreground' : 'text-primary')} /> {pick(locale, 'باقات', 'Packages', 'Paketler')}
               </button>
             </div>
           </div>
 
-          <div className="mt-10 grid w-full max-w-4xl grid-cols-1 gap-3 animate-fade-in-up sm:grid-cols-3" style={{ animationDelay: '460ms', animationFillMode: 'both' }}>
+          <div className="mt-6 grid w-full max-w-4xl grid-cols-1 gap-3 animate-fade-in-up md:mt-10 md:grid-cols-3" style={{ animationDelay: '460ms', animationFillMode: 'both' }}>
             {heroDestinations.map((item) => (
               <div key={item.city} className="relative min-h-28 overflow-hidden rounded-lg border border-white/20 bg-slate-950 shadow-lg">
                 <Image
@@ -872,7 +876,7 @@ export function HeroSectionClient({
           </div>
 
           {/* Search Box Card */}
-          <div className="relative bg-transparent p-0 sm:p-2 lg:p-4">
+          <div className="relative rounded-[1.75rem] border border-white/70 bg-white/92 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:p-4 lg:p-5">
             <form
               action={getActionUrl()}
               className="space-y-4"

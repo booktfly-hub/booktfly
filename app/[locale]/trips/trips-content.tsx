@@ -30,6 +30,8 @@ import type { Trip } from '@/types'
 import type { LiveOffer } from '@/lib/travelpayouts-server'
 import { LiveTripCard } from '@/components/trips/live-trip-card'
 import { HotelCard } from '@/components/trips/hotel-card'
+import { LiveOfferModal } from '@/components/trips/live-offer-modal'
+import { HotelOfferModal } from '@/components/trips/hotel-offer-modal'
 import type { HotelOffer } from '@/lib/booking-hotels'
 import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
@@ -87,6 +89,8 @@ export function TripsContent({
   const [trips, setTrips] = useState<Trip[]>(initialTrips)
   const [partnerOffers, setPartnerOffers] = useState<LiveOffer[]>(liveOffers)
   const [hotelOffers, setHotelOffers] = useState<HotelOffer[]>(initialHotelOffers)
+  const [selectedLiveOffer, setSelectedLiveOffer] = useState<LiveOffer | null>(null)
+  const [selectedHotelOffer, setSelectedHotelOffer] = useState<HotelOffer | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -597,24 +601,9 @@ export function TripsContent({
         </div>
       ) : (
         <>
-          {/* Platform trips first */}
-          {trips.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {trips.map((trip, idx) => (
-                <div
-                  key={trip.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${(idx % 6) * 100}ms` }}
-                >
-                  <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Partner options — clearly separated section */}
+          {/* Partner flight offers — first */}
           {partnerOffers.length > 0 && (
-            <div className={trips.length > 0 ? 'mt-12 md:mt-16' : ''}>
+            <div>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg md:text-2xl font-bold text-slate-900">
@@ -664,16 +653,16 @@ export function TripsContent({
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${(idx % 6) * 100}ms` }}
                   >
-                    <LiveTripCard offer={offer} />
+                    <LiveTripCard offer={offer} onViewDetails={() => setSelectedLiveOffer(offer)} />
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Hotel offers — only show when user has searched a destination */}
+          {/* Hotel offers — second */}
           {hotelOffers.length > 0 && filters.destination && (
-            <div className={trips.length > 0 || partnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
+            <div className={partnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg md:text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -705,7 +694,24 @@ export function TripsContent({
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${idx * 100}ms` }}
                   >
-                    <HotelCard offer={offer} />
+                    <HotelCard offer={offer} onViewDetails={() => setSelectedHotelOffer(offer)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Platform trips — last */}
+          {trips.length > 0 && (
+            <div className={partnerOffers.length > 0 || hotelOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {trips.map((trip, idx) => (
+                  <div
+                    key={trip.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${(idx % 6) * 100}ms` }}
+                  >
+                    <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
                   </div>
                 ))}
               </div>
@@ -727,6 +733,13 @@ export function TripsContent({
         </>
       )}
     </div>
+
+    {selectedLiveOffer && (
+      <LiveOfferModal offer={selectedLiveOffer} onClose={() => setSelectedLiveOffer(null)} />
+    )}
+    {selectedHotelOffer && (
+      <HotelOfferModal offer={selectedHotelOffer} onClose={() => setSelectedHotelOffer(null)} />
+    )}
     </>
   )
 }

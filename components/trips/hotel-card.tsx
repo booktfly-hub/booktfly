@@ -33,7 +33,7 @@ const TIER_COLORS = {
   },
 }
 
-export function HotelCard({ offer, className }: { offer: HotelOffer; className?: string }) {
+export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOffer; className?: string; onViewDetails?: () => void }) {
   const locale = useLocale()
   const isAr = locale === 'ar'
   const Arrow = isAr ? ArrowLeft : ArrowRight
@@ -48,11 +48,10 @@ export function HotelCard({ offer, className }: { offer: HotelOffer; className?:
   const propertyType = isAr ? offer.property_type_ar : offer.property_type_en
 
   return (
-    <a
-      href={offer.affiliate_url}
-      target="_blank"
-      rel="noopener sponsored"
-      className="block group h-full focus:outline-none"
+    <button
+      type="button"
+      onClick={onViewDetails}
+      className={cn('block w-full text-start group h-full focus:outline-none', !onViewDetails && 'cursor-default')}
     >
       <div className={cn(
         'relative h-full flex flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white transition-[border-color,box-shadow,transform] duration-200',
@@ -168,6 +167,6 @@ export function HotelCard({ offer, className }: { offer: HotelOffer; className?:
           </div>
         </div>
       </div>
-    </a>
+    </button>
   )
 }

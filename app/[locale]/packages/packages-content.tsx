@@ -206,7 +206,7 @@ export function PackagesContent({ initialPackages, initialTotalPages, initialFil
         description={t('category_heroes.packages.description')}
         image="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=2400&q=85"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Search context banner */}
         {(filters.start_date || filters.end_date || filters.travelers) && (
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground bg-muted/50 rounded-2xl px-4 py-3 mb-6 relative z-20">

@@ -16,7 +16,7 @@ function fmtDuration(min: number | null) {
   return `${h ? h + 'h ' : ''}${m ? m + 'm' : ''}`.trim()
 }
 
-export function LiveTripCard({ offer, className }: { offer: LiveOffer; className?: string }) {
+export function LiveTripCard({ offer, className, onViewDetails }: { offer: LiveOffer; className?: string; onViewDetails?: () => void }) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -55,16 +55,15 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
           </span>
         )}
       </div>
-      <a
-        href={offer.affiliate_url}
-        target="_blank"
-        rel="noopener sponsored"
-        className="block group h-full focus:outline-none"
+      <button
+        type="button"
+        onClick={onViewDetails}
+        className={cn('block w-full text-start group h-full focus:outline-none', !onViewDetails && 'cursor-default')}
       >
         <div
           className={cn(
             'relative h-full flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-[border-color,box-shadow,transform] duration-200',
-            'hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
+            onViewDetails && 'hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5',
             className
           )}
         >
@@ -188,7 +187,7 @@ export function LiveTripCard({ offer, className }: { offer: LiveOffer; className
             </div>
           </div>
         </div>
-      </a>
+      </button>
     </div>
   )
 }
