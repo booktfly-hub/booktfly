@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils'
 export function Navbar() {
   const t = useTranslations()
   const locale = useLocale()
-  const isAr = locale === 'ar'
   const pathname = usePathname()
   const { user, profile, loading, signOut } = useUser()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -90,7 +89,7 @@ export function Navbar() {
   return (
     <div
       className={cn(
-        'z-50 flex justify-center px-4 pt-2 transition-all duration-300 sm:px-6 md:pt-3',
+        'z-50 flex justify-center px-2 pt-2 transition-all duration-300 sm:px-6 md:pt-3',
         useHeroOverlay
           ? 'fixed left-0 right-0 top-0 pointer-events-none'
           : 'sticky top-0'
@@ -104,10 +103,10 @@ export function Navbar() {
             : 'max-w-7xl rounded-2xl border-border/80 bg-surface/95 shadow-lg shadow-slate-200/60 backdrop-blur-xl'
         )}
       >
-        <div className={cn('flex items-center justify-between gap-3 px-3 py-1.5 transition-all duration-500 sm:gap-4 sm:px-4 md:px-6 xl:gap-5 xl:px-6 xl:py-2')}>
+        <div className={cn('flex items-center justify-between gap-2 px-2 py-1.5 transition-all duration-500 sm:gap-4 sm:px-4 md:px-6 xl:gap-5 xl:px-6 xl:py-2')}>
           {/* Logo */}
           <Link href={`/${locale}`} className="relative z-5 flex shrink-0">
-            <div className={cn('relative flex h-14 w-40 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 md:h-16 md:w-48 xl:w-44 2xl:w-48', desktopCompact && 'md:w-44')}>
+            <div className={cn('relative flex h-11 w-28 items-center justify-center overflow-hidden rounded-lg transition-all duration-500 sm:h-14 sm:w-40 md:h-16 md:w-48 xl:w-44 2xl:w-48', desktopCompact && 'md:w-44')}>
               <Image 
                 src="/navbar.png"   
                 width={224} height={72}
@@ -297,14 +296,14 @@ export function Navbar() {
                     <Link
                       href={`/${locale}/auth/login`}
                       className={cn(
-                        'inline-flex shrink-0 rounded-xl transition-colors whitespace-nowrap',
+                        'inline-flex shrink-0 rounded-xl whitespace-nowrap transition-colors',
                         useHeroOverlay ? 'text-white drop-shadow-sm hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100',
                         desktopCompact
                           ? pick(locale, 'text-[10px] font-bold px-2 py-2', 'text-xs font-bold px-2.5 py-2', 'text-xs font-bold px-2.5 py-2')
-                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5')
+                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5')
                       )}
                     >
-                      {t('common.login')}
+                      {locale === 'ar' ? 'حسابي' : t('common.login')}
                     </Link>
                     <Link
                       href={`/${locale}/auth/signup`}
@@ -313,7 +312,7 @@ export function Navbar() {
                         useHeroOverlay ? 'bg-white text-primary hover:bg-white/90' : 'bg-primary text-primary-foreground hover:bg-primary/90',
                         desktopCompact
                           ? pick(locale, 'text-[10px] font-bold px-2 py-2', 'text-xs font-bold px-2.5 py-2', 'text-xs font-bold px-2.5 py-2')
-                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 sm:py-2.5')
+                          : pick(locale, 'text-[10px] sm:text-sm font-bold px-2 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-2.5 sm:px-5 py-2 sm:py-2.5', 'text-xs sm:text-sm font-bold px-2.5 sm:px-5 py-2 sm:py-2.5')
                       )}
                     >
                       {t('common.signup')}
@@ -439,6 +438,28 @@ export function Navbar() {
                     ))}
                   </div>
                 </div>
+
+                {!user && (
+                  <>
+                    <div className="h-px bg-border/50 my-2" />
+                    <div className="grid grid-cols-1 gap-2 sm:hidden">
+                      <Link
+                        href={`/${locale}/auth/login`}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center justify-center rounded-lg border border-border bg-muted px-4 py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface"
+                      >
+                        {t('common.login')}
+                      </Link>
+                      <Link
+                        href={`/${locale}/auth/signup`}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                      >
+                        {t('common.signup')}
+                      </Link>
+                    </div>
+                  </>
+                )}
 
                 {user && (
                   <>

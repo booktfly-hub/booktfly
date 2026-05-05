@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
 import { fetchPartnerLiveOffers } from '@/lib/live-offers-server'
-import { getHotelOffers, getPopularHotelOffers } from '@/lib/booking-hotels'
+import { getHotelOffers } from '@/lib/booking-hotels'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -80,7 +80,7 @@ export default async function TripsPage({
     }),
     destination
       ? getHotelOffers({ destination_iata: destination, checkin: dateFrom || undefined, checkout: dateTo || undefined })
-      : getPopularHotelOffers(),
+      : Promise.resolve([]),
   ])
 
   return (

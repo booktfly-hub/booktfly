@@ -17,14 +17,19 @@ import {
   Users,
   DoorOpen,
   ArrowUpDown,
+  Hotel,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RoomCard } from '@/components/rooms/room-card'
+import { HotelCard } from '@/components/trips/hotel-card'
 import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { ROOM_CATEGORIES } from '@/lib/constants'
 import type { Room } from '@/types'
+import type { HotelOffer } from '@/lib/booking-hotels'
+import { CityAutocomplete } from '@/components/shared/city-autocomplete'
+import { HotelOfferModal } from '@/components/trips/hotel-offer-modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -71,6 +76,16 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
   const isAr = locale === 'ar'
 
   const [rooms, setRooms] = useState<Room[]>(initialRooms)
+  const [hotelOffers, setHotelOffers] = useState<HotelOffer[]>([])
+  const [selectedHotelOffer, setSelectedHotelOffer] = useState<HotelOffer | null>(null)
+
+  // Load popular hotel offers on mount
+  useEffect(() => {
+    fetch('/api/trips/hotel-offers')
+      .then(r => r.json())
+      .then(data => setHotelOffers(data?.offers || []))
+      .catch(() => {})
+  }, [])
   const roomRibbons = useMemo(
     () => computeRibbons(rooms.map((r) => ({ id: r.id, price: r.price_per_night, duration_minutes: null }))),
     [rooms],
@@ -107,13 +122,27 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         if (filters.days) params.set('days', filters.days)
         if (filters.sort) params.set('sort', filters.sort)
 
-        const res = await fetch(`/api/rooms?${params.toString()}`)
-        const data = await res.json()
+        const roomsPromise = fetch(`/api/rooms?${params.toString()}`).then(r => r.json())
+        const hotelParams = new URLSearchParams()
+        if (city) hotelParams.set('city', city)
+        if (filters.check_in) hotelParams.set('date_from', filters.check_in)
+        if (filters.days) {
+          const checkout = new Date(filters.check_in || new Date())
+          checkout.setDate(checkout.getDate() + parseInt(filters.days))
+          hotelParams.set('date_to', checkout.toISOString().slice(0, 10))
+        }
+        if (filters.passengers) hotelParams.set('adults', filters.passengers)
+        const hotelPromise = append
+          ? Promise.resolve<{ offers: HotelOffer[] } | null>(null)
+          : fetch(`/api/trips/hotel-offers?${hotelParams.toString()}`).then(r => r.json())
+
+        const [data, hotelData] = await Promise.all([roomsPromise, hotelPromise])
 
         if (append) {
           setRooms((prev) => [...prev, ...(data.rooms || [])])
         } else {
           setRooms(data.rooms || [])
+          setHotelOffers(hotelData?.offers || [])
         }
         setTotalPages(data.totalPages || 1)
       } catch {
@@ -211,19 +240,22 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         description={t('category_heroes.rooms.description')}
         image="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Main Search Bar */}
         <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
         {/* Row 1: City Search & Category */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <div className="sm:col-span-1">
-            <Input
-              type="text"
+          <div className="sm:col-span-1 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors">
+            <CityAutocomplete
+              locale={locale}
               value={filters.city}
-              onChange={(e) => updateFilter('city', e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onChange={(val) => updateFilter('city', val)}
+              onSelect={(val) => {
+                updateFilter('city', val)
+                setSearchCity(val)
+                fetchRooms(1, false, val)
+              }}
               placeholder={t('rooms.filter_city')}
-              className="h-12 md:h-14 rounded-2xl border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-none hover:bg-slate-100"
             />
           </div>
 
@@ -433,7 +465,43 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         </div>
       )}
 
-      {/* Results */}
+      {/* Partner Hotels — Booking.com — first */}
+      {hotelOffers.length > 0 && (
+        <div className="mb-12 md:mb-16">
+          <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-lg md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Hotel className="h-5 w-5 text-blue-600" />
+                {pick(locale,
+                  searchCity ? `فنادق شركاء في ${searchCity}` : 'فنادق الشركاء',
+                  searchCity ? `Partner Hotels in ${searchCity}` : 'Partner Hotels',
+                  searchCity ? `${searchCity} Ortak Otelleri` : 'Ortak Oteller'
+                )}
+              </h2>
+              <p className="mt-1 text-xs md:text-sm text-slate-500">
+                {pick(locale,
+                  'احجز إقامتك عبر Booking.com — أسعار تنافسية وأكثر من 28 مليون خيار',
+                  'Book your stay via Booking.com — competitive rates across 28M+ properties',
+                  'Booking.com üzerinden konaklamanızı rezerve edin — 28 milyondan fazla tesis'
+                )}
+              </p>
+            </div>
+            <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-[11px] font-semibold text-blue-700 border border-blue-200">
+              {hotelOffers.length}{' '}
+              {pick(locale, 'خيار', 'options', 'seçenek')}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {hotelOffers.map((offer, idx) => (
+              <div key={offer.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                <HotelCard offer={offer} onViewDetails={() => setSelectedHotelOffer(offer)} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Platform rooms — after partner results */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
@@ -462,6 +530,9 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         </>
       )}
     </div>
+      {selectedHotelOffer && (
+        <HotelOfferModal offer={selectedHotelOffer} onClose={() => setSelectedHotelOffer(null)} />
+      )}
     </>
   )
 }
