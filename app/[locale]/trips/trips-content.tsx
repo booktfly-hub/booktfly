@@ -562,11 +562,7 @@ export function TripsContent({
             destinationCode={filters.destination}
             cabinClass={filters.cabin_class || undefined}
             selectedDate={departureDate}
-            onDateSelect={(d, meta) => {
-              if (meta?.source === 'partner' && meta.affiliateUrl) {
-                window.open(meta.affiliateUrl, '_blank', 'noopener,noreferrer')
-                return
-              }
+            onDateSelect={(d) => {
               updateFilter('date_from', format(d, 'yyyy-MM-dd'))
             }}
           />
