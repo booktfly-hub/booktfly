@@ -19,6 +19,7 @@ import { TripCard } from '@/components/trips/trip-card'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
+import { PassengerPicker, type PassengerCounts } from '@/components/shared/passenger-picker'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SortTabs, type SortKey } from '@/components/trips/sort-tabs'
@@ -47,6 +48,9 @@ type Filters = {
   trip_type: string
   cabin_class: string
   sort: string
+  adults: number
+  children: number
+  infants: number
 }
 
 const emptyFilters: Filters = {
@@ -59,6 +63,9 @@ const emptyFilters: Filters = {
   trip_type: 'one_way',
   cabin_class: '',
   sort: 'newest',
+  adults: 1,
+  children: 0,
+  infants: 0,
 }
 
 const parseDateValue = (value: string) => {
@@ -164,6 +171,9 @@ export function TripsContent({
         if (activeFilters.trip_type) params.set('trip_type', activeFilters.trip_type)
         if (activeFilters.cabin_class) params.set('cabin_class', activeFilters.cabin_class)
         if (activeFilters.sort) params.set('sort', activeFilters.sort)
+        if (activeFilters.adults) params.set('adults', String(activeFilters.adults))
+        if (activeFilters.children) params.set('children', String(activeFilters.children))
+        if (activeFilters.infants) params.set('infants', String(activeFilters.infants))
 
         const tripsPromise = fetch(`/api/trips?${params.toString()}`).then((res) => res.json())
         const partnerOffersPromise = append
@@ -190,7 +200,7 @@ export function TripsContent({
         setLoadingMore(false)
       }
     },
-    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort]
+    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, filters.adults, filters.children, filters.infants]
   )
 
   const handleSearch = useCallback(() => {
@@ -228,6 +238,9 @@ export function TripsContent({
     trip_type: initialFilters.trip_type,
     cabin_class: initialFilters.cabin_class,
     sort: initialFilters.sort,
+    adults: initialFilters.adults ?? 1,
+    children: initialFilters.children ?? 0,
+    infants: initialFilters.infants ?? 0,
   })
 
   useEffect(() => {
@@ -239,7 +252,10 @@ export function TripsContent({
       prev.price_max !== filters.price_max ||
       prev.trip_type !== filters.trip_type ||
       prev.cabin_class !== filters.cabin_class ||
-      prev.sort !== filters.sort
+      prev.sort !== filters.sort ||
+      prev.adults !== filters.adults ||
+      prev.children !== filters.children ||
+      prev.infants !== filters.infants
     if (changed) {
       filterDepsRef.current = {
         date_from: filters.date_from,
@@ -249,11 +265,14 @@ export function TripsContent({
         trip_type: filters.trip_type,
         cabin_class: filters.cabin_class,
         sort: filters.sort,
+        adults: filters.adults,
+        children: filters.children,
+        infants: filters.infants,
       }
       setPage(1)
       fetchTrips(1)
     }
-  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, fetchTrips])
+  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, filters.adults, filters.children, filters.infants, fetchTrips])
 
   const handleLoadMore = () => {
     const nextPage = page + 1
@@ -261,8 +280,24 @@ export function TripsContent({
     fetchTrips(nextPage, true)
   }
 
-  const updateFilter = (key: keyof Filters, value: string | boolean) => {
+  const updateFilter = (key: keyof Filters, value: string | boolean | number) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const passengerValue: PassengerCounts = {
+    adults: filters.adults,
+    children: filters.children,
+    infants: filters.infants,
+    childAges: Array.from({ length: filters.children }, () => 5),
+  }
+
+  const handlePassengersChange = (next: PassengerCounts) => {
+    setFilters((prev) => ({
+      ...prev,
+      adults: next.adults,
+      children: next.children,
+      infants: next.infants,
+    }))
   }
 
   const handleTripTypeChange = (value: string) => {
@@ -403,6 +438,15 @@ export function TripsContent({
               />
             </PopoverContent>
           </Popover>
+        </div>
+
+        {/* Passenger picker */}
+        <div className="mt-3">
+          <PassengerPicker
+            locale={locale}
+            value={passengerValue}
+            onChange={handlePassengersChange}
+          />
         </div>
 
         <div className="w-full mt-2">

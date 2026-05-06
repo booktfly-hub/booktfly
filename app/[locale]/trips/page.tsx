@@ -29,6 +29,11 @@ export default async function TripsPage({
   const priceMax = str('price_max')
   const cabinClass = str('cabin_class')
   const sort = str('sort') || 'newest'
+  const adults = Math.max(1, Math.min(9, parseInt(str('adults') || '1', 10) || 1))
+  const children = Math.max(0, Math.min(9, parseInt(str('children') || '0', 10) || 0))
+  const infants = Math.max(0, Math.min(9, parseInt(str('infants') || '0', 10) || 0))
+  const cabinForLive: 'Y' | 'C' =
+    cabinClass === 'business' || cabinClass === 'first' ? 'C' : 'Y'
 
   const supabase = await createClient()
 
@@ -77,6 +82,10 @@ export default async function TripsPage({
       departure_date: dateFrom || undefined,
       return_date: dateTo || undefined,
       trip_type: tripType,
+      adults,
+      children,
+      infants,
+      cabin_class: cabinForLive,
     }),
     destination
       ? getHotelOffers({ destination_iata: destination, checkin: dateFrom || undefined, checkout: dateTo || undefined })
@@ -99,6 +108,9 @@ export default async function TripsPage({
         price_max: priceMax,
         cabin_class: cabinClass,
         sort,
+        adults,
+        children,
+        infants,
       }}
     />
   )

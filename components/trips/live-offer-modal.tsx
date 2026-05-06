@@ -246,6 +246,16 @@ export function LiveOfferModal({ offer, onClose }: { offer: LiveOffer; onClose: 
               {pick(locale, 'احجز الآن', 'Book Now', 'Şimdi Rezervasyon')}
             </a>
           </div>
+          {offer.source !== 'duffel' && (
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-400 font-medium">
+              {pick(
+                locale,
+                'يتم تأكيد السعر النهائي والتوافر عند إكمال الحجز لدى شريك السفر.',
+                'Final price and availability are confirmed at checkout on the partner site.',
+                'Nihai fiyat ve uygunluk, partner sitesinde ödeme sırasında onaylanır.'
+              )}
+            </p>
+          )}
         </div>
       </div>
     </div>

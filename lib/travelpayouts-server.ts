@@ -5,6 +5,7 @@ import {
   buildOfferDeepLink,
   buildSearchDeepLink,
   getAirlineName,
+  type CabinClass,
 } from './travelpayouts'
 
 const calendarCache = new Map<string, { at: number; data: Record<string, { price: number; affiliate_url: string }> }>()
@@ -81,13 +82,22 @@ export async function fetchLiveFlights(opts: {
   return_date?: string
   currency?: string
   limit?: number
+  adults?: number
+  children?: number
+  infants?: number
+  cabin_class?: CabinClass
 }): Promise<LiveOffer[]> {
   const origin = opts.origin?.trim().toUpperCase()
   const destination = opts.destination?.trim().toUpperCase()
   if (!origin || !destination) return []
   if (!/^[A-Z]{3}$/.test(origin) || !/^[A-Z]{3}$/.test(destination)) return []
 
-  const cacheKey = `${origin}-${destination}-${opts.departure_date ?? ''}-${opts.return_date ?? ''}-${opts.currency ?? 'usd'}-${opts.limit ?? 30}`
+  const adults = Math.max(1, Math.min(9, opts.adults ?? 1))
+  const children = Math.max(0, Math.min(9, opts.children ?? 0))
+  const infants = Math.max(0, Math.min(9, opts.infants ?? 0))
+  const cabin: CabinClass = opts.cabin_class || 'Y'
+
+  const cacheKey = `${origin}-${destination}-${opts.departure_date ?? ''}-${opts.return_date ?? ''}-${opts.currency ?? 'usd'}-${opts.limit ?? 30}-${adults}${children}${infants}${cabin}`
   const hit = cache.get(cacheKey)
   if (hit && Date.now() - hit.at < ttl) return hit.offers
 
@@ -137,13 +147,24 @@ export async function fetchLiveFlights(opts: {
     transfers: r.transfers ?? 0,
     duration_minutes: r.duration ?? null,
     affiliate_url: r.link
-      ? buildOfferDeepLink(r.link, 'trips_grid')
+      ? buildOfferDeepLink(r.link, {
+          sub_id: 'trips_grid',
+          adults,
+          children,
+          infants,
+          cabin_class: cabin,
+          airline: r.airline,
+          direct: (r.transfers ?? 0) === 0,
+        })
       : buildSearchDeepLink({
           origin: r.origin,
           destination: r.destination,
           departure_at: r.departure_at.slice(0, 10),
           return_at: r.return_at?.slice(0, 10),
-          adults: 1,
+          adults,
+          children,
+          infants,
+          cabin_class: cabin,
           sub_id: 'trips_grid',
         }),
     source: 'travelpayouts',
@@ -188,6 +209,10 @@ export async function fetchLiveFlightsByName(opts: {
   return_date?: string
   currency?: string
   limit?: number
+  adults?: number
+  children?: number
+  infants?: number
+  cabin_class?: CabinClass
 }): Promise<LiveOffer[]> {
   const [originIata, destIata] = await Promise.all([
     resolveIata(opts.origin),
