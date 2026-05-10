@@ -8,6 +8,8 @@ import { getCountryCode } from '@/lib/countries'
 import { pick } from '@/lib/i18n-helpers'
 import { localizeCity, localizeAirline } from '@/lib/airports-i18n'
 import type { LiveOffer } from '@/lib/travelpayouts-server'
+import { PriceTierBadge } from '@/components/ui/price-tier-badge'
+import type { PriceTier } from '@/lib/price-tier'
 
 function fmtDuration(min: number | null) {
   if (!min) return ''
@@ -16,7 +18,19 @@ function fmtDuration(min: number | null) {
   return `${h ? h + 'h ' : ''}${m ? m + 'm' : ''}`.trim()
 }
 
-export function LiveTripCard({ offer, className, onViewDetails }: { offer: LiveOffer; className?: string; onViewDetails?: () => void }) {
+export function LiveTripCard({
+  offer,
+  className,
+  onViewDetails,
+  priceTier,
+  priceMedian,
+}: {
+  offer: LiveOffer
+  className?: string
+  onViewDetails?: () => void
+  priceTier?: PriceTier
+  priceMedian?: number | null
+}) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -43,6 +57,9 @@ export function LiveTripCard({ offer, className, onViewDetails }: { offer: LiveO
   return (
     <div className="relative h-full">
       <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
+        {priceTier && (
+          <PriceTierBadge tier={priceTier} median={priceMedian} currency={offer.price_currency} />
+        )}
         {offer.source === 'duffel' ? (
           <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
             <Zap className="h-3 w-3" />

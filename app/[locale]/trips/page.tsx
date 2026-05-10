@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
 import { fetchPartnerLiveOffers } from '@/lib/live-offers-server'
 import { getHotelOffers } from '@/lib/booking-hotels'
+import { expandWithNearby, isIataCode } from '@/lib/nearby-airports'
 import type { Trip } from '@/types'
 
 export default async function TripsPage({
@@ -13,6 +14,22 @@ export default async function TripsPage({
   const buildLocationGroup = (prefix: 'origin' | 'destination', raw: string) => {
     const term = escapeLike(raw)
     return `or(${prefix}_city_ar.ilike.%${term}%,${prefix}_city_en.ilike.%${term}%,${prefix}_code.ilike.%${term}%)`
+  }
+  const buildLocationGroupExpanded = (
+    prefix: 'origin' | 'destination',
+    raw: string,
+    includeNearby: boolean,
+  ) => {
+    if (!includeNearby || !isIataCode(raw)) return buildLocationGroup(prefix, raw)
+    const codes = expandWithNearby(raw)
+    const codeMatches = codes.map((c) => `${prefix}_code.ilike.${escapeLike(c)}`).join(',')
+    return `or(${codeMatches})`
+  }
+  const shiftDate = (iso: string, days: number) => {
+    const d = new Date(`${iso}T00:00:00.000Z`)
+    if (Number.isNaN(d.getTime())) return iso
+    d.setUTCDate(d.getUTCDate() + days)
+    return d.toISOString().slice(0, 10)
   }
   const params = await searchParams
   const str = (key: string) => {
@@ -32,6 +49,9 @@ export default async function TripsPage({
   const adults = Math.max(1, Math.min(9, parseInt(str('adults') || '1', 10) || 1))
   const children = Math.max(0, Math.min(9, parseInt(str('children') || '0', 10) || 0))
   const infants = Math.max(0, Math.min(9, parseInt(str('infants') || '0', 10) || 0))
+  const includeNearby = str('include_nearby') === '1' || str('include_nearby') === 'true'
+  const flexDaysRaw = parseInt(str('flex_days') || '0', 10)
+  const flexDays = Math.max(0, Math.min(3, Number.isFinite(flexDaysRaw) ? flexDaysRaw : 0))
   const cabinForLive: 'Y' | 'C' =
     cabinClass === 'business' || cabinClass === 'first' ? 'C' : 'Y'
 
@@ -47,14 +67,17 @@ export default async function TripsPage({
     .eq('status', 'active')
 
   if (origin && destination) {
-    query = query.or(`and(${buildLocationGroup('origin', origin)},${buildLocationGroup('destination', destination)})`)
+    query = query.or(
+      `and(${buildLocationGroupExpanded('origin', origin, includeNearby)},${buildLocationGroupExpanded('destination', destination, includeNearby)})`,
+    )
   } else if (origin) {
-    query = query.or(buildLocationGroup('origin', origin))
+    query = query.or(buildLocationGroupExpanded('origin', origin, includeNearby))
   } else if (destination) {
-    query = query.or(buildLocationGroup('destination', destination))
+    query = query.or(buildLocationGroupExpanded('destination', destination, includeNearby))
   }
-  if (dateFrom) query = query.gte('departure_at', dateFrom)
-  if (dateTo) query = query.lte('departure_at', dateTo)
+  if (dateFrom) query = query.gte('departure_at', flexDays > 0 ? shiftDate(dateFrom, -flexDays) : dateFrom)
+  if (dateTo) query = query.lte('departure_at', flexDays > 0 ? shiftDate(dateTo, flexDays) : dateTo)
+  else if (dateFrom && flexDays > 0) query = query.lte('departure_at', shiftDate(dateFrom, flexDays))
   if (priceMin) query = query.gte('price_per_seat', parseFloat(priceMin))
   if (priceMax) query = query.lte('price_per_seat', parseFloat(priceMax))
   if (tripType === 'one_way') {
@@ -111,6 +134,8 @@ export default async function TripsPage({
         adults,
         children,
         infants,
+        include_nearby: includeNearby,
+        flex_days: flexDays,
       }}
     />
   )

@@ -16,15 +16,19 @@ import { FavoriteButton } from '@/components/shared/favorite-button'
 import { ShareButton } from '@/components/shared/share-button'
 import { BnplBadge } from '@/components/ui/bnpl-badge'
 import { RibbonBadge, type RibbonKind } from '@/components/ui/ribbon-badge'
+import { PriceTierBadge } from '@/components/ui/price-tier-badge'
+import type { PriceTier } from '@/lib/price-tier'
 import type { Trip } from '@/types'
 
 type TripCardProps = {
   trip: Trip
   className?: string
   ribbon?: RibbonKind
+  priceTier?: PriceTier
+  priceMedian?: number | null
 }
 
-function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
+function TripCardComponent({ trip, className, ribbon, priceTier, priceMedian }: TripCardProps) {
   const t = useTranslations()
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -77,10 +81,17 @@ function TripCardComponent({ trip, className, ribbon }: TripCardProps) {
         )}
       >
         <div className="flex flex-col h-full p-6">
-          {/* Ribbon (Best value / Cheapest / Fastest) */}
-          {ribbon && (
-            <div className="mb-3">
-              <RibbonBadge kind={ribbon} />
+          {/* Ribbon (Best value / Cheapest / Fastest) + Price tier */}
+          {(ribbon || priceTier) && (
+            <div className="mb-3 flex flex-wrap items-center gap-1.5">
+              {ribbon && <RibbonBadge kind={ribbon} />}
+              {priceTier && (
+                <PriceTierBadge
+                  tier={priceTier}
+                  median={priceMedian}
+                  currency={trip.currency}
+                />
+              )}
             </div>
           )}
 
