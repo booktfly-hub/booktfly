@@ -71,7 +71,8 @@
     "trip_requests": "Trip Requests",
     "last_minute": "Last Minute",
     "packages": "Packages",
-    "saved": "Saved"
+    "saved": "Saved",
+    "assistant": "AI"
   },
   "auth": {
     "login_title": "Log in to your account",
@@ -1375,5 +1376,80 @@
     "add_new": "Add new traveler",
     "use_this": "Use this traveler",
     "confirm_delete": "Remove saved traveler?"
+  },
+  "assistant": {
+    "title": "BookitFly AI",
+    "error_title": "Something went wrong",
+    "retry": "Try again",
+    "disclaimer": "AI can make mistakes — verify important details before booking.",
+    "empty": {
+      "greeting": "How can I help you travel today?",
+      "subtitle": "Find flights, compare hotels, get reviews — all in one chat.",
+      "items": {
+        "flight": "Find a flight",
+        "hotel": "Find a hotel",
+        "compare": "Compare offers",
+        "research": "Look something up"
+      }
+    },
+    "composer": {
+      "placeholder": "Ask anything about your trip…",
+      "send": "Send",
+      "stop": "Stop generating",
+      "voice": "Voice input",
+      "attach": "Attach",
+      "thinking_label": "Thinking"
+    },
+    "tool": {
+      "flights": {
+        "preparing": "Preparing flight search",
+        "running": "Searching flights",
+        "done": "Flights found",
+        "error": "Flight search failed"
+      },
+      "hotels": {
+        "preparing": "Preparing hotel search",
+        "running": "Searching hotels",
+        "done": "Hotels found",
+        "error": "Hotel search failed"
+      },
+      "compare": {
+        "preparing": "Preparing comparison",
+        "running": "Comparing options",
+        "done": "Comparison ready",
+        "error": "Could not compare"
+      },
+      "web": {
+        "preparing": "Preparing web search",
+        "running": "Searching the web",
+        "done": "Sources found",
+        "error": "Web search failed"
+      },
+      "generic": {
+        "preparing": "Preparing",
+        "running": "Working",
+        "done": "Done",
+        "error": "Failed"
+      }
+    },
+    "flight": {
+      "found": "{count, plural, =1 {1 flight found} other {# flights found}}",
+      "no_results": "No live flights for that route. Try different dates or nearby airports.",
+      "direct": "Non-stop",
+      "stops": "{n, plural, =1 {1 stop} other {# stops}}",
+      "book": "Book"
+    },
+    "hotel": {
+      "found": "{count, plural, =1 {1 hotel found} other {# hotels found}}",
+      "no_results": "No live hotels for that city. Try a wider date range.",
+      "from": "From",
+      "view": "View"
+    },
+    "compare": {
+      "book": "Book"
+    },
+    "web": {
+      "sources": "Sources"
+    }
   }
 }

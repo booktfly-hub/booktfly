@@ -59,13 +59,16 @@ export function LocaleShell({ children }: Props) {
   const segment = segments[2]
   const hidePublicChrome = segment ? HIDDEN_CHROME_SEGMENTS.has(segment) : false
   const isDetailPage = DETAIL_PAGE_PATTERNS.some(p => p.test(pathname))
+  // Full-bleed app shell: navbar stays, but no marketing footer / mobile bottom nav,
+  // and the page area fills exactly the viewport below the navbar (no min-h overflow).
+  const isAppShellPage = segment === 'assistant'
 
   return (
     <UserProvider>
       <SavedItemsProvider>
       {!hidePublicChrome && <Navbar />}
       <main id="main-content" tabIndex={-1} className="flex-1 scroll-mt-28 focus:outline-none">
-        {hidePublicChrome ? (
+        {hidePublicChrome || isAppShellPage ? (
           children
         ) : (
           <div className="flex min-h-[100svh] flex-col">
@@ -73,8 +76,8 @@ export function LocaleShell({ children }: Props) {
           </div>
         )}
       </main>
-      {!hidePublicChrome && <Footer />}
-      {!hidePublicChrome && <MobileBottomNav />}
+      {!hidePublicChrome && !isAppShellPage && <Footer />}
+      {!hidePublicChrome && !isAppShellPage && <MobileBottomNav />}
       <Suspense><AccessDeniedToast /></Suspense>
       <Suspense><ScrollRestorer pathname={pathname} /></Suspense>
       <Toaster />

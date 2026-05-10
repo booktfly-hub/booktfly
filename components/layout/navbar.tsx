@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect, useId } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon, Heart } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User, LayoutDashboard, Plane, Ticket, BedDouble, CarFront, PlaneTakeoff, Flame, PackageIcon, Heart, Sparkles } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { LanguageSwitcher } from './language-switcher'
 import { CurrencySwitcher } from '@/components/shared/currency-switcher'
@@ -32,6 +32,9 @@ export function Navbar() {
     `/${locale}/last-minute`,
   ])
   const useHeroOverlay = heroOverlayRoutes.has(pathname) && !scrolled
+  // App-shell routes (e.g. the AI assistant) force the compact icon-only nav
+  // so the chat has more room and labels don't fight with the language/currency switchers.
+  const forceCompact = pathname === `/${locale}/assistant` || pathname.startsWith(`/${locale}/assistant/`)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,12 +82,13 @@ export function Navbar() {
     { href: `/${locale}/packages`, label: t('nav.packages'), icon: PackageIcon },
     { href: `/${locale}/last-minute`, label: t('nav.last_minute'), icon: Flame, highlight: true },
     { href: `/${locale}/trip-requests`, label: t('nav.trip_requests'), icon: PlaneTakeoff },
+    { href: `/${locale}/assistant`, label: t('nav.assistant'), icon: Sparkles, highlight: true },
   ]
 
   const isNavItemActive = (href: string) =>
     href !== '#' && (pathname === href || pathname.startsWith(`${href}/`))
 
-  const desktopCompact = scrolled || useHeroOverlay
+  const desktopCompact = scrolled || useHeroOverlay || forceCompact
 
   return (
     <div
