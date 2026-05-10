@@ -1,8 +1,6 @@
 'use client'
 
 import { pick } from '@/lib/i18n-helpers'
-import { useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
 import { Plus, X, CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
@@ -21,12 +19,12 @@ interface MultiCityLegsProps {
   legs: FlightLeg[]
   onChange: (legs: FlightLeg[]) => void
   locale: string
+  departureFromLabel: string
+  arrivalToLabel: string
+  departureDateLabel: string
 }
 
-export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
-  const t = useTranslations()
-  const isAr = locale === 'ar'
-
+export function MultiCityLegs({ legs, onChange, locale, departureFromLabel, arrivalToLabel, departureDateLabel }: MultiCityLegsProps) {
   function addLeg() {
     if (legs.length >= 6) return
     onChange([...legs, { origin: '', destination: '', date: undefined }])
@@ -50,12 +48,12 @@ export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
             {/* Origin */}
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">
-                {t('hero.departure_from')} {index + 1}
+                {departureFromLabel} {index + 1}
               </label>
               <CityAutocomplete
                 value={leg.origin}
                 onChange={(val) => updateLeg(index, 'origin', val)}
-                placeholder={t('hero.departure_from')}
+                placeholder={departureFromLabel}
                 locale={locale}
               />
             </div>
@@ -63,12 +61,12 @@ export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
             {/* Destination */}
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">
-                {t('hero.arrival_to')} {index + 1}
+                {arrivalToLabel} {index + 1}
               </label>
               <CityAutocomplete
                 value={leg.destination}
                 onChange={(val) => updateLeg(index, 'destination', val)}
-                placeholder={t('hero.arrival_to')}
+                placeholder={arrivalToLabel}
                 locale={locale}
               />
             </div>
@@ -76,7 +74,7 @@ export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
             {/* Date */}
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">
-                {t('hero.departure_date')}
+                {departureDateLabel}
               </label>
               <Popover>
                 <PopoverTrigger
@@ -86,7 +84,7 @@ export function MultiCityLegs({ legs, onChange, locale }: MultiCityLegsProps) {
                   )}
                 >
                   <CalendarIcon className="h-4 w-4 me-2 shrink-0" />
-                  {leg.date ? format(leg.date, 'dd/MM/yyyy') : t('hero.departure_date')}
+                  {leg.date ? format(leg.date, 'dd/MM/yyyy') : departureDateLabel}
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar

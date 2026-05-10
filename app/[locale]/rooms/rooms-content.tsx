@@ -22,6 +22,7 @@ import {
 import { cn } from '@/lib/utils'
 import { RoomCard } from '@/components/rooms/room-card'
 import { HotelCard } from '@/components/trips/hotel-card'
+import { getDisplayCurrency } from '@/components/shared/currency-switcher'
 import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
@@ -79,12 +80,19 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
   const [hotelOffers, setHotelOffers] = useState<HotelOffer[]>([])
   const [selectedHotelOffer, setSelectedHotelOffer] = useState<HotelOffer | null>(null)
 
-  // Load popular hotel offers on mount
+  // Load popular hotel offers on mount + refetch when display currency changes.
   useEffect(() => {
-    fetch('/api/trips/hotel-offers')
-      .then(r => r.json())
-      .then(data => setHotelOffers(data?.offers || []))
-      .catch(() => {})
+    const load = () => {
+      const params = new URLSearchParams()
+      params.set('currency', getDisplayCurrency())
+      fetch(`/api/trips/hotel-offers?${params.toString()}`)
+        .then(r => r.json())
+        .then(data => setHotelOffers(data?.offers || []))
+        .catch(() => {})
+    }
+    load()
+    window.addEventListener('bookitfly:currency-change', load)
+    return () => window.removeEventListener('bookitfly:currency-change', load)
   }, [])
   const roomRibbons = useMemo(
     () => computeRibbons(rooms.map((r) => ({ id: r.id, price: r.price_per_night, duration_minutes: null }))),
@@ -132,6 +140,7 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
           hotelParams.set('date_to', checkout.toISOString().slice(0, 10))
         }
         if (filters.passengers) hotelParams.set('adults', filters.passengers)
+        hotelParams.set('currency', getDisplayCurrency())
         const hotelPromise = append
           ? Promise.resolve<{ offers: HotelOffer[] } | null>(null)
           : fetch(`/api/trips/hotel-offers?${hotelParams.toString()}`).then(r => r.json())
@@ -465,7 +474,7 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
         </div>
       )}
 
-      {/* Partner Hotels — Booking.com — first */}
+      {/* Partner Hotels — first */}
       {hotelOffers.length > 0 && (
         <div className="mb-12 md:mb-16">
           <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
@@ -480,9 +489,9 @@ export function RoomsContent({ initialRooms, initialTotalPages, initialFilters }
               </h2>
               <p className="mt-1 text-xs md:text-sm text-slate-500">
                 {pick(locale,
-                  'احجز إقامتك عبر Booking.com — أسعار تنافسية وأكثر من 28 مليون خيار',
-                  'Book your stay via Booking.com — competitive rates across 28M+ properties',
-                  'Booking.com üzerinden konaklamanızı rezerve edin — 28 milyondan fazla tesis'
+                  'فنادق حقيقية بأسعار حية — مزوّدة من شركائنا وقابلة للحجز مباشرة',
+                  'Real hotels with live prices — sourced from our partners and bookable directly',
+                  'Gerçek oteller, canlı fiyatlar — ortaklarımızdan doğrudan rezerve edilebilir'
                 )}
               </p>
             </div>

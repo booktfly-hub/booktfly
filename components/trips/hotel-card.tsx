@@ -1,9 +1,9 @@
 'use client'
 
 import { useLocale } from 'next-intl'
-import { ExternalLink, MapPin, Star, Building2, ArrowRight, ArrowLeft } from 'lucide-react'
+import { MapPin, Star, Building2, ArrowRight, ArrowLeft } from 'lucide-react'
 import { pick } from '@/lib/i18n-helpers'
-import { cn } from '@/lib/utils'
+import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import type { HotelOffer } from '@/lib/booking-hotels'
 
 function fmtDate(iso: string, locale: string) {
@@ -46,6 +46,8 @@ export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOff
   const city = isAr ? offer.city_ar : offer.city
   const tierLabel = isAr ? offer.tier_label_ar : offer.tier_label_en
   const propertyType = isAr ? offer.property_type_ar : offer.property_type_en
+  const headline = offer.hotel_name || propertyType
+  const partnerLabel = 'Booking.com'
 
   return (
     <button
@@ -63,8 +65,13 @@ export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOff
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={offer.image_url}
-            alt={city}
+            alt={headline}
             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              const fallback = offer.fallback_image_url
+              const img = e.currentTarget
+              if (fallback && img.src !== fallback) img.src = fallback
+            }}
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/60 via-slate-950/20 to-transparent" />
 
@@ -76,10 +83,10 @@ export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOff
             </span>
           </div>
 
-          {/* Booking.com badge */}
+          {/* Partner badge */}
           <div className="absolute top-3 end-3">
             <span className="inline-flex items-center rounded-full border border-white/80 bg-white/92 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur-sm">
-              Booking.com
+              {partnerLabel}
             </span>
           </div>
 
@@ -107,13 +114,14 @@ export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOff
               ))}
             </div>
             <h3 className="text-[1.2rem] font-black leading-tight tracking-[-0.02em] text-slate-900 line-clamp-2">
-              {propertyType}
+              {headline}
             </h3>
             <div className="flex items-center gap-1.5 text-slate-500">
               <Building2 className="h-3.5 w-3.5 shrink-0" />
               <span className="text-sm font-semibold">
-                {offer.property_count}{' '}
-                {pick(locale, 'خيار إقامة', 'properties', 'tesis')}
+                {offer.hotel_name
+                  ? propertyType
+                  : `${offer.property_count} ${pick(locale, 'خيار إقامة', 'properties', 'tesis')}`}
               </span>
             </div>
           </div>
@@ -146,14 +154,14 @@ export function HotelCard({ offer, className, onViewDetails }: { offer: HotelOff
                 </span>
                 <div className="flex items-baseline gap-1.5">
                   <span className={cn('text-[2rem] font-black leading-none tracking-[-0.03em]', colors.price)}>
-                    ${offer.price_from}
+                    {(isAr ? formatPrice : formatPriceEN)(offer.price_from, offer.price_currency)}
                   </span>
                   <span className="text-sm font-semibold text-slate-400">
                     / {pick(locale, 'ليلة', 'night', 'gece')}
                   </span>
                 </div>
                 <p className="text-[10px] font-medium text-slate-400 mt-1.5">
-                  {pick(locale, 'عبر Booking.com', 'via Booking.com', 'Booking.com üzerinden')}
+                  {pick(locale, `عبر ${partnerLabel}`, `via ${partnerLabel}`, `${partnerLabel} üzerinden`)}
                 </p>
               </div>
 

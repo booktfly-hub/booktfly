@@ -12,11 +12,15 @@ export type PassengerCounts = {
   childAges: number[]
 }
 
+export type CabinClassValue = '' | 'economy' | 'business' | 'first'
+
 interface PassengerPickerProps {
   value: PassengerCounts
   onChange: (value: PassengerCounts) => void
   locale: string
   className?: string
+  cabinClass?: CabinClassValue
+  onCabinChange?: (value: CabinClassValue) => void
 }
 
 const t = {
@@ -33,6 +37,10 @@ const t = {
     done: 'تم',
     traveler: 'مسافر',
     travelers: 'مسافرين',
+    cabin_class: 'درجة المقصورة',
+    economy: 'الاقتصادية',
+    business: 'رجال الأعمال',
+    first: 'الأولى',
   },
   en: {
     passengers: 'Passengers',
@@ -47,10 +55,14 @@ const t = {
     done: 'Done',
     traveler: 'traveler',
     travelers: 'travelers',
+    cabin_class: 'Cabin class',
+    economy: 'Economy',
+    business: 'Business',
+    first: 'First',
   },
 }
 
-export function PassengerPicker({ value, onChange, locale, className }: PassengerPickerProps) {
+export function PassengerPicker({ value, onChange, locale, className, cabinClass, onCabinChange }: PassengerPickerProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const isAr = locale === 'ar'
@@ -96,9 +108,17 @@ export function PassengerPicker({ value, onChange, locale, className }: Passenge
     onChange({ ...value, childAges: ages })
   }
 
-  const summary = total === 1
+  const cabinLabel: Record<Exclude<CabinClassValue, ''>, string> = {
+    economy: strings.economy,
+    business: strings.business,
+    first: strings.first,
+  }
+  const travelerSummary = total === 1
     ? `1 ${strings.traveler}`
     : `${total} ${strings.travelers}`
+  const summary = onCabinChange
+    ? `${travelerSummary} · ${cabinClass ? cabinLabel[cabinClass] : strings.economy}`
+    : travelerSummary
 
   return (
     <div ref={ref} className={cn('relative', className)}>
@@ -173,6 +193,37 @@ export function PassengerPicker({ value, onChange, locale, className }: Passenge
             onIncrement={() => update('infants', 1)}
             min={0}
           />
+
+          {/* Cabin class */}
+          {onCabinChange && (
+            <>
+              <div className="border-t border-slate-100" />
+              <div>
+                <p className="text-sm font-semibold text-slate-900 mb-2">{strings.cabin_class}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['economy', 'business', 'first'] as const).map((c) => {
+                    const active = (cabinClass || 'economy') === c
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => onCabinChange(c)}
+                        aria-pressed={active}
+                        className={cn(
+                          'h-10 rounded-lg border text-xs font-bold transition-colors',
+                          active
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40'
+                        )}
+                      >
+                        {cabinLabel[c]}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Done button */}
           <button

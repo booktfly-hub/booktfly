@@ -14,7 +14,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatPrice, formatPriceEN } from '@/lib/utils'
 import { pick } from '@/lib/i18n-helpers'
 import { SubscribeInline } from '@/components/shared/subscribe-inline'
 import type { HotelOffer } from '@/lib/booking-hotels'
@@ -59,6 +59,16 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
   const city = isAr ? offer.city_ar : offer.city
   const tierLabel = isAr ? offer.tier_label_ar : offer.tier_label_en
   const propertyType = isAr ? offer.property_type_ar : offer.property_type_en
+  const headline = offer.hotel_name || propertyType
+  const partnerLabel = 'Booking.com'
+  const ctaLabel = offer.hotel_name
+    ? pick(locale, 'احجز هذا الفندق', 'Book this hotel', 'Bu oteli rezerve et')
+    : pick(
+        locale,
+        `تصفّح فنادق ${tierLabel} في ${city}`,
+        `Browse ${tierLabel.toLowerCase()} hotels in ${city}`,
+        `${city} ${tierLabel.toLowerCase()} otellerine göz at`,
+      )
 
   useEffect(() => {
     const prev = document.body.style.overflow
@@ -93,8 +103,13 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={offer.image_url}
-            alt={city}
+            alt={headline}
             className="h-full w-full object-cover"
+            onError={(e) => {
+              const fallback = offer.fallback_image_url
+              const img = e.currentTarget
+              if (fallback && img.src !== fallback) img.src = fallback
+            }}
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
 
@@ -106,20 +121,23 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
             </span>
           </div>
 
-          {/* Booking.com badge */}
+          {/* Partner badge */}
           <div className="absolute top-4 end-12">
             <span className="inline-flex items-center rounded-full border border-white/80 bg-white/92 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur-sm">
-              Booking.com
+              {partnerLabel}
             </span>
           </div>
 
-          {/* City overlay */}
-          <div className="absolute bottom-4 start-5">
-            <p className="text-2xl font-black text-white drop-shadow leading-tight">{city}</p>
+          {/* City / hotel-name overlay */}
+          <div className="absolute bottom-4 start-5 end-5">
+            <p className="text-2xl font-black text-white drop-shadow leading-tight line-clamp-2">{headline}</p>
             <div className="flex items-center gap-1 mt-1">
               <MapPin className="h-3 w-3 text-white/80" />
               <span className="text-xs font-semibold text-white/90">
-                {isAr ? offer.country_ar : offer.country}
+                {city}
+                {(isAr ? offer.country_ar : offer.country)
+                  ? `, ${isAr ? offer.country_ar : offer.country}`
+                  : ''}
               </span>
             </div>
           </div>
@@ -135,12 +153,14 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
               ))}
             </div>
             <h2 className="text-xl font-black text-slate-900 leading-tight">{propertyType}</h2>
-            <div className="flex items-center gap-1.5 mt-2 text-slate-500">
-              <Building2 className="h-4 w-4 shrink-0" />
-              <span className="text-sm font-semibold">
-                {offer.property_count} {pick(locale, 'خيار إقامة متاح', 'properties available', 'tesis mevcut')}
-              </span>
-            </div>
+            {!offer.hotel_name && (
+              <div className="flex items-center gap-1.5 mt-2 text-slate-500">
+                <Building2 className="h-4 w-4 shrink-0" />
+                <span className="text-sm font-semibold">
+                  {offer.property_count} {pick(locale, 'خيار إقامة متاح', 'properties available', 'tesis mevcut')}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Dates + nights */}
@@ -202,10 +222,15 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
                   {pick(locale, 'تبدأ من', 'Starting from', 'Başlangıç')}
                 </p>
                 <div className={cn('text-[2.5rem] font-black leading-none tracking-tight', colors.price)}>
-                  ${offer.price_from}
+                  {(isAr ? formatPrice : formatPriceEN)(offer.price_from, offer.price_currency)}
                 </div>
                 <p className="text-xs text-slate-400 font-medium mt-1.5">
-                  {pick(locale, 'في الليلة • عبر Booking.com', 'per night • via Booking.com', 'gecelik • Booking.com')}
+                  {pick(
+                    locale,
+                    `في الليلة • عبر ${partnerLabel}`,
+                    `per night • via ${partnerLabel}`,
+                    `gecelik • ${partnerLabel}`,
+                  )}
                 </p>
               </div>
               <a
@@ -218,7 +243,7 @@ export function HotelOfferModal({ offer, onClose }: { offer: HotelOffer; onClose
                 )}
               >
                 <ExternalLink className="h-4 w-4" />
-                {pick(locale, 'احجز الفندق', 'Book Hotel', 'Otel Rezervasyonu')}
+                {ctaLabel}
               </a>
             </div>
           </div>

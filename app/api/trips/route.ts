@@ -7,6 +7,9 @@ import { optimizeImage } from '@/lib/optimize-image'
 import { notify } from '@/lib/notifications'
 import { logActivity } from '@/lib/activity-log'
 import { expandWithNearby, isIataCode } from '@/lib/nearby-airports'
+import { getUsdRates, convertWithRates } from '@/lib/fx-rates-server'
+
+const SUPPORTED_CURRENCIES = new Set(['SAR', 'AED', 'USD', 'EUR', 'GBP'])
 
 export async function GET(request: NextRequest) {
   try {
@@ -144,8 +147,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    const targetCurrencyRaw = (searchParams.get('currency') || '').toUpperCase()
+    const targetCurrency = SUPPORTED_CURRENCIES.has(targetCurrencyRaw) ? targetCurrencyRaw : ''
+    let outputTrips = trips || []
+    if (targetCurrency && outputTrips.length > 0) {
+      const needsConversion = outputTrips.some(
+        (t) => (t.currency || '').toUpperCase() !== targetCurrency,
+      )
+      if (needsConversion) {
+        const rates = await getUsdRates()
+        outputTrips = outputTrips.map((t) => {
+          const from = (t.currency || 'SAR').toUpperCase()
+          if (from === targetCurrency) return t
+          const seat = convertWithRates(t.price_per_seat, from, targetCurrency, rates)
+          const oneWay =
+            typeof t.price_per_seat_one_way === 'number'
+              ? convertWithRates(t.price_per_seat_one_way, from, targetCurrency, rates)
+              : t.price_per_seat_one_way
+          return {
+            ...t,
+            price_per_seat: Math.round(seat),
+            price_per_seat_one_way: typeof oneWay === 'number' ? Math.round(oneWay) : oneWay,
+            currency: targetCurrency,
+          }
+        })
+      }
+    }
+
     return NextResponse.json({
-      trips: trips || [],
+      trips: outputTrips,
       total: count || 0,
       page,
       limit,

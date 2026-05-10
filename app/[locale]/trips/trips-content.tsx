@@ -60,6 +60,7 @@ import { HotelCard } from '@/components/trips/hotel-card'
 import { LiveOfferModal } from '@/components/trips/live-offer-modal'
 import { HotelOfferModal } from '@/components/trips/hotel-offer-modal'
 import type { HotelOffer } from '@/lib/booking-hotels'
+import { getDisplayCurrency } from '@/components/shared/currency-switcher'
 import { useMemo } from 'react'
 import { format, parseISO, isValid } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -381,6 +382,15 @@ export function TripsContent({
     setHotelOffers(initialHotelOffers)
   }, [initialHotelOffers])
 
+  // Refetch everything (trips + partner offers + hotels) when display currency changes.
+  useEffect(() => {
+    const handler = () => {
+      fetchTripsRef.current?.(1, false)
+    }
+    window.addEventListener('bookitfly:currency-change', handler)
+    return () => window.removeEventListener('bookitfly:currency-change', handler)
+  }, [])
+
   const fetchTrips = useCallback(
     async (
       pageNum: number,
@@ -415,6 +425,9 @@ export function TripsContent({
         if (activeFilters.include_nearby) params.set('include_nearby', '1')
         if (activeFilters.flex_days) params.set('flex_days', String(activeFilters.flex_days))
 
+        const userCurrency = getDisplayCurrency()
+        if (userCurrency) params.set('currency', userCurrency)
+
         const tripsPromise = fetch(`/api/trips?${params.toString()}`).then((res) => res.json())
         const partnerOffersPromise = append
           ? Promise.resolve<{ offers: LiveOffer[] } | null>(null)
@@ -442,6 +455,11 @@ export function TripsContent({
     },
     [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, filters.adults, filters.children, filters.infants, filters.include_nearby, filters.flex_days]
   )
+
+  const fetchTripsRef = useRef(fetchTrips)
+  useEffect(() => {
+    fetchTripsRef.current = fetchTrips
+  }, [fetchTrips])
 
   const handleSearch = useCallback(() => {
     setSearchOrigin(filters.origin)
@@ -1097,7 +1115,7 @@ export function TripsContent({
                 {hotelOffers.length > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-700">
                     <Hotel className="h-3 w-3" />
-                    Booking.com: {hotelOffers.length}
+                    {pick(locale, 'فنادق', 'Hotels', 'Oteller')}: {hotelOffers.length}
                   </span>
                 )}
               </div>
