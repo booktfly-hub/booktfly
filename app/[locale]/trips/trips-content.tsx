@@ -1,6 +1,7 @@
 'use client'
 
 import { pick } from '@/lib/i18n-helpers'
+import dynamic from 'next/dynamic'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import {
@@ -10,18 +11,44 @@ import {
   ChevronDown,
   Loader2,
   ArrowLeftRight,
+  ArrowRight,
+  Route,
   CalendarIcon,
   Plane,
   Hotel,
+  Pencil,
+  MapPin,
+  CalendarRange,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TripCard } from '@/components/trips/trip-card'
 import { EmptyState } from '@/components/shared/empty-state'
 import { CardSkeleton } from '@/components/shared/loading-skeleton'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
+import { PassengerPicker, type PassengerCounts, type CabinClassValue } from '@/components/shared/passenger-picker'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SortTabs, type SortKey } from '@/components/trips/sort-tabs'
+import { StopsFilter, type StopValue } from '@/components/trips/stops-filter'
+import { AirlineFilter, type AirlineEntry } from '@/components/trips/airline-filter'
+import { StickySearchSummary } from '@/components/trips/sticky-search-summary'
+import {
+  DepartureTimeFilter,
+  type TimeBucket,
+  timeBucketFromIso,
+} from '@/components/trips/departure-time-filter'
+import { DurationFilter } from '@/components/trips/duration-filter'
+import { ShareSearchButton } from '@/components/trips/share-search-button'
+import { TrackRouteButton } from '@/components/trips/track-route-button'
+import { MapViewToggle } from '@/components/trips/map-view-toggle'
+
+const HotelMapView = dynamic(
+  () => import('@/components/trips/hotel-map-view').then((m) => m.HotelMapView),
+  { ssr: false },
+)
+import { RecentSearches, saveRecentSearch, type RecentSearch } from '@/components/trips/recent-searches'
+import { useFilterUrlSync } from '@/lib/use-filter-url-sync'
+import { computePriceTiers, priceMedian } from '@/lib/price-tier'
 import { PriceStrip } from '@/components/trips/price-strip'
 import { computeRibbons } from '@/components/ui/ribbon-badge'
 import { StaleSearchModal } from '@/components/ui/stale-search-modal'
@@ -47,6 +74,11 @@ type Filters = {
   trip_type: string
   cabin_class: string
   sort: string
+  adults: number
+  children: number
+  infants: number
+  include_nearby: boolean
+  flex_days: number
 }
 
 const emptyFilters: Filters = {
@@ -59,6 +91,11 @@ const emptyFilters: Filters = {
   trip_type: 'one_way',
   cabin_class: '',
   sort: 'newest',
+  adults: 1,
+  children: 0,
+  infants: 0,
+  include_nearby: false,
+  flex_days: 0,
 }
 
 const parseDateValue = (value: string) => {
@@ -109,14 +146,222 @@ export function TripsContent({
     [trips],
   )
 
+  // Compute price tiers across the merged set (platform trips + partner offers)
+  // so "good deal" / "high price" reflects the user's full visible market.
+  const priceTierData = useMemo(() => {
+    const merged = [
+      ...trips.map((tr) => ({ id: `t:${tr.id}`, price: tr.price_per_seat })),
+      ...partnerOffers.map((o) => ({ id: `o:${o.id}`, price: o.price_amount })),
+    ]
+    return {
+      tiers: computePriceTiers(merged),
+      median: priceMedian(merged),
+    }
+  }, [trips, partnerOffers])
+
   const [filters, setFilters] = useState<Filters>({ ...emptyFilters, ...initialFilters })
   const [showFilters, setShowFilters] = useState(false)
+  const [stopsFilter, setStopsFilter] = useState<StopValue[]>([])
+  const [airlinesFilter, setAirlinesFilter] = useState<string[]>([])
+  const [timeFilter, setTimeFilter] = useState<TimeBucket[]>([])
+  const [maxDurationHours, setMaxDurationHours] = useState<number | null>(null)
+  const [recentRefreshKey, setRecentRefreshKey] = useState(0)
+  const [hotelView, setHotelView] = useState<'list' | 'map'>('list')
+  const searchCardRef = useRef<HTMLDivElement | null>(null)
+
+  // Sync filters → URL (server-rendered initial values come from the same params).
+  useFilterUrlSync({
+    origin: filters.origin,
+    destination: filters.destination,
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+    trip_type: filters.trip_type,
+    cabin_class: filters.cabin_class,
+    price_min: filters.price_min,
+    price_max: filters.price_max,
+    sort: filters.sort === 'newest' ? '' : filters.sort,
+    adults: filters.adults > 1 ? filters.adults : '',
+    children: filters.children || '',
+    infants: filters.infants || '',
+    include_nearby: filters.include_nearby ? '1' : '',
+    flex_days: filters.flex_days || '',
+  })
+
+  const handleEditSearch = useCallback(() => {
+    const el = searchCardRef.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY - 96
+    window.scrollTo({ top, behavior: 'smooth' })
+  }, [])
   const [searchOrigin, setSearchOrigin] = useState(initialFilters.origin)
   const [searchDestination, setSearchDestination] = useState(initialFilters.destination)
   const departureDate = parseDateValue(filters.date_from)
   const returnDate = parseDateValue(filters.date_to)
+
+  const tripStopBucket = (tr: Trip): StopValue => (tr.is_direct ? 'direct' : '1')
+  const offerStopBucket = (o: LiveOffer): StopValue => {
+    const t = o.transfers ?? 0
+    if (t <= 0) return 'direct'
+    if (t === 1) return '1'
+    return '2+'
+  }
+
+  // Airline normalization: IATA codes when possible, else a name-keyed bucket.
+  const tripAirlineKey = (tr: Trip): string => {
+    const raw = (tr.airline || '').trim()
+    if (!raw) return ''
+    if (/^[A-Z0-9]{2,3}$/i.test(raw)) return raw.toUpperCase()
+    return `name:${raw.toLowerCase()}`
+  }
+  const offerAirlineKey = (o: LiveOffer): string =>
+    (o.airline_iata || '').toUpperCase()
+
+  const tripTimeBucket = (tr: Trip) => timeBucketFromIso(tr.departure_at)
+  const offerTimeBucket = (o: LiveOffer) => timeBucketFromIso(o.departing_at)
+  const tripDurationHours = (tr: Trip): number | null =>
+    tr.duration_minutes && tr.duration_minutes > 0 ? tr.duration_minutes / 60 : null
+  const offerDurationHours = (o: LiveOffer): number | null =>
+    o.duration_minutes && o.duration_minutes > 0 ? o.duration_minutes / 60 : null
+
+  const stopsCounts = useMemo(() => {
+    const c: Record<StopValue, number> = { direct: 0, '1': 0, '2+': 0 }
+    trips.forEach((tr) => { c[tripStopBucket(tr)] += 1 })
+    partnerOffers.forEach((o) => { c[offerStopBucket(o)] += 1 })
+    return c
+  }, [trips, partnerOffers])
+
+  const stopsMinPrices = useMemo(() => {
+    const m: Partial<Record<StopValue, { price: number; currency?: string }>> = {}
+    const consider = (bucket: StopValue, price: number, currency?: string) => {
+      if (!Number.isFinite(price) || price <= 0) return
+      const cur = m[bucket]
+      if (!cur || price < cur.price) m[bucket] = { price, currency }
+    }
+    trips.forEach((tr) => consider(tripStopBucket(tr), tr.price_per_seat, tr.currency))
+    partnerOffers.forEach((o) => consider(offerStopBucket(o), o.price_amount, o.price_currency))
+    return m
+  }, [trips, partnerOffers])
+
+  const filteredTrips = useMemo(() => {
+    return trips.filter((tr) => {
+      if (stopsFilter.length > 0 && !stopsFilter.includes(tripStopBucket(tr))) return false
+      if (airlinesFilter.length > 0) {
+        const k = tripAirlineKey(tr)
+        if (!k || !airlinesFilter.includes(k)) return false
+      }
+      if (timeFilter.length > 0) {
+        const b = tripTimeBucket(tr)
+        if (!b || !timeFilter.includes(b)) return false
+      }
+      if (maxDurationHours !== null) {
+        const d = tripDurationHours(tr)
+        if (d !== null && d > maxDurationHours) return false
+      }
+      return true
+    })
+  }, [trips, stopsFilter, airlinesFilter, timeFilter, maxDurationHours])
+
+  const filteredPartnerOffers = useMemo(() => {
+    return partnerOffers.filter((o) => {
+      if (stopsFilter.length > 0 && !stopsFilter.includes(offerStopBucket(o))) return false
+      if (airlinesFilter.length > 0) {
+        const k = offerAirlineKey(o)
+        if (!k || !airlinesFilter.includes(k)) return false
+      }
+      if (timeFilter.length > 0) {
+        const b = offerTimeBucket(o)
+        if (!b || !timeFilter.includes(b)) return false
+      }
+      if (maxDurationHours !== null) {
+        const d = offerDurationHours(o)
+        if (d !== null && d > maxDurationHours) return false
+      }
+      return true
+    })
+  }, [partnerOffers, stopsFilter, airlinesFilter, timeFilter, maxDurationHours])
+
+  const timeBucketCounts = useMemo(() => {
+    const c: Record<TimeBucket, number> = { morning: 0, afternoon: 0, evening: 0, night: 0 }
+    trips.forEach((tr) => {
+      const b = tripTimeBucket(tr)
+      if (b) c[b] += 1
+    })
+    partnerOffers.forEach((o) => {
+      const b = offerTimeBucket(o)
+      if (b) c[b] += 1
+    })
+    return c
+  }, [trips, partnerOffers])
+
+  const durationBounds = useMemo(() => {
+    let min = Infinity
+    let max = 0
+    const consider = (h: number | null) => {
+      if (h === null) return
+      if (h < min) min = h
+      if (h > max) max = h
+    }
+    trips.forEach((tr) => consider(tripDurationHours(tr)))
+    partnerOffers.forEach((o) => consider(offerDurationHours(o)))
+    if (!Number.isFinite(min) || max <= 0) return null
+    return { min: Math.max(1, Math.floor(min)), max: Math.max(2, Math.ceil(max)) }
+  }, [trips, partnerOffers])
+
+  // Aggregate airlines from the unfiltered base sets so chips don't disappear
+  // as they get selected. Counts/min-prices respect the *other* filter (stops)
+  // so each chip reflects how many results it would yield given current state.
+  const airlineEntries = useMemo<AirlineEntry[]>(() => {
+    const map = new Map<string, AirlineEntry>()
+    const upsert = (
+      key: string,
+      name: string,
+      price: number,
+      currency?: string,
+      logoUrl?: string,
+    ) => {
+      if (!key) return
+      if (!Number.isFinite(price) || price <= 0) return
+      const existing = map.get(key)
+      if (!existing) {
+        map.set(key, { code: key, name, count: 1, minPrice: price, currency, logoUrl })
+      } else {
+        existing.count += 1
+        if (price < existing.minPrice) {
+          existing.minPrice = price
+          existing.currency = currency || existing.currency
+        }
+        if (!existing.logoUrl && logoUrl) existing.logoUrl = logoUrl
+      }
+    }
+    trips.forEach((tr) => {
+      if (stopsFilter.length > 0 && !stopsFilter.includes(tripStopBucket(tr))) return
+      const key = tripAirlineKey(tr)
+      const display = (tr.airline || '').trim() || key
+      const isIata = /^[A-Z0-9]{2,3}$/i.test(key)
+      upsert(
+        key,
+        display,
+        tr.price_per_seat,
+        tr.currency,
+        isIata ? `https://pics.avs.io/64/64/${key}.png` : undefined,
+      )
+    })
+    partnerOffers.forEach((o) => {
+      if (stopsFilter.length > 0 && !stopsFilter.includes(offerStopBucket(o))) return
+      const key = offerAirlineKey(o)
+      upsert(
+        key,
+        o.airline_name || key,
+        o.price_amount,
+        o.price_currency,
+        key ? `https://pics.avs.io/64/64/${key}.png` : undefined,
+      )
+    })
+    return Array.from(map.values())
+  }, [trips, partnerOffers, stopsFilter])
+
   const liveOfferCounts = useMemo(() => {
-    return partnerOffers.reduce(
+    return filteredPartnerOffers.reduce(
       (acc, offer) => {
         if (offer.source === 'duffel') acc.duffel += 1
         else acc.travelpayouts += 1
@@ -124,9 +369,9 @@ export function TripsContent({
       },
       { travelpayouts: 0, duffel: 0 }
     )
-  }, [partnerOffers])
+  }, [filteredPartnerOffers])
 
-  const totalResultsCount = trips.length + partnerOffers.length + hotelOffers.length
+  const totalResultsCount = filteredTrips.length + filteredPartnerOffers.length + hotelOffers.length
 
   useEffect(() => {
     setPartnerOffers(liveOffers)
@@ -164,6 +409,11 @@ export function TripsContent({
         if (activeFilters.trip_type) params.set('trip_type', activeFilters.trip_type)
         if (activeFilters.cabin_class) params.set('cabin_class', activeFilters.cabin_class)
         if (activeFilters.sort) params.set('sort', activeFilters.sort)
+        if (activeFilters.adults) params.set('adults', String(activeFilters.adults))
+        if (activeFilters.children) params.set('children', String(activeFilters.children))
+        if (activeFilters.infants) params.set('infants', String(activeFilters.infants))
+        if (activeFilters.include_nearby) params.set('include_nearby', '1')
+        if (activeFilters.flex_days) params.set('flex_days', String(activeFilters.flex_days))
 
         const tripsPromise = fetch(`/api/trips?${params.toString()}`).then((res) => res.json())
         const partnerOffersPromise = append
@@ -190,7 +440,7 @@ export function TripsContent({
         setLoadingMore(false)
       }
     },
-    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort]
+    [searchOrigin, searchDestination, filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, filters.adults, filters.children, filters.infants, filters.include_nearby, filters.flex_days]
   )
 
   const handleSearch = useCallback(() => {
@@ -198,7 +448,51 @@ export function TripsContent({
     setSearchDestination(filters.destination)
     setPage(1)
     fetchTrips(1, false, filters.origin, filters.destination)
-  }, [filters.origin, filters.destination, fetchTrips])
+    if (filters.origin && filters.destination) {
+      saveRecentSearch({
+        origin: filters.origin,
+        destination: filters.destination,
+        date_from: filters.date_from,
+        date_to: filters.date_to,
+        trip_type: filters.trip_type,
+        cabin_class: filters.cabin_class,
+        adults: filters.adults,
+        children: filters.children,
+        infants: filters.infants,
+      })
+      setRecentRefreshKey((k) => k + 1)
+    }
+  }, [filters, fetchTrips])
+
+  const handleRecentSelect = useCallback(
+    (entry: RecentSearch) => {
+      setFilters((prev) => ({
+        ...prev,
+        origin: entry.origin,
+        destination: entry.destination,
+        date_from: entry.date_from || '',
+        date_to: entry.date_to || '',
+        trip_type: entry.trip_type || prev.trip_type,
+        cabin_class: entry.cabin_class || prev.cabin_class,
+        adults: entry.adults ?? prev.adults,
+        children: entry.children ?? prev.children,
+        infants: entry.infants ?? prev.infants,
+      }))
+      setSearchOrigin(entry.origin)
+      setSearchDestination(entry.destination)
+      setPage(1)
+      fetchTrips(1, false, entry.origin, entry.destination, {
+        date_from: entry.date_from || '',
+        date_to: entry.date_to || '',
+        trip_type: entry.trip_type,
+        cabin_class: entry.cabin_class,
+        adults: entry.adults,
+        children: entry.children,
+        infants: entry.infants,
+      })
+    },
+    [fetchTrips],
+  )
 
   const handleCitySelect = useCallback((field: 'origin' | 'destination', value: string) => {
     const newOrigin = field === 'origin' ? value : filters.origin
@@ -228,6 +522,11 @@ export function TripsContent({
     trip_type: initialFilters.trip_type,
     cabin_class: initialFilters.cabin_class,
     sort: initialFilters.sort,
+    adults: initialFilters.adults ?? 1,
+    children: initialFilters.children ?? 0,
+    infants: initialFilters.infants ?? 0,
+    include_nearby: initialFilters.include_nearby ?? false,
+    flex_days: initialFilters.flex_days ?? 0,
   })
 
   useEffect(() => {
@@ -239,7 +538,12 @@ export function TripsContent({
       prev.price_max !== filters.price_max ||
       prev.trip_type !== filters.trip_type ||
       prev.cabin_class !== filters.cabin_class ||
-      prev.sort !== filters.sort
+      prev.sort !== filters.sort ||
+      prev.adults !== filters.adults ||
+      prev.children !== filters.children ||
+      prev.infants !== filters.infants ||
+      prev.include_nearby !== filters.include_nearby ||
+      prev.flex_days !== filters.flex_days
     if (changed) {
       filterDepsRef.current = {
         date_from: filters.date_from,
@@ -249,11 +553,16 @@ export function TripsContent({
         trip_type: filters.trip_type,
         cabin_class: filters.cabin_class,
         sort: filters.sort,
+        adults: filters.adults,
+        children: filters.children,
+        infants: filters.infants,
+        include_nearby: filters.include_nearby,
+        flex_days: filters.flex_days,
       }
       setPage(1)
       fetchTrips(1)
     }
-  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, fetchTrips])
+  }, [filters.date_from, filters.date_to, filters.price_min, filters.price_max, filters.trip_type, filters.cabin_class, filters.sort, filters.adults, filters.children, filters.infants, filters.include_nearby, filters.flex_days, fetchTrips])
 
   const handleLoadMore = () => {
     const nextPage = page + 1
@@ -261,8 +570,24 @@ export function TripsContent({
     fetchTrips(nextPage, true)
   }
 
-  const updateFilter = (key: keyof Filters, value: string | boolean) => {
+  const updateFilter = (key: keyof Filters, value: string | boolean | number) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const passengerValue: PassengerCounts = {
+    adults: filters.adults,
+    children: filters.children,
+    infants: filters.infants,
+    childAges: Array.from({ length: filters.children }, () => 5),
+  }
+
+  const handlePassengersChange = (next: PassengerCounts) => {
+    setFilters((prev) => ({
+      ...prev,
+      adults: next.adults,
+      children: next.children,
+      infants: next.infants,
+    }))
   }
 
   const handleTripTypeChange = (value: string) => {
@@ -295,17 +620,52 @@ export function TripsContent({
     setFilters(emptyFilters)
     setSearchOrigin('')
     setSearchDestination('')
+    setStopsFilter([])
+    setAirlinesFilter([])
+    setTimeFilter([])
+    setMaxDurationHours(null)
     setPage(1)
     fetchTrips(1, false, '', '', emptyFilters)
   }
 
-  const hasActiveFilters = Object.entries(filters).some(([key, val]) => key !== 'sort' && val !== '')
+  const hasActiveFilters =
+    !!filters.origin ||
+    !!filters.destination ||
+    !!filters.date_from ||
+    !!filters.date_to ||
+    !!filters.price_min ||
+    !!filters.price_max ||
+    !!filters.cabin_class ||
+    filters.trip_type !== 'one_way' ||
+    filters.adults > 1 ||
+    filters.children > 0 ||
+    filters.infants > 0 ||
+    filters.include_nearby ||
+    filters.flex_days > 0 ||
+    stopsFilter.length > 0 ||
+    airlinesFilter.length > 0 ||
+    timeFilter.length > 0 ||
+    maxDurationHours !== null
 
   const inputClass =
     'w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border-none text-slate-700 text-sm md:text-base font-medium focus:ring-2 focus:ring-primary focus:outline-none transition-colors hover:bg-slate-100'
 
   return (
     <>
+      <StickySearchSummary
+        watchRef={searchCardRef}
+        origin={filters.origin}
+        destination={filters.destination}
+        dateFrom={filters.date_from}
+        dateTo={filters.date_to}
+        tripType={filters.trip_type}
+        cabinClass={filters.cabin_class}
+        adults={filters.adults}
+        children={filters.children}
+        infants={filters.infants}
+        onEdit={handleEditSearch}
+        onSearch={handleSearch}
+      />
       <CategoryHero
         eyebrow={t('category_heroes.trips.eyebrow')}
         title={t('category_heroes.trips.title')}
@@ -314,7 +674,7 @@ export function TripsContent({
       />
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-12 sm:-mt-14 pt-0 pb-8 md:pb-16 lg:pb-20 animate-fade-in-up">
         {/* Main Search Bar */}
-        <div className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 relative z-20">
+        <div ref={searchCardRef} className="bg-white rounded-3xl md:rounded-[2rem] p-4 md:p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-4 relative z-20">
 
         {/* Row 1: Origin & Destination */}
         <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
@@ -350,21 +710,36 @@ export function TripsContent({
           />
         </div>
 
-        {/* Row 2: Trip Type, Dates, Search */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-          {/* Trip Type */}
-          <div className="relative">
-            <select
-              value={filters.trip_type}
-              onChange={(e) => handleTripTypeChange(e.target.value)}
-              className="appearance-none w-full h-12 md:h-14 px-3 sm:px-4 pe-9 sm:pe-10 rounded-2xl bg-slate-50 border-none text-slate-700 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-primary focus:outline-none hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <option value="round_trip">{t('trips.round_trip')}</option>
-              <option value="one_way">{t('trips.one_way')}</option>
-            </select>
-            <ChevronDown className="absolute end-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-          </div>
+        {/* Trip type pills */}
+        <div className="mb-3 flex flex-wrap gap-2">
+          {([
+            { value: 'round_trip', label: t('trips.round_trip'), icon: <ArrowLeftRight className="h-4 w-4" /> },
+            { value: 'one_way', label: t('trips.one_way'), icon: <ArrowRight className={cn('h-4 w-4', isAr && 'rotate-180')} /> },
+            { value: 'multi_city', label: t('trips.multi_city'), icon: <Route className="h-4 w-4" /> },
+          ] as const).map((opt) => {
+            const active = filters.trip_type === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleTripTypeChange(opt.value)}
+                aria-pressed={active}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition-colors',
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-500 hover:border-primary/40 hover:text-slate-900'
+                )}
+              >
+                {opt.icon}
+                <span>{opt.label}</span>
+              </button>
+            )
+          })}
+        </div>
 
+        {/* Row 2: Dates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           {/* Departure Date */}
           <Popover>
             <PopoverTrigger
@@ -405,6 +780,52 @@ export function TripsContent({
           </Popover>
         </div>
 
+        {/* Search-nearby toggles (Wego pattern) */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => updateFilter('include_nearby', !filters.include_nearby)}
+            aria-pressed={filters.include_nearby}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs md:text-sm font-bold transition-colors',
+              filters.include_nearby
+                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-slate-900',
+            )}
+          >
+            <MapPin className="h-3.5 w-3.5" />
+            <span>{pick(locale, 'مطارات قريبة', 'Nearby airports', 'Yakındaki havalimanları')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => updateFilter('flex_days', filters.flex_days > 0 ? 0 : 3)}
+            aria-pressed={filters.flex_days > 0}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs md:text-sm font-bold transition-colors',
+              filters.flex_days > 0
+                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-slate-900',
+            )}
+          >
+            <CalendarRange className="h-3.5 w-3.5" />
+            <span>
+              {pick(locale, 'تواريخ مرنة', 'Flexible dates', 'Esnek tarihler')}
+              {filters.flex_days > 0 ? ` ±${filters.flex_days}` : ''}
+            </span>
+          </button>
+        </div>
+
+        {/* Passenger + Cabin picker */}
+        <div className="mt-3">
+          <PassengerPicker
+            locale={locale}
+            value={passengerValue}
+            onChange={handlePassengersChange}
+            cabinClass={(filters.cabin_class || 'economy') as CabinClassValue}
+            onCabinChange={(c) => updateFilter('cabin_class', c)}
+          />
+        </div>
+
         <div className="w-full mt-2">
           <button
             onClick={handleSearch}
@@ -443,6 +864,15 @@ export function TripsContent({
               <SlidersHorizontal className="h-4 w-4" />
               {t('common.filter')}
             </button>
+
+            <ShareSearchButton />
+
+            <TrackRouteButton
+              originCode={filters.origin}
+              destinationCode={filters.destination}
+              cabinClass={filters.cabin_class || 'economy'}
+              targetPrice={priceTierData.median ?? undefined}
+            />
           </div>
 
           {hasActiveFilters && (
@@ -457,11 +887,16 @@ export function TripsContent({
         </div>
       </div>
 
+      {/* Recent searches strip */}
+      <div className="mb-6">
+        <RecentSearches onSelect={handleRecentSelect} refreshKey={recentRefreshKey} />
+      </div>
+
       {/* Extra Filter panel */}
       {showFilters && (
         <div className="rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 bg-white p-5 md:p-8 mb-8 md:mb-12 shadow-xl shadow-slate-200/40 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <h3 className="text-base md:text-lg font-bold text-slate-900 mb-5 md:mb-6">{t('common.filter')}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-1.5 md:space-y-2">
               <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
                 {t('trips.filter_price')} ({t('common.from')})
@@ -488,24 +923,6 @@ export function TripsContent({
                 className={inputClass}
               />
             </div>
-            <div className="space-y-1.5 md:space-y-2">
-              <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">
-                {t('trips.filter_cabin')}
-              </label>
-              <div className="relative">
-                <select
-                  value={filters.cabin_class}
-                  onChange={(e) => updateFilter('cabin_class', e.target.value)}
-                  className={cn(inputClass, 'appearance-none pe-10 cursor-pointer')}
-                >
-                  <option value="">{t('common.view_all')}</option>
-                  <option value="economy">{t('trips.economy')}</option>
-                  <option value="business">{t('trips.business')}</option>
-                  <option value="first">{t('trips.first')}</option>
-                </select>
-                <ChevronDown className="absolute end-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -518,11 +935,7 @@ export function TripsContent({
             destinationCode={filters.destination}
             cabinClass={filters.cabin_class || undefined}
             selectedDate={departureDate}
-            onDateSelect={(d, meta) => {
-              if (meta?.source === 'partner' && meta.affiliateUrl) {
-                window.open(meta.affiliateUrl, '_blank', 'noopener,noreferrer')
-                return
-              }
+            onDateSelect={(d) => {
               updateFilter('date_from', format(d, 'yyyy-MM-dd'))
             }}
           />
@@ -536,6 +949,48 @@ export function TripsContent({
             'حدّد مدينة المغادرة والوصول معًا لعرض مقارنة الأسعار والعروض المباشرة.',
             'Select both departure and destination to show live offers and price comparison.',
             'Canli teklifler ve fiyat karşılaştırmasını görmek için kalkış ve varışı birlikte seçin.'
+          )}
+        </div>
+      )}
+
+      {/* Stops filter chips (Wego pattern) */}
+      {!loading && (trips.length > 0 || partnerOffers.length > 0) && (
+        <div className="mb-4">
+          <StopsFilter
+            value={stopsFilter}
+            onChange={setStopsFilter}
+            counts={stopsCounts}
+            minPrices={stopsMinPrices}
+          />
+        </div>
+      )}
+
+      {/* Airline filter chips (Wego pattern) */}
+      {!loading && airlineEntries.length > 0 && (
+        <div className="mb-4">
+          <AirlineFilter
+            airlines={airlineEntries}
+            value={airlinesFilter}
+            onChange={setAirlinesFilter}
+          />
+        </div>
+      )}
+
+      {/* Departure-time + Duration (Wego patterns) */}
+      {!loading && (trips.length > 0 || partnerOffers.length > 0) && (
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <DepartureTimeFilter
+            value={timeFilter}
+            onChange={setTimeFilter}
+            counts={timeBucketCounts}
+          />
+          {durationBounds && durationBounds.max > durationBounds.min && (
+            <DurationFilter
+              value={maxDurationHours}
+              onChange={setMaxDurationHours}
+              min={durationBounds.min}
+              max={durationBounds.max}
+            />
           )}
         </div>
       )}
@@ -590,7 +1045,7 @@ export function TripsContent({
             <CardSkeleton key={i} />
           ))}
         </div>
-      ) : trips.length === 0 && partnerOffers.length === 0 && hotelOffers.length === 0 ? (
+      ) : filteredTrips.length === 0 && filteredPartnerOffers.length === 0 && hotelOffers.length === 0 ? (
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <EmptyState
             icon={Plane}
@@ -602,7 +1057,7 @@ export function TripsContent({
       ) : (
         <>
           {/* Partner flight offers — first */}
-          {partnerOffers.length > 0 && (
+          {filteredPartnerOffers.length > 0 && (
             <div>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
@@ -624,7 +1079,7 @@ export function TripsContent({
                   </p>
                 </div>
                 <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
-                  {partnerOffers.length}{' '}
+                  {filteredPartnerOffers.length}{' '}
                   {pick(locale, 'عرض', 'offers', 'teklif')}
                 </span>
               </div>
@@ -647,13 +1102,18 @@ export function TripsContent({
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {partnerOffers.map((offer, idx) => (
+                {filteredPartnerOffers.map((offer, idx) => (
                   <div
                     key={offer.id}
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${(idx % 6) * 100}ms` }}
                   >
-                    <LiveTripCard offer={offer} onViewDetails={() => setSelectedLiveOffer(offer)} />
+                    <LiveTripCard
+                      offer={offer}
+                      onViewDetails={() => setSelectedLiveOffer(offer)}
+                      priceTier={priceTierData.tiers.get(`o:${offer.id}`)}
+                      priceMedian={priceTierData.median}
+                    />
                   </div>
                 ))}
               </div>
@@ -662,7 +1122,7 @@ export function TripsContent({
 
           {/* Hotel offers — second */}
           {hotelOffers.length > 0 && filters.destination && (
-            <div className={partnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
+            <div className={filteredPartnerOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
               <div className="mb-5 md:mb-6 flex items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg md:text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -682,36 +1142,42 @@ export function TripsContent({
                     )}
                   </p>
                 </div>
-                <span className="hidden md:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-[11px] font-semibold text-blue-700 border border-blue-200">
-                  <Hotel className="h-3 w-3" />
-                  {pick(locale, 'فئات الإقامة', 'Stay tiers', 'Konaklama seçenekleri')}
-                </span>
+                <MapViewToggle value={hotelView} onChange={setHotelView} />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {hotelOffers.map((offer, idx) => (
-                  <div
-                    key={offer.id}
-                    className="animate-fade-in-up"
-                    style={{ animationDelay: `${idx * 100}ms` }}
-                  >
-                    <HotelCard offer={offer} onViewDetails={() => setSelectedHotelOffer(offer)} />
-                  </div>
-                ))}
-              </div>
+              {hotelView === 'map' ? (
+                <HotelMapView offers={hotelOffers} height={460} />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                  {hotelOffers.map((offer, idx) => (
+                    <div
+                      key={offer.id}
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${idx * 100}ms` }}
+                    >
+                      <HotelCard offer={offer} onViewDetails={() => setSelectedHotelOffer(offer)} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* Platform trips — last */}
-          {trips.length > 0 && (
-            <div className={partnerOffers.length > 0 || hotelOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
+          {filteredTrips.length > 0 && (
+            <div className={filteredPartnerOffers.length > 0 || hotelOffers.length > 0 ? 'mt-12 md:mt-16' : ''}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {trips.map((trip, idx) => (
+                {filteredTrips.map((trip, idx) => (
                   <div
                     key={trip.id}
                     className="animate-fade-in-up"
                     style={{ animationDelay: `${(idx % 6) * 100}ms` }}
                   >
-                    <TripCard trip={trip} ribbon={tripRibbons.get(trip.id)} />
+                    <TripCard
+                      trip={trip}
+                      ribbon={tripRibbons.get(trip.id)}
+                      priceTier={priceTierData.tiers.get(`t:${trip.id}`)}
+                      priceMedian={priceTierData.median}
+                    />
                   </div>
                 ))}
               </div>

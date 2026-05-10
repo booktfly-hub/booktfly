@@ -136,15 +136,53 @@ export function buildSearchDeepLink(opts: {
 }
 
 // Deep link to a specific flight offer using the partial 'link' returned by Flight Data API.
-// Aviasales returns partial URLs (e.g. "/search/RUH15080DXB1?...") that need the host + marker.
-export function buildOfferDeepLink(partialLink: string, sub_id?: string): string {
+// Aviasales returns partial URLs (e.g. "/search/RUH15080DXB100Y") that need the host + marker.
+// Aviasales encodes pax + cabin as the trailing 4 chars before the query string:
+// {ORIGIN}{DDMM}{DEST}{RDDMM?}{adults}{children}{infants}{Y|C}
+// Without overriding, the partial path bakes in 1 adult / 0 / 0 / economy. We rewrite those
+// trailing digits to match the user's selection so the partner search opens with the same pax.
+export function buildOfferDeepLink(
+  partialLink: string,
+  opts:
+    | string
+    | {
+        sub_id?: string
+        adults?: number
+        children?: number
+        infants?: number
+        cabin_class?: CabinClass
+        airline?: string
+        direct?: boolean
+      } = {}
+): string {
   if (!partialLink) return ''
+  const o = typeof opts === 'string' ? { sub_id: opts } : opts
+
   const base = partialLink.startsWith('http')
     ? partialLink
     : `https://www.aviasales.com${partialLink.startsWith('/') ? partialLink : '/' + partialLink}`
   const url = new URL(base)
+
+  // Rewrite the trailing pax/cabin of /search/{ORIGIN}{DDMM}{DEST}{RDDMM?}{A}{C?}{I?}{Y|C?}
+  // Aviasales sometimes returns the short form (just adults) when defaults apply, and
+  // sometimes the long form (A C I cabin). Anchor on the destination airport code so we
+  // can replace whatever pax tail follows it without losing the date(s).
+  if (o.adults !== undefined || o.children !== undefined || o.infants !== undefined || o.cabin_class) {
+    const adults = Math.max(1, Math.min(9, o.adults ?? 1))
+    const children = Math.max(0, Math.min(9, o.children ?? 0))
+    const infants = Math.max(0, Math.min(9, o.infants ?? 0))
+    const cabin = o.cabin_class || 'Y'
+    url.pathname = url.pathname.replace(
+      /^(\/search\/[A-Z]{3}\d{4}[A-Z]{3}(?:\d{4})?)\d{1,3}[YC]?$/,
+      `$1${adults}${children}${infants}${cabin}`
+    )
+  }
+
   if (marker && !url.searchParams.has('marker')) url.searchParams.set('marker', marker)
-  if (sub_id) url.searchParams.set('sub_id', sub_id)
+  if (o.sub_id) url.searchParams.set('sub_id', o.sub_id)
+  // Tighten the live search so the displayed offer is more likely to appear at the top.
+  if (o.airline && /^[A-Z0-9]{2}$/i.test(o.airline)) url.searchParams.set('airlines', o.airline.toUpperCase())
+  if (o.direct) url.searchParams.set('direct', 'true')
   return url.toString()
 }
 

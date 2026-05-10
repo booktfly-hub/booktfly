@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { optimizeImage } from '@/lib/optimize-image'
 import { notify } from '@/lib/notifications'
 import { logActivity } from '@/lib/activity-log'
+import { expandWithNearby, isIataCode } from '@/lib/nearby-airports'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +14,21 @@ export async function GET(request: NextRequest) {
     const buildLocationGroup = (prefix: 'origin' | 'destination', raw: string) => {
       const term = escapeLike(raw)
       return `or(${prefix}_city_ar.ilike.%${term}%,${prefix}_city_en.ilike.%${term}%,${prefix}_code.ilike.%${term}%)`
+    }
+    const buildLocationGroupExpanded = (
+      prefix: 'origin' | 'destination',
+      raw: string,
+      includeNearby: boolean,
+    ) => {
+      if (!includeNearby || !isIataCode(raw)) return buildLocationGroup(prefix, raw)
+      const codes = expandWithNearby(raw)
+      // Match any of the expanded IATA codes in the *_code column. Other
+      // columns are skipped here to keep the OR clause short — the IATA
+      // expansion is the whole point.
+      const codeMatches = codes
+        .map((c) => `${prefix}_code.ilike.${escapeLike(c)}`)
+        .join(',')
+      return `or(${codeMatches})`
     }
 
     const limited = rateLimit(request, { limit: 30, windowMs: 60_000 })
@@ -30,6 +46,9 @@ export async function GET(request: NextRequest) {
     const tripType = searchParams.get('trip_type')
     const cabinClass = searchParams.get('cabin_class')
     const directOnly = searchParams.get('direct_only')
+    const includeNearby = searchParams.get('include_nearby') === '1' || searchParams.get('include_nearby') === 'true'
+    const flexDaysRaw = parseInt(searchParams.get('flex_days') || '0', 10)
+    const flexDays = Math.max(0, Math.min(3, Number.isFinite(flexDaysRaw) ? flexDaysRaw : 0))
     const sort = searchParams.get('sort') || 'newest'
     const page = parseInt(searchParams.get('page') || '1', 10)
     const limit = parseInt(searchParams.get('limit') || '12', 10)
@@ -47,19 +66,32 @@ export async function GET(request: NextRequest) {
     }
 
     if (origin && destination) {
-      query = query.or(`and(${buildLocationGroup('origin', origin)},${buildLocationGroup('destination', destination)})`)
+      query = query.or(
+        `and(${buildLocationGroupExpanded('origin', origin, includeNearby)},${buildLocationGroupExpanded('destination', destination, includeNearby)})`,
+      )
     } else if (origin) {
-      query = query.or(buildLocationGroup('origin', origin))
+      query = query.or(buildLocationGroupExpanded('origin', origin, includeNearby))
     } else if (destination) {
-      query = query.or(buildLocationGroup('destination', destination))
+      query = query.or(buildLocationGroupExpanded('destination', destination, includeNearby))
+    }
+
+    const shiftDate = (iso: string, days: number) => {
+      const d = new Date(`${iso}T00:00:00.000Z`)
+      if (Number.isNaN(d.getTime())) return iso
+      d.setUTCDate(d.getUTCDate() + days)
+      return d.toISOString().slice(0, 10)
     }
 
     if (dateFrom) {
-      query = query.gte('departure_at', dateFrom)
+      query = query.gte('departure_at', flexDays > 0 ? shiftDate(dateFrom, -flexDays) : dateFrom)
     }
 
     if (dateTo) {
-      query = query.lte('departure_at', dateTo)
+      query = query.lte('departure_at', flexDays > 0 ? shiftDate(dateTo, flexDays) : dateTo)
+    } else if (dateFrom && flexDays > 0) {
+      // Cap the upper bound when only departure is set, so we don't pull in
+      // arbitrarily-far-future trips.
+      query = query.lte('departure_at', shiftDate(dateFrom, flexDays))
     }
 
     if (priceMin) {

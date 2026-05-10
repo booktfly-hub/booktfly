@@ -14,9 +14,17 @@ export async function fetchPartnerLiveOffers(opts: {
   departure_date?: string
   return_date?: string
   trip_type?: string
+  adults?: number
+  children?: number
+  infants?: number
+  cabin_class?: 'Y' | 'C'
 }): Promise<LiveOffer[]> {
   const origin = opts.origin?.trim() || ''
   const destination = opts.destination?.trim() || ''
+  const adults = Math.max(1, Math.min(9, opts.adults ?? 1))
+  const children = Math.max(0, Math.min(9, opts.children ?? 0))
+  const infants = Math.max(0, Math.min(9, opts.infants ?? 0))
+  const cabin: 'Y' | 'C' = opts.cabin_class || 'Y'
 
   if (origin && destination) {
     const [originIata, destinationIata] = await Promise.all([
@@ -34,6 +42,10 @@ export async function fetchPartnerLiveOffers(opts: {
             ? opts.return_date
             : undefined,
         limit: 10,
+        adults,
+        children,
+        infants,
+        cabin_class: cabin,
       }),
       originIata && destinationIata
         ? searchDuffelFlights({
