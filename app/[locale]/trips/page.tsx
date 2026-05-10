@@ -1,9 +1,40 @@
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { TripsContent } from './trips-content'
 import { fetchPartnerLiveOffers } from '@/lib/live-offers-server'
-import { getHotelOffers } from '@/lib/booking-hotels'
+import { getLiveHotelOffers } from '@/lib/booking-hotels'
 import { expandWithNearby, isIataCode } from '@/lib/nearby-airports'
+import { getUsdRates, convertWithRates } from '@/lib/fx-rates-server'
 import type { Trip } from '@/types'
+
+const SUPPORTED_CURRENCIES = new Set(['SAR', 'AED', 'USD', 'EUR', 'GBP'])
+
+async function readCurrencyCookie(): Promise<string> {
+  const c = (await cookies()).get('bf_currency')?.value?.toUpperCase() ?? 'SAR'
+  return SUPPORTED_CURRENCIES.has(c) ? c : 'SAR'
+}
+
+async function convertTripsToCurrency(trips: Trip[] | null, target: string): Promise<Trip[]> {
+  if (!trips || trips.length === 0) return []
+  const targetUpper = target.toUpperCase()
+  if (trips.every((t) => (t.currency || '').toUpperCase() === targetUpper)) return trips
+  const rates = await getUsdRates()
+  return trips.map((t) => {
+    const from = (t.currency || 'SAR').toUpperCase()
+    if (from === targetUpper) return t
+    const seat = convertWithRates(t.price_per_seat, from, targetUpper, rates)
+    const oneWay =
+      typeof t.price_per_seat_one_way === 'number'
+        ? convertWithRates(t.price_per_seat_one_way, from, targetUpper, rates)
+        : t.price_per_seat_one_way
+    return {
+      ...t,
+      price_per_seat: Math.round(seat),
+      price_per_seat_one_way: typeof oneWay === 'number' ? Math.round(oneWay) : oneWay,
+      currency: targetUpper as Trip['currency'],
+    }
+  })
+}
 
 export default async function TripsPage({
   searchParams,
@@ -98,6 +129,8 @@ export default async function TripsPage({
 
   const { data: trips, count } = await query
 
+  const userCurrency = await readCurrencyCookie()
+  const tripsForClient = await convertTripsToCurrency(trips as Trip[] | null, userCurrency)
   const [liveOffers, hotelOffers] = await Promise.all([
     fetchPartnerLiveOffers({
       origin,
@@ -109,15 +142,21 @@ export default async function TripsPage({
       children,
       infants,
       cabin_class: cabinForLive,
+      currency: userCurrency,
     }),
     destination
-      ? getHotelOffers({ destination_iata: destination, checkin: dateFrom || undefined, checkout: dateTo || undefined })
+      ? getLiveHotelOffers({
+          destination_iata: destination,
+          checkin: dateFrom || undefined,
+          checkout: dateTo || undefined,
+          currency: userCurrency,
+        })
       : Promise.resolve([]),
   ])
 
   return (
     <TripsContent
-      initialTrips={(trips as Trip[]) || []}
+      initialTrips={tripsForClient}
       initialTotalPages={Math.ceil((count || 0) / 12)}
       liveOffers={liveOffers}
       hotelOffers={hotelOffers}

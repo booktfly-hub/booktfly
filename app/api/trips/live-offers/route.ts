@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       children,
       infants,
       cabin_class,
+      currency: searchParams.get('currency') || undefined,
     })
 
     return NextResponse.json({ offers })

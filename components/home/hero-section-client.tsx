@@ -5,13 +5,14 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X, Package } from 'lucide-react'
+import { Search, ArrowLeftRight, ChevronDown, CalendarIcon, Plane, Building, CarFront, ShieldCheck, CreditCard, Clock, MapPin, Car as CarIcon, CalendarDays, Moon, Users, DoorOpen, ArrowUpDown, SlidersHorizontal, X, Package, ArrowRight, Route } from 'lucide-react'
 import { format } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CityAutocomplete } from '@/components/shared/city-autocomplete'
-import { PassengerPicker, type PassengerCounts } from '@/components/shared/passenger-picker'
+import { PassengerPicker, type PassengerCounts, type CabinClassValue } from '@/components/shared/passenger-picker'
+import { MultiCityLegs, type FlightLeg } from '@/components/home/multi-city-legs'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -51,10 +52,15 @@ export function HeroSectionClient({
   const [origin, setOrigin] = useState('')
   const [destination, setDestination] = useState('')
   const [tripType, setTripType] = useState('round_trip')
+  const [cabinClass, setCabinClass] = useState<CabinClassValue>('economy')
   const [passengerCounts, setPassengerCounts] = useState<PassengerCounts>({ adults: 1, children: 0, infants: 0, childAges: [] })
   const passengers = passengerCounts.adults + passengerCounts.children + passengerCounts.infants
   const [departureDate, setDepartureDate] = useState<Date>()
   const [returnDate, setReturnDate] = useState<Date>()
+  const [legs, setLegs] = useState<FlightLeg[]>([
+    { origin: '', destination: '', date: undefined },
+    { origin: '', destination: '', date: undefined },
+  ])
   const [hotelCity, setHotelCity] = useState('')
   const [hotelCategory, setHotelCategory] = useState('')
   const [hotelCheckIn, setHotelCheckIn] = useState<Date>()
@@ -70,6 +76,7 @@ export function HeroSectionClient({
       if (raw) {
         const prefs = JSON.parse(raw)
         if (prefs.tripType) setTripType(prefs.tripType)
+        if (prefs.cabinClass) setCabinClass(prefs.cabinClass)
         if (prefs.passengerCounts) setPassengerCounts(prefs.passengerCounts)
         if (prefs.hotelPassengers) setHotelPassengers(String(prefs.hotelPassengers))
       }
@@ -157,11 +164,32 @@ export function HeroSectionClient({
     // flights
     {
       const params = new URLSearchParams()
+      if (tripType === 'multi_city') {
+        params.set('trip_type', 'multi_city')
+        const encoded = legs
+          .filter((l) => l.origin && l.destination)
+          .map((l) => `${l.origin}-${l.destination}${l.date ? `-${format(l.date, 'yyyy-MM-dd')}` : ''}`)
+          .join('|')
+        if (encoded) params.set('legs', encoded)
+        const first = legs[0]
+        if (first?.origin) params.set('origin', first.origin)
+        if (first?.destination) params.set('destination', first.destination)
+        if (first?.date) params.set('date_from', format(first.date, 'yyyy-MM-dd'))
+        if (cabinClass) params.set('cabin_class', cabinClass)
+        if (passengers > 1) params.set('passengers', String(passengers))
+        if (passengerCounts.adults > 1) params.set('adults', String(passengerCounts.adults))
+        if (passengerCounts.children > 0) params.set('children', String(passengerCounts.children))
+        if (passengerCounts.infants > 0) params.set('infants', String(passengerCounts.infants))
+        if (passengerCounts.childAges.length > 0) params.set('child_ages', passengerCounts.childAges.join(','))
+        const qs = params.toString()
+        return `/${locale}/trips${qs ? `?${qs}` : ''}`
+      }
       if (origin) params.set('origin', origin)
       if (destination) params.set('destination', destination)
       if (tripType) params.set('trip_type', tripType)
       if (departureDate) params.set('date_from', format(departureDate, 'yyyy-MM-dd'))
       if (returnDate && tripType === 'round_trip') params.set('date_to', format(returnDate, 'yyyy-MM-dd'))
+      if (cabinClass) params.set('cabin_class', cabinClass)
       if (passengers > 1) params.set('passengers', String(passengers))
       if (passengerCounts.adults > 1) params.set('adults', String(passengerCounts.adults))
       if (passengerCounts.children > 0) params.set('children', String(passengerCounts.children))
@@ -632,6 +660,12 @@ export function HeroSectionClient({
     if (searchMode === 'hotels') return renderHotelSearchForm()
     if (searchMode === 'cars') return renderCarSearchForm()
 
+    const tripTypePills: { value: 'round_trip'|'one_way'|'multi_city'; label: string; icon: React.ReactNode }[] = [
+      { value: 'round_trip', label: roundTripLabel, icon: <ArrowLeftRight className="h-4 w-4" /> },
+      { value: 'one_way', label: oneWayLabel, icon: <ArrowRight className={cn('h-4 w-4', isAr && 'rotate-180')} /> },
+      { value: 'multi_city', label: t('trips.multi_city'), icon: <Route className="h-4 w-4" /> },
+    ]
+
     return (
       <>
         <input type="hidden" name="origin" value={origin} />
@@ -640,6 +674,45 @@ export function HeroSectionClient({
         <input type="hidden" name="date_from" value={departureDate ? format(departureDate, 'yyyy-MM-dd') : ''} />
         <input type="hidden" name="date_to" value={returnDate ? format(returnDate, 'yyyy-MM-dd') : ''} />
 
+        {/* Trip type pills */}
+        <div className="flex flex-wrap gap-2">
+          {tripTypePills.map((opt) => {
+            const active = tripType === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  setTripType(opt.value)
+                  savePrefs({ tripType: opt.value })
+                  if (opt.value === 'one_way') setReturnDate(undefined)
+                }}
+                aria-pressed={active}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition-colors',
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                )}
+              >
+                {opt.icon}
+                <span>{opt.label}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {tripType === 'multi_city' ? (
+          <MultiCityLegs
+            legs={legs}
+            onChange={setLegs}
+            locale={locale}
+            departureFromLabel={departureFromLabel}
+            arrivalToLabel={arrivalToLabel}
+            departureDateLabel={departureDateLabel}
+          />
+        ) : (
+        <>
         {/* Row 1: Origin & Destination */}
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           <CityAutocomplete
@@ -687,27 +760,8 @@ export function HeroSectionClient({
           />
         </div>
 
-        {/* Row 2: Trip type and dates */}
-        <div className={cn("grid gap-3", searchMode === 'flights' ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
-          {searchMode === 'flights' && (
-            <div className="relative">
-              <select
-                value={tripType}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setTripType(value)
-                  savePrefs({ tripType: value })
-                  if (value === 'one_way') setReturnDate(undefined)
-                }}
-                className="h-14 w-full cursor-pointer appearance-none rounded-lg border border-input bg-surface px-5 pe-10 text-sm font-semibold text-foreground shadow-sm outline-none transition-colors hover:bg-muted focus:border-ring focus:ring-4 focus:ring-ring/15"
-              >
-                <option value="round_trip">{roundTripLabel}</option>
-                <option value="one_way">{oneWayLabel}</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute end-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
-            </div>
-          )}
-
+        {/* Row 2: Dates */}
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
           {/* Departure Date */}
           <Popover>
             <PopoverTrigger
@@ -751,8 +805,10 @@ export function HeroSectionClient({
             </PopoverContent>
           </Popover>
         </div>
+        </>
+        )}
 
-        {/* Row 3: Passengers (Skyscanner-style) */}
+        {/* Row 3: Passengers + Cabin (Wego-style) */}
         <PassengerPicker
           value={passengerCounts}
           onChange={(v) => {
@@ -760,6 +816,11 @@ export function HeroSectionClient({
             savePrefs({ passengerCounts: v })
           }}
           locale={locale}
+          cabinClass={cabinClass}
+          onCabinChange={(c) => {
+            setCabinClass(c)
+            savePrefs({ cabinClass: c })
+          }}
         />
 
         {/* Search button */}

@@ -123,6 +123,7 @@ export function HotelMapView({ offers, height = 460, className }: HotelMapViewPr
                   <div className="space-y-1.5">
                     {c.offers.map((o) => {
                       const tierLabel = isAr ? o.tier_label_ar : o.tier_label_en
+                      const label = o.hotel_name || tierLabel
                       return (
                         <a
                           key={o.id}
@@ -131,13 +132,13 @@ export function HotelMapView({ offers, height = 460, className }: HotelMapViewPr
                           rel="noopener noreferrer"
                           className="flex items-center justify-between gap-3 rounded-md border border-slate-100 bg-white px-2 py-1.5 hover:border-blue-300 hover:bg-blue-50 transition-colors"
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-600 shrink-0">
                               {Array.from({ length: o.star_rating }).map((_, i) => (
                                 <Star key={i} className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
                               ))}
                             </span>
-                            <span className="text-xs font-bold text-slate-700">{tierLabel}</span>
+                            <span className="text-xs font-bold text-slate-700 truncate">{label}</span>
                           </div>
                           <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700">
                             {o.price_from} {o.price_currency}

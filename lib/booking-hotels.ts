@@ -1,4 +1,5 @@
 import 'server-only'
+import { searchLiteApi } from './liteapi-server'
 
 const AFFILIATE_ID = process.env.BOOKING_AFFILIATE_ID || ''
 
@@ -16,8 +17,9 @@ export interface HotelOffer {
   checkout: string
   adults: number
   image_url: string
+  fallback_image_url?: string
   affiliate_url: string
-  source: 'booking'
+  source: 'booking' | 'liteapi'
   tier: HotelTier
   tier_label_en: string
   tier_label_ar: string
@@ -27,6 +29,17 @@ export interface HotelOffer {
   property_count: string
   property_type_en: string
   property_type_ar: string
+  // Real-property fields (present when sourced from Hotellook)
+  hotel_id?: string
+  hotel_name?: string
+  hotel_lat?: number
+  hotel_lng?: number
+}
+
+function tierFromStars(stars: number): HotelTier {
+  if (stars >= 5) return 'luxury'
+  if (stars >= 3) return 'comfort'
+  return 'budget'
 }
 
 interface CityMeta {
@@ -380,4 +393,188 @@ function defaultCheckout(checkin: string): string {
   const d = new Date(checkin)
   d.setDate(d.getDate() + 3)
   return d.toISOString().slice(0, 10)
+}
+
+// ─── Live (Hotellook) ─────────────────────────────────────────────────────
+// Returns one card per real hotel — each `affiliate_url` deep-links to the
+// specific property page on search.hotellook.com (not a search results list).
+
+const TIER_FALLBACK_IMAGE: Record<HotelTier, string> = {
+  luxury: TIER_IMAGES.luxury.default,
+  comfort: TIER_IMAGES.comfort.default,
+  budget: TIER_IMAGES.budget.default,
+}
+
+function liveCityMeta(iata: string | undefined, fallbackCity: string): {
+  city_en: string
+  city_ar: string
+  iata: string
+  country_en: string
+  country_ar: string
+  country_code: string
+  image: string
+} {
+  const code = (iata || '').toUpperCase()
+  const meta = code ? CITIES[code] : undefined
+  if (meta) {
+    return {
+      city_en: meta.en,
+      city_ar: meta.ar,
+      iata: code,
+      country_en: meta.country_en,
+      country_ar: meta.country_ar,
+      country_code: meta.country_code,
+      image: meta.image,
+    }
+  }
+  return {
+    city_en: fallbackCity,
+    city_ar: fallbackCity,
+    iata: code,
+    country_en: '',
+    country_ar: '',
+    country_code: '',
+    image: TIER_IMAGES.comfort.default,
+  }
+}
+
+/** Booking.com deep link targeting a specific hotel by name (lands on the property when matched). */
+function buildBookingHotelDeepLink(opts: {
+  hotelName: string
+  city: string
+  checkin: string
+  checkout: string
+  adults: number
+  currency?: string
+  sub_id?: string
+}): string {
+  const url = new URL('https://www.booking.com/searchresults.html')
+  url.searchParams.set('ss', `${opts.hotelName}, ${opts.city}`)
+  url.searchParams.set('checkin', opts.checkin)
+  url.searchParams.set('checkout', opts.checkout)
+  url.searchParams.set('group_adults', String(opts.adults))
+  url.searchParams.set('no_rooms', '1')
+  url.searchParams.set('lang', 'en-gb')
+  if (opts.currency) url.searchParams.set('selected_currency', opts.currency.toUpperCase())
+  if (AFFILIATE_ID) url.searchParams.set('aid', AFFILIATE_ID)
+  if (opts.sub_id) url.searchParams.set('label', opts.sub_id)
+  return url.toString()
+}
+
+function nightsBetween(checkin: string, checkout: string): number {
+  const ms = new Date(checkout).getTime() - new Date(checkin).getTime()
+  return Math.max(1, Math.round(ms / 86_400_000))
+}
+
+async function buildLiveOffers(opts: {
+  cityName: string
+  iata?: string
+  countryCode?: string
+  checkin: string
+  checkout: string
+  adults: number
+  currency?: string
+  limit?: number
+}): Promise<HotelOffer[]> {
+  const cityMeta = liveCityMeta(opts.iata, opts.cityName)
+  const countryCode = (opts.countryCode || cityMeta.country_code || '').toUpperCase()
+  if (!countryCode) return []
+
+  const currency = (opts.currency || 'USD').toUpperCase()
+  const hotels = await searchLiteApi({
+    cityName: cityMeta.city_en || opts.cityName,
+    countryCode,
+    checkin: opts.checkin,
+    checkout: opts.checkout,
+    adults: opts.adults,
+    currency,
+    limit: opts.limit ?? 12,
+  })
+  if (hotels.length === 0) return []
+
+  const nights = nightsBetween(opts.checkin, opts.checkout)
+
+  return hotels.map((h) => {
+    const stars = h.stars > 0 ? h.stars : 3
+    const tier = tierFromStars(stars)
+    const tm = TIER_META[tier]
+    const perNight = Math.round(h.price_total / nights)
+    return {
+      id: `liteapi-${h.hotel_id}`,
+      city: h.city || cityMeta.city_en,
+      city_ar: cityMeta.city_ar,
+      city_iata: cityMeta.iata,
+      country: cityMeta.country_en || h.country,
+      country_ar: cityMeta.country_ar,
+      country_code: cityMeta.country_code,
+      checkin: opts.checkin,
+      checkout: opts.checkout,
+      adults: opts.adults,
+      image_url: h.photo || h.thumbnail || TIER_FALLBACK_IMAGE[tier],
+      fallback_image_url: TIER_FALLBACK_IMAGE[tier],
+      affiliate_url: buildBookingHotelDeepLink({
+        hotelName: h.name,
+        city: h.city || cityMeta.city_en,
+        checkin: opts.checkin,
+        checkout: opts.checkout,
+        adults: opts.adults,
+        currency,
+        sub_id: `bf_${h.hotel_id}`,
+      }),
+      source: 'liteapi',
+      tier,
+      tier_label_en: tm.label_en,
+      tier_label_ar: tm.label_ar,
+      star_rating: Math.max(1, Math.min(5, stars)),
+      price_from: perNight,
+      price_currency: h.price_currency || 'USD',
+      property_count: '',
+      property_type_en: tm.type_en,
+      property_type_ar: tm.type_ar,
+      hotel_id: h.hotel_id,
+      hotel_name: h.name,
+      hotel_lat: h.latitude ?? undefined,
+      hotel_lng: h.longitude ?? undefined,
+    } satisfies HotelOffer
+  })
+}
+
+export async function getLiveHotelOffers(opts: {
+  destination_iata?: string
+  city?: string
+  checkin?: string
+  checkout?: string
+  adults?: number
+  currency?: string
+  limit?: number
+}): Promise<HotelOffer[]> {
+  const checkin = opts.checkin || defaultCheckin()
+  const checkout = opts.checkout || defaultCheckout(checkin)
+  const adults = opts.adults ?? 2
+
+  let cityName = opts.city?.trim() || ''
+  let iata = opts.destination_iata?.toUpperCase()
+  if (!cityName && iata && CITIES[iata]) cityName = CITIES[iata].en
+  if (!cityName) return []
+
+  const live = await buildLiveOffers({ cityName, iata, checkin, checkout, adults, currency: opts.currency, limit: opts.limit })
+  if (live.length > 0) return live
+
+  // Fallback: synthetic 3-tier cards if the live API returned nothing.
+  if (iata) return getHotelOffers({ destination_iata: iata, checkin, checkout, adults })
+  return getHotelOffersForCity({ city: cityName, checkin, checkout, adults })
+}
+
+export async function getLivePopularHotelOffers(currency?: string): Promise<HotelOffer[]> {
+  const checkin = defaultCheckin()
+  const checkout = defaultCheckout(checkin)
+  const cities = ['DXB', 'IST', 'CAI']
+  const results = await Promise.all(
+    cities.map((iata) =>
+      buildLiveOffers({ cityName: CITIES[iata].en, iata, checkin, checkout, adults: 2, currency, limit: 4 }),
+    ),
+  )
+  const flat = results.flat()
+  if (flat.length > 0) return flat
+  return getPopularHotelOffers()
 }

@@ -8,6 +8,12 @@ import { cn } from '@/lib/utils'
 export type DisplayCurrency = 'SAR' | 'AED' | 'USD' | 'EUR' | 'GBP'
 
 const LOCAL_KEY = 'bookitfly.display_currency'
+const COOKIE_KEY = 'bf_currency'
+
+function writeCookie(value: string) {
+  if (typeof document === 'undefined') return
+  document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=31536000; SameSite=Lax`
+}
 
 const CURRENCY_LABEL: Record<DisplayCurrency, { ar: string; en: string; symbol: string }> = {
   SAR: { ar: 'ريال سعودي', en: 'Saudi Riyal', symbol: 'ر.س' },
@@ -31,11 +37,13 @@ export function CurrencySwitcher({ className }: { className?: string }) {
   useEffect(() => {
     const saved = (localStorage.getItem(LOCAL_KEY) as DisplayCurrency | null) ?? 'SAR'
     setCur(saved)
+    writeCookie(saved)
   }, [])
 
   function pick(next: DisplayCurrency) {
     setCur(next)
     localStorage.setItem(LOCAL_KEY, next)
+    writeCookie(next)
     setOpen(false)
     window.dispatchEvent(new CustomEvent('bookitfly:currency-change', { detail: next }))
   }
