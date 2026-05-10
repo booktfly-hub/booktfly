@@ -71,7 +71,8 @@
     "trip_requests": "Gezi Talepleri",
     "last_minute": "Son Dakika",
     "packages": "Paketler",
-    "saved": "Kaydedilenler"
+    "saved": "Kaydedilenler",
+    "assistant": "AI"
   },
   "auth": {
     "login_title": "Hesabınıza giriş yapın",
@@ -1372,5 +1373,80 @@
     "add_new": "Yeni yolcu ekle",
     "use_this": "Bu yolcuyu kullan",
     "confirm_delete": "Kayıtlı yolcu silinsin mi?"
+  },
+  "assistant": {
+    "title": "BookitFly AI",
+    "error_title": "Bir şeyler ters gitti",
+    "retry": "Tekrar dene",
+    "disclaimer": "Yapay zeka hata yapabilir — rezervasyon öncesi önemli bilgileri doğrulayın.",
+    "empty": {
+      "greeting": "Bugün seyahatinizde nasıl yardımcı olabilirim?",
+      "subtitle": "Uçuş bul, otel karşılaştır, yorumlara bak — tek bir sohbette.",
+      "items": {
+        "flight": "Uçuş bul",
+        "hotel": "Otel bul",
+        "compare": "Teklifleri karşılaştır",
+        "research": "Bir şey araştır"
+      }
+    },
+    "composer": {
+      "placeholder": "Seyahatiniz hakkında her şeyi sorun…",
+      "send": "Gönder",
+      "stop": "Durdur",
+      "voice": "Sesli giriş",
+      "attach": "Ekle",
+      "thinking_label": "Düşünüyor"
+    },
+    "tool": {
+      "flights": {
+        "preparing": "Uçuş araması hazırlanıyor",
+        "running": "Uçuşlar aranıyor",
+        "done": "Uçuşlar bulundu",
+        "error": "Uçuş araması başarısız"
+      },
+      "hotels": {
+        "preparing": "Otel araması hazırlanıyor",
+        "running": "Oteller aranıyor",
+        "done": "Oteller bulundu",
+        "error": "Otel araması başarısız"
+      },
+      "compare": {
+        "preparing": "Karşılaştırma hazırlanıyor",
+        "running": "Karşılaştırılıyor",
+        "done": "Karşılaştırma hazır",
+        "error": "Karşılaştırılamadı"
+      },
+      "web": {
+        "preparing": "Web araması hazırlanıyor",
+        "running": "Web aranıyor",
+        "done": "Kaynaklar bulundu",
+        "error": "Web araması başarısız"
+      },
+      "generic": {
+        "preparing": "Hazırlanıyor",
+        "running": "Çalışıyor",
+        "done": "Tamamlandı",
+        "error": "Başarısız"
+      }
+    },
+    "flight": {
+      "found": "{count, plural, =1 {1 uçuş bulundu} other {# uçuş bulundu}}",
+      "no_results": "Bu rota için canlı uçuş yok. Farklı tarihler veya yakın havalimanları deneyin.",
+      "direct": "Aktarmasız",
+      "stops": "{n, plural, =1 {1 aktarma} other {# aktarma}}",
+      "book": "Rezervasyon"
+    },
+    "hotel": {
+      "found": "{count, plural, =1 {1 otel bulundu} other {# otel bulundu}}",
+      "no_results": "Bu şehir için canlı otel yok. Daha geniş bir tarih aralığı deneyin.",
+      "from": "Başlangıç",
+      "view": "Görüntüle"
+    },
+    "compare": {
+      "book": "Rezervasyon"
+    },
+    "web": {
+      "sources": "Kaynaklar"
+    }
   }
 }
